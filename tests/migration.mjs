@@ -1,4 +1,4 @@
-import { APP_URL, launch, nav, reporter } from "./harness.mjs";
+import { APP_URL, SEEDED_TOPICS, launch, nav, reporter } from "./harness.mjs";
 
 const { check, finish } = reporter();
 
@@ -67,6 +67,11 @@ const browser = await launch();
     .filter({ has: page.locator(".topic-card-title", { hasText: "Geometric distribution" }) });
   check("v1: dropped question's attempt still counts toward mastery",
     (await geoCard.textContent())?.includes("1 attempt"), (await geoCard.textContent())?.slice(0, 80));
+  // A topic you've already worked on must not be re-locked when its prereq
+  // later gains questions — adding coverage to a foundational topic would
+  // otherwise retroactively lock everything above it.
+  check("v1: an already-attempted topic is not re-locked by a newly-covered prereq",
+    !(await geoCard.textContent())?.includes("Locked"), (await geoCard.textContent())?.slice(0, 80));
   await page.close();
 }
 
@@ -148,7 +153,9 @@ const browser = await launch();
   await page.waitForSelector(".topic-card");
   check("import: custom topic round-trips through export/import",
     (await page.locator(".topic-card-title", { hasText: "Martingale stopping" }).count()) === 1);
-  check("import: seeded topics intact", (await page.locator(".topic-card").count()) === 20);
+  check("import: seeded topics intact",
+  (await page.locator(".topic-card").count()) === SEEDED_TOPICS + 1,
+  `${await page.locator(".topic-card").count()} cards`);
   await page.close();
 }
 

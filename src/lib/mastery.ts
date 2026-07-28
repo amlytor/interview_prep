@@ -100,6 +100,12 @@ export function masteryFor(topicId: TopicId, mastery: Map<TopicId, TopicMastery>
  * A topic is unlocked when every direct prerequisite is proficient. A prereq
  * with zero questions in the bank can't be practised yet, so it never blocks
  * unlocking (generate a quiz for it to give it real coverage).
+ *
+ * A topic you have ALREADY attempted is never re-locked. Without this, adding
+ * questions to a foundational topic would retroactively lock everything above
+ * it: a prereq with no questions doesn't block, so a user can be deep into a
+ * topic before its prerequisite gains any coverage at all. Taking that away
+ * after the fact would be punishing progress rather than guiding it.
  */
 export function isUnlocked(
   topicId: TopicId,
@@ -109,6 +115,7 @@ export function isUnlocked(
 ): boolean {
   const note = notesById.get(topicId);
   if (!note || note.prereqs.length === 0) return true;
+  if (masteryFor(topicId, mastery).attempts > 0) return true;
   return note.prereqs.every(
     (p) => masteryFor(p, mastery).proficient || !topicsWithQuestions.has(p),
   );

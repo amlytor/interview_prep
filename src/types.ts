@@ -213,7 +213,7 @@ export interface AppData {
   // AI-generated questions awaiting user approval. They only enter the live
   // bank (and the mastery signal) once explicitly approved.
   stagedQuestions: Question[];
-  // User-created topics, on top of the 19 seeded ones. Each has exactly one
+  // User-created topics, on top of the 24 seeded ones. Each has exactly one
   // study note, same as a seeded topic, so the whole knowledge tree / mastery
   // / Learn-mode machinery works on them unchanged.
   customTopics: { id: TopicId; label: string }[];

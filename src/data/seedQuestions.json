@@ -1081,6 +1081,1036 @@
       "explanation": "This is the textbook way to game a VaR limit. Selling deep out-of-the-money options brings in premium every day and produces losses only in scenarios rarer than the VaR confidence level - so those losses land beyond the quantile, where VaR literally cannot see them. Measured risk falls, P&L looks steady and impressive, and the actual exposure is a large short tail. The strategy is sometimes described as picking up nickels in front of a steamroller, and the pattern - smooth returns punctuated by a catastrophic quarter - recurs through the history of blowups. The model is not broken; it is doing exactly what a quantile does, which is why the fix is a different measure. Expected Shortfall averages losses beyond the threshold and therefore charges for precisely this trade, which is one of the main reasons FRTB switched to it. Stress testing and explicit tail-scenario limits do the same job from another direction.",
       "technique": "How a quantile-based limit can be gamed",
       "difficultyRationale": "Medium: requires connecting the payoff shape to the measure's blind spot."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define duration and convexity. Describe their properties and their uses.",
+      "canonicalAnswer": "Duration is the first-order sensitivity of a bond's price to yield (Macaulay duration is the PV-weighted average time to the cash flows; modified duration is Macaulay divided by (1 + y/k) and gives dP/P = -D_mod * dy). Convexity is the second-order term: dP/P = -D_mod*dy + (1/2)*C*dy^2. Duration rises with maturity and falls with coupon and yield; convexity is positive for option-free bonds and is worth paying for.",
+      "explanation": "Duration comes in three flavours and you should name all three. MACAULAY duration is the present-value-weighted average time until you receive the cash flows, measured in years - for a zero-coupon bond it is exactly the maturity, which is the cleanest anchor to quote. MODIFIED duration is Macaulay/(1 + y/k) and is the actual price sensitivity: a 5-year modified duration means a 1% rise in yield costs you roughly 5% of the price. DOLLAR duration (DV01 or PV01) is the price change per basis point, and it is the one you hedge with, because dollar durations add across a book while percentage durations do not. Properties: duration rises with maturity, falls with coupon (bigger early cash flows pull the weighted average time forward), and falls with yield (higher discounting weights the early flows more). CONVEXITY is the curvature. Price is a sum of terms proportional to (1+y)^(-t), each of which is convex in y, so the price-yield curve bows toward the origin. Economically, as yields fall the price rises AND duration extends, so gains accelerate; as yields rise, duration shortens, so losses decelerate. That asymmetry is a free option, which is why positive convexity is paid for in a lower yield - and why callable bonds and MBS, which have NEGATIVE convexity, offer more yield. Uses: duration for hedging and for expressing a view on the level of rates; convexity to correct the duration estimate for large moves, and as a position in its own right for someone expecting volatility.",
+      "technique": "Duration and convexity as first and second derivatives",
+      "difficultyRationale": "Medium: a definition question, but a full answer needs all three durations and the convexity intuition."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Draw the graph of bond price versus yield to maturity. Why is the curve convex? Give both the mathematical and the economic intuition.",
+      "canonicalAnswer": "A downward-sloping curve that is convex (bowed toward the origin), asymptoting toward zero as yield rises. Mathematically, price is a sum of terms proportional to (1+y)^(-t), each convex in y, and a sum of convex functions is convex. Economically, duration itself falls as yield rises, so the slope flattens.",
+      "explanation": "The shape: price falls as yield rises, steeply at low yields and ever more gently at high yields, approaching zero asymptotically. It never crosses zero, since the cash flows are positive. Mathematical intuition: P = sum of CF_t*(1+y)^(-t). Each term has second derivative t(t+1)*CF_t*(1+y)^(-t-2) > 0, so every term is convex in y and therefore so is the sum. Economic intuition, which is the better answer: the SLOPE of this curve is (minus) dollar duration, and duration is not constant - it falls as yields rise. At low yields, the distant cash flows still carry meaningful present value, the weighted average time to the cash flows is long, and the bond is very rate-sensitive. At high yields those distant flows are discounted to almost nothing, the effective maturity of the bond collapses toward its near-term coupons, and sensitivity falls. A curve whose downward slope keeps flattening is convex. The consequence worth stating: convexity means a symmetric move in yields is ASYMMETRIC in price - you gain more from a 100bp rally than you lose from a 100bp selloff. That is valuable, so it is priced: two bonds with the same duration but different convexity will not have the same yield, and the more convex one yields less.",
+      "technique": "Second derivative of the discounting function",
+      "difficultyRationale": "Medium: the graph is easy; getting credit requires both intuitions, and the economic one is the harder half."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two bonds have the same maturity and the same yield, but one has a 2% coupon and the other an 8% coupon. Which has the higher duration?",
+      "options": [
+        "The 2% coupon bond",
+        "The 8% coupon bond",
+        "They are equal, since maturity and yield match",
+        "It depends on the level of the yield"
+      ],
+      "correctOption": 0,
+      "explanation": "The LOW-coupon bond. Duration is the present-value-weighted average time to the cash flows, so a bigger coupon means more of your money arrives early, which pulls the weighted average time forward and shortens duration. In the limit, a zero-coupon bond pays everything at maturity, so its Macaulay duration equals its maturity exactly - the maximum possible for that maturity. This is why zeros are the sharpest tool for taking or hedging a duration view, and why comparing two bonds by maturity alone is a mistake: a 30-year high-coupon bond can easily have less rate sensitivity than a 20-year zero.",
+      "technique": "Duration versus coupon",
+      "difficultyRationale": "Easy: one property, but the zero-coupon limiting case is what makes it stick."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "From the term structure you see that the five-year spot rate is 10% per annum and the ten-year spot rate is 15% per annum. What is the implied forward rate from year 5 to year 10?",
+      "canonicalAnswer": "About 20.2%. From (1.15)^10 = (1.10)^5 * (1+f)^5, f = [(1.15)^10 / (1.10)^5]^(1/5) - 1 = 20.23%.",
+      "explanation": "No-arbitrage: investing for ten years at the ten-year spot must equal investing five years at the five-year spot and then rolling into the implied forward. So (1+s10)^10 = (1+s5)^5 * (1+f)^5. Rearranged, (1+f)^5 = (1.15)^10 / (1.10)^5. Numerically, 1.15^10 = 4.0456 and 1.10^5 = 1.6105, so (1+f)^5 = 2.5120, and f = 2.5120^(0.2) - 1 = 0.2023, about 20.2%. The quick mental approximation is the maturity-weighted difference: (10*15% - 5*10%)/5 = (150 - 50)/5 = 20%. That is close, and it is worth quoting to show you can do it in your head - but say explicitly that it is a LOWER bound. The approximation is linear while compounding is multiplicative, so it always understates the true forward, and the gap widens with the level of rates and with the length of the period.",
+      "technique": "Bootstrapping a forward rate from two spot rates",
+      "difficultyRationale": "Medium: the equation is standard; the value is in also giving the mental approximation and knowing its bias."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "The five-year rate is 10% and the ten-year rate is 15%, so the approximate forward from year 5 to year 10 is 20%. Explain in plain English, with no algebra, why the true forward rate has to be higher than 20%.",
+      "canonicalAnswer": "Because compounding is multiplicative, not additive. Over the first five years you earn 10% on a base that is growing more slowly than the ten-year bond's, so to catch up over the last five years you need more than the simple arithmetic gap - the shortfall in the early years compounds too.",
+      "explanation": "The averaging argument treats rates as if they add: five years at 10% plus five years at 20% averages to 15% over ten years. But money does not grow additively. Think of it as two accounts. The ten-year account grows at 15% every year from day one, so by year 5 it has already built a bigger balance. The five-year-then-forward account has been growing at only 10%, so at year 5 it is behind - and it is behind on a compounding basis, meaning the deficit itself has been growing. Over the remaining five years, the second account must not only match 15% growth but also close a gap that has been compounding for five years. Closing a compounded gap requires more than the arithmetic difference, so the forward exceeds 20%. Another way to put it that interviewers like: the arithmetic mean of the rates is being used where the GEOMETRIC mean is the correct one, and the geometric mean of a spread-out set of numbers is always below the arithmetic mean. To make the ten-year geometric average come out at 15% when the first five years only contribute 10%, the last five years have to do more than 20% of work. And the sanity check: with rates this high the effect is large - the true answer is 20.2%, not 20.0%.",
+      "technique": "Geometric versus arithmetic averaging of rates",
+      "difficultyRationale": "Medium: the maths is trivial once seen, but the no-algebra constraint makes the explanation the hard part."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain carefully the difference between the yield on a bond and the rate of return on a bond.",
+      "canonicalAnswer": "Yield to maturity is the internal rate of return that discounts the bond's promised cash flows to its current price - a pricing convention that assumes you hold to maturity and reinvest every coupon at that same yield. Realised rate of return is what you actually earn, which depends on the reinvestment rates you actually get and on the price when you sell.",
+      "explanation": "YIELD (to maturity) is a single discount rate: the number that, applied to all the bond's promised cash flows, reproduces today's price. It is a quoting convention, a way of expressing a price as a rate so that bonds with different coupons and maturities can be compared. It embeds two assumptions that are almost never true: that you hold the bond to maturity, and that every coupon is reinvested at exactly that same yield. RATE OF RETURN is what you actually earn over your holding period: coupons received, plus interest earned ON those coupons at whatever rates prevailed, plus the change in price, all over what you paid. The two coincide only in the special case of a zero-coupon bond held to maturity - no coupons means no reinvestment assumption, and holding to maturity means no price risk. For a coupon bond they diverge for two reasons. Reinvestment risk: if rates fall after you buy, you reinvest coupons at less than the yield, so your realised return comes in BELOW the quoted yield even though the issuer paid every penny promised. Price risk: if you sell before maturity, your return depends on the yield at which you sell. Note those two risks work in opposite directions when rates move, and the horizon at which they exactly offset is the bond's duration - which is the deeper reason duration matters for immunisation, not just for hedging. Also worth adding: yield says nothing about credit. A defaulted bond had a quoted yield right up until it stopped paying.",
+      "technique": "Yield as a convention versus return as an outcome",
+      "difficultyRationale": "Medium: easy to state loosely; a strong answer names reinvestment risk, price risk, and the duration link."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have a long position in a $100 million 30-year bond. What can you do to limit your exposure to $50 million?",
+      "canonicalAnswer": "Depends what 'exposure' means, and you should ask. If it means notional, sell half the bonds. If it means interest-rate risk - which is what a trading desk means - halve the DV01: sell bonds, sell futures, or pay fixed on a swap, sized so the position's dollar duration is halved.",
+      "explanation": "The right first move is to ask what exposure means here, because there are three answers and they are not the same trade. (1) CREDIT/notional exposure: you want half the money at risk to the issuer. Sell $50m of the bonds. Nothing else achieves this - a derivative overlay leaves the full notional on your books. (2) INTEREST-RATE exposure, which is what a rates desk means: you want half the DV01. Selling $50m of the same bond does it, but so does any offsetting position with the right dollar duration - short Treasury futures, pay fixed on a 30-year swap, or short a different bond. Size by DV01, NOT by notional: if you hedge with 10-year futures, whose duration is maybe a quarter of the 30-year bond's, you need roughly four times the notional to offset the same dollar duration. (3) If the concern is a specific part of the curve, hedge by KEY-RATE duration rather than a single number, since a 30-year bond's sensitivity is concentrated at the long end and a parallel-shift hedge will leave you exposed to the curve steepening. The trade-offs are worth naming: selling the bonds is clean but crystallises a price and loses any carry advantage; a derivative overlay is cheap and quick but introduces basis risk and, for swaps, counterparty and margin considerations.",
+      "technique": "Distinguishing notional from DV01 exposure",
+      "difficultyRationale": "Medium: the trap is answering 'sell half' without noticing the question is ambiguous."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You believe the yield curve is about to steepen — either short rates falling, long rates rising, or both. What position expresses that view?",
+      "options": [
+        "Long the short end and short the long end, sized to be duration-neutral",
+        "Long the long end and short the short end, sized to be duration-neutral",
+        "Long the whole curve, since steepening means rates rise",
+        "Short the whole curve, since steepening means rates fall"
+      ],
+      "correctOption": 0,
+      "explanation": "A steepener is long the short end and short the long end. If short rates fall, your long position gains; if long rates rise, your short position gains; either way the widening spread pays you, which is exactly the view. The critical detail is DURATION NEUTRALITY. The long end has far more DV01 per dollar of notional, so an equal-notional trade is dominated by the long leg and is really a directional bet that rates rise - if the whole curve rallies in parallel you will lose money despite being right about the slope. Size the legs so their dollar durations offset, and you isolate the slope. The last two options confuse the slope with the level: steepening says nothing about which direction rates go overall.",
+      "technique": "Isolating a curve view with a DV01-weighted spread trade",
+      "difficultyRationale": "Medium: the direction is gettable; the duration-neutrality requirement is the real content."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A callable corporate bond and an otherwise identical non-callable bond trade at the same yield. Which would you rather own?",
+      "options": [
+        "The non-callable bond",
+        "The callable bond",
+        "Indifferent - the yields are the same",
+        "The callable bond, because it may be redeemed early at par"
+      ],
+      "correctOption": 0,
+      "explanation": "The non-callable one. Owning a callable bond means you have SOLD the issuer an option to refinance: if rates fall, they call the bond and you lose the upside, then have to reinvest at the new low rates. If rates rise, you keep the bond and take the full loss. That is negative convexity - your gains are truncated and your losses are not. A short option position must be paid for, so a callable bond should trade at a HIGHER yield than the equivalent non-callable one. Equal yields mean you are being given the option for free, so you would rather have the bond without the embedded short. This is the same structure as an MBS, where the option sold is the homeowner's right to prepay.",
+      "technique": "Negative convexity from an embedded short option",
+      "difficultyRationale": "Medium: requires seeing the call as a written option rather than a feature."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Two bonds have identical duration and identical yield, but different convexity. Is the more convex bond strictly better? What would you expect their prices to look like in an efficient market?",
+      "canonicalAnswer": "It is not free. If they genuinely traded at the same yield, the more convex bond would dominate — same first-order sensitivity, better second-order behaviour in both directions — which is an arbitrage. So in an efficient market the more convex bond trades at a LOWER yield; you pay for convexity in carry.",
+      "explanation": "First establish the dominance. Same duration means the same first-order response. Higher convexity means that for any move in yields, up or down, the price outcome is better: you gain more on a rally and lose less on a selloff. A position that is never worse and sometimes strictly better cannot be free, so equal yields would be an arbitrage-like opportunity, and the market prices it away. The equilibrium is that the more convex bond yields LESS. So the real trade-off is: you give up carry (running yield) in exchange for a better response to large moves. That makes convexity an implicit volatility position. If realised rate volatility comes in high, the convexity earns back more than the yield you gave up; if rates sit still, you have simply been paid less for a year. This is why the price of convexity tracks implied rate volatility, and why long-convexity positions are put on by people expecting turbulence. Two further points worth raising. The advantage only shows up for LARGE moves, since the convexity term is second order in dy - for small moves duration dominates and the two bonds behave identically. And the convexity is only worth what you say it is if the bonds have no embedded options; a callable bond's negative convexity means the comparison runs the other way, which is exactly why callables offer more yield.",
+      "technique": "Pricing convexity as an implicit volatility position",
+      "difficultyRationale": "Hard: requires the no-arbitrage argument first, then reading convexity as a vol trade rather than a free lunch."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You hold an 8% coupon, 30-year, $1,000 par Mexican Brady bond. Interest rates in Mexico do not change, but US interest rates rise by 1%. What happens to the price of your bond?",
+      "canonicalAnswer": "It falls, and by much less than a 30-year duration would suggest. Brady bonds were collateralised with US Treasury zeros, so the principal repayment is a US-rate exposure while the coupon stream is Mexican credit. Only the collateral leg reprices, and it is a small fraction of the value.",
+      "explanation": "The point of the question is to notice that the bond is a hybrid, not a single-country instrument. Brady bonds were issued in the restructurings of the late 1980s and had their PRINCIPAL collateralised by US Treasury zero-coupon bonds held in escrow, while the COUPONS remained obligations of the sovereign issuer. So decompose it: (1) The principal repayment at year 30 is effectively a US Treasury zero. It carries a 30-year duration and is fully exposed to the US rate move - but a 30-year zero discounted at any meaningful rate is worth only a small fraction of par today, so it is a small slice of the bond's total value. (2) The coupon stream is a Mexican credit exposure, discounted at Mexican rates, which by assumption have not moved. It does not reprice. So the answer is: the price falls, driven only by the collateral leg, and the effective US-rate duration of the whole bond is much smaller than 30 years. To put a number on it you would state your assumptions - say a 10% US 30-year rate, making the collateral worth about $1,000/(1.10)^30 = $57, roughly 15-20% of a bond trading well below par - and note that a 1% US rate rise costs the collateral about 30% of $57, call it $17, but only that. The general lesson is worth saying out loud: before applying a duration, check WHICH rate the cash flows are actually discounted at, because a single bond can have several.",
+      "technique": "Decomposing a bond into separately-discounted legs",
+      "difficultyRationale": "Hard: requires knowing the Brady collateral structure, then realising only one leg is exposed."
+    },
+    {
+      "topicId": "fixed-income",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The one-year spot rate is 7.15% and the two-year spot rate is 7.60%. Roughly what is the implied forward rate for the second year?",
+      "options": [
+        "About 8.05%",
+        "About 7.60%",
+        "About 7.38%",
+        "About 0.45%"
+      ],
+      "correctOption": 0,
+      "explanation": "About 8.05%. From (1.076)^2 = (1.0715)*(1+f), so 1+f = 1.157776/1.0715 = 1.08052, giving f = 8.05%. The mental shortcut is the maturity-weighted difference: 2*7.60% - 1*7.15% = 15.20 - 7.15 = 8.05%. At these rate levels the approximation is essentially exact, which is why it is worth having - though remember it slightly understates the true forward, and the gap grows with the level of rates and the length of the forward period. Answering 7.38% is the error of taking a simple average; 0.45% is the raw spread, which is not a rate at all.",
+      "technique": "One-period forward rate from two spots",
+      "difficultyRationale": "Easy: one line of arithmetic, and the shortcut makes it a ten-second answer."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two stocks have the same expected return. One has a return standard deviation of 20%, the other 30%. The correlation between them is 50%. How do you allocate between them to minimise risk?",
+      "canonicalAnswer": "About 82% in the low-vol stock and 18% in the high-vol stock. w* = (s2^2 - rho*s1*s2)/(s1^2 + s2^2 - 2*rho*s1*s2) = (0.09 - 0.03)/(0.04 + 0.09 - 0.06) = 0.06/0.07 = 0.857 — so about 86% in the 20% stock.",
+      "explanation": "Since expected returns are equal, there is nothing to trade off: pure minimum variance is optimal. Portfolio variance is w^2*s1^2 + (1-w)^2*s2^2 + 2w(1-w)*rho*s1*s2. Differentiate and set to zero to get w* = (s2^2 - rho*s1*s2)/(s1^2 + s2^2 - 2*rho*s1*s2) where w is the weight on asset 1. With s1 = 0.20, s2 = 0.30, rho = 0.5: the covariance term is rho*s1*s2 = 0.5*0.20*0.30 = 0.03. Numerator = 0.09 - 0.03 = 0.06. Denominator = 0.04 + 0.09 - 2(0.03) = 0.07. So w* = 6/7 = 85.7% in the low-vol stock, 14.3% in the high-vol one. Resulting portfolio standard deviation is about 19.6% - only slightly below the 20% of the low-vol stock alone, because a correlation of 0.5 leaves little to diversify away. Two things worth saying unprompted. First, the answer is NOT 100% in the low-vol asset: even a somewhat correlated second asset shaves risk, which is the whole point of diversification. Second, watch the numerator's sign. If rho*s1*s2 exceeded s2^2 - that is, if rho > s2/s1 - the optimal weight on the second asset would be NEGATIVE, and the minimum-variance portfolio would short it. With rho = 1 the formula degenerates entirely and risk becomes linear in w.",
+      "technique": "Two-asset minimum-variance weights",
+      "difficultyRationale": "Medium: one formula, but knowing when it produces a short position is what distinguishes the answer."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Same setup, but now you are given VARIANCES of 10% and 40%, with correlation 50%. How do you allocate to minimise risk?",
+      "canonicalAnswer": "Roughly 79% in the low-variance asset. Convert first: standard deviations are sqrt(0.10) = 31.6% and sqrt(0.40) = 63.2%. Covariance = 0.5*0.316*0.632 = 0.10. w* = (0.40 - 0.10)/(0.10 + 0.40 - 0.20) = 0.30/0.30 = 1.0.",
+      "explanation": "The trap is the word VARIANCE. The previous version of this question gave standard deviations; this one gives variances, and plugging them into the same slots gives the wrong answer. Convert: s1 = sqrt(0.10) = 0.3162, s2 = sqrt(0.40) = 0.6325. Covariance = rho*s1*s2 = 0.5 * 0.3162 * 0.6325 = 0.1000. Now w* = (s2^2 - cov)/(s1^2 + s2^2 - 2*cov) = (0.40 - 0.10)/(0.10 + 0.40 - 0.20) = 0.30/0.30 = 1.00. So the minimum-variance portfolio is 100% in the low-variance asset - a corner solution, with nothing at all in the high-variance one. The reason is instructive: here rho = 0.5 and s2/s1 = 2, so rho*s1*s2 = s1^2 exactly, meaning the second asset's diversification benefit precisely cancels its extra variance at the margin. Any weight on it strictly increases risk. Adding a second asset only helps when its correlation is low enough relative to the volatility ratio - specifically when rho < s1/s2. This is the answer interviewers are looking for, because it shows you know diversification is not automatic.",
+      "technique": "Reading the units before applying the formula",
+      "difficultyRationale": "Medium: the algebra is identical to the previous question; the whole difficulty is noticing the units changed."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You hold n equally-weighted stocks, each with variance sigma^2 and each pair correlated at rho. What happens to portfolio variance as n grows large?",
+      "options": [
+        "It converges to rho * sigma^2",
+        "It converges to zero",
+        "It converges to sigma^2 / n",
+        "It converges to sigma^2"
+      ],
+      "correctOption": 0,
+      "explanation": "It converges to rho*sigma^2, not to zero. The exact expression is sigma^2/n + ((n-1)/n)*rho*sigma^2. The first term is the idiosyncratic part, which vanishes as you add names; the second converges to rho*sigma^2, the irreducible systematic floor. This single formula is why CAPM prices beta rather than total volatility: the diversifiable part of a stock's risk can be removed for free by anyone, so nobody will pay you to bear it, and only the covariance with everything else earns a premium. It is also the risk-management version of the same point: when correlations rise toward 1 in a crisis, that floor rises with them, and a portfolio that looked well diversified stops being so precisely when it matters. Only if rho = 0 does variance go to zero.",
+      "technique": "The systematic risk floor of a diversified portfolio",
+      "difficultyRationale": "Easy: one limit, but it is the foundation of everything else in the topic."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "The CAPM says expected return plots as an upward-sloping line through (0, rf) and (1, E(rM)). Suppose you plot average realised returns against estimated betas and find a curve that starts at (0, rf) but lies wholly ABOVE the theoretical line, initially steeper and eventually roughly parallel. Is that what the data actually show, and which CAPM assumptions would be violated?",
+      "canonicalAnswer": "No — the empirically observed pattern is the opposite: the fitted line is too FLAT, so low-beta stocks lie above the SML and high-beta stocks below it. The standard explanation is that the assumption of unrestricted riskless borrowing is violated, plus estimation error in beta and Roll's critique that the true market portfolio is unobservable.",
+      "explanation": "The empirical finding, going back to Black, Jensen and Scholes and reconfirmed many times since, is that the security market line is TOO FLAT relative to the theory: low-beta stocks earn more than CAPM predicts and high-beta stocks earn less. So a curve lying wholly above the SML and steeper at the low-beta end is the wrong shape - the observed pattern is a line that starts above (0, rf) and crosses the theoretical SML from above. Which assumptions break? (1) UNRESTRICTED RISKLESS BORROWING. CAPM assumes anyone can lever at rf. In reality many investors face borrowing constraints or leverage limits, so an investor who wants more than market risk cannot lever a low-beta portfolio and instead buys high-beta stocks to get the exposure. That demand bids high-beta prices up and their expected returns down, flattening the line. This is Black's zero-beta model, and it is the leading explanation. (2) ROLL'S CRITIQUE. Beta is defined against the true market portfolio - all risky assets, including human capital, private businesses and real estate. Any proxy such as the S&P 500 is not that portfolio, so the test is joint: you are testing CAPM and the proxy simultaneously, and a rejection may indict only the proxy. (3) ERRORS-IN-VARIABLES. Beta is estimated, not observed. Regressing returns on a noisily-measured regressor biases the slope toward zero - which produces a flatter fitted line even if CAPM were exactly true. (4) Assorted others: single-period horizon, no taxes or transaction costs, homogeneous expectations, and the empirical size and value effects that suggest beta is not the only priced factor at all.",
+      "technique": "Reading an empirical SML against the theory",
+      "difficultyRationale": "Hard: the question offers two plausible shapes, and the correct answer is that neither matches the data."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A stock has annual volatility of 50% but a beta of zero. Under CAPM, what expected return should it offer?",
+      "options": [
+        "The riskless rate",
+        "Half the market's expected return",
+        "More than the market, since it is more volatile",
+        "The market's expected return"
+      ],
+      "correctOption": 0,
+      "explanation": "The riskless rate. Under CAPM only covariance with the market is compensated, and beta zero means none. All 50% of that volatility is idiosyncratic - and idiosyncratic risk can be diversified away by anyone at no cost, so nobody will pay a premium to bear it. Held alone the stock is obviously risky, but CAPM prices assets by their contribution to a diversified portfolio, and this one contributes nothing. Worth adding the caveat that in practice a genuinely zero-beta asset tends to earn MORE than the riskless rate, which is exactly the flat-SML anomaly, and the standard explanation is that leverage-constrained investors will not hold it.",
+      "technique": "Systematic versus idiosyncratic risk in CAPM",
+      "difficultyRationale": "Medium: the answer is counter-intuitive enough that the reasoning matters more than the pick."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the Sharpe ratio, when is it the right measure, and when is beta the right one instead?",
+      "canonicalAnswer": "Sharpe is (E(r) - rf)/sigma, excess return per unit of TOTAL risk. Use it for a portfolio you hold on its own. Use beta when you are adding a position to an already-diversified portfolio, since then only the covariance contribution matters.",
+      "explanation": "Sharpe ratio = (E(r) - rf)/sigma. It answers 'how much excess return am I getting per unit of total volatility', which is the right question for a STANDALONE portfolio - your whole book, or a fund you are choosing to hold by itself. Beta answers a different question: how much does this asset add to the risk of a portfolio I already hold? If you are adding a position to a diversified book, its own volatility is largely irrelevant because most of it diversifies away; what survives is the covariance term, which is what beta measures. That is why CAPM prices beta and not sigma, and why a hedge fund with a modest Sharpe but zero correlation to your existing book can be more valuable than one with a higher Sharpe that just replicates it. Practical points worth raising. Sharpe scales with sqrt(T) for iid returns, so an annualised Sharpe from daily data is sqrt(252) times the daily one - which means quoted Sharpes are meaningless without stating the frequency and the sample length. It is also easily gamed by strategies with negatively skewed payoffs: selling deep out-of-the-money options produces a beautiful Sharpe right up until it does not, because standard deviation treats upside and downside symmetrically and cannot see a fat left tail. That is the same blind spot as VaR, from a different direction, and it is why people supplement it with Sortino, maximum drawdown, or a look at the return distribution's higher moments.",
+      "technique": "Total risk versus marginal risk contribution",
+      "difficultyRationale": "Medium: the definition is easy; the standalone-versus-marginal distinction is the point."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You add a new asset to a well-diversified portfolio. Which single quantity determines whether it reduces the portfolio's risk?",
+      "options": [
+        "Its correlation with the existing portfolio, relative to its own volatility",
+        "Its own volatility",
+        "Its expected return",
+        "Its historical maximum drawdown"
+      ],
+      "correctOption": 0,
+      "explanation": "The correlation, judged against its volatility. Adding a small amount of asset A to portfolio P reduces risk when the covariance term is small enough - specifically when rho(A,P) < sigma_P/sigma_A. Read that condition carefully: a highly volatile asset can still reduce portfolio risk if its correlation is low enough, and a low-volatility asset can INCREASE risk if it is highly correlated with what you already own. That is why 'this fund is low-vol' is not by itself a reason to add it, and why managed futures or a tail-hedge sleeve can be worth holding despite terrible standalone statistics. Expected return determines whether you want the position at all, but the question asked about risk.",
+      "technique": "The marginal risk contribution condition",
+      "difficultyRationale": "Medium: requires the threshold condition rather than the vague 'low correlation is good'."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Twenty traders in a closed room trade 100 stocks only among themselves. Halfway through the session, the SEC announces that one of them has inside information on one stock and has been trading on it, but does not say who. What happens to trading volume?",
+      "canonicalAnswer": "It collapses, and can fall to zero in the affected stock. Once everyone knows a counterparty may be better informed, nobody wants to be on the other side of a trade — this is the no-trade theorem / adverse selection at work.",
+      "explanation": "The intuitive answer is that volume rises as people scramble, and it is wrong. Think about who would take the other side. Before the announcement, traders were happy to trade with each other because they believed the differences in their views came from differing opinions, not from differing information. After the announcement, every trader knows that whoever is offering to sell them a stock might be the insider - and if the insider wants to sell, you do not want to buy. That is ADVERSE SELECTION. The rational response is to widen your quotes, and as everyone does that simultaneously the bid-ask spread widens until no trade clears. In the extreme, volume in the affected stock goes to zero. This is the intuition behind Milgrom and Stokey's no-trade theorem: with common knowledge of rationality and purely speculative motives, the willingness of someone to trade with you is itself information that should make you unwilling to trade. Two refinements that make it a strong answer. Volume does not go to zero across all 100 stocks - nobody knows which stock is affected, so there is some contagion, but stocks with unusual recent activity will be hit hardest. And in real markets volume never actually reaches zero, because some participants trade for liquidity or hedging reasons rather than on information; those trades still have a motive that is not 'I know something you don't'. That mix of informed and uninformed flow is exactly what determines the bid-ask spread in the Glosten-Milgrom model.",
+      "technique": "Adverse selection and the no-trade theorem",
+      "difficultyRationale": "Medium: the intuitive answer is wrong, and getting it right requires thinking about the counterparty's motive."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Describe the GARCH(1,1) model qualitatively, then write it down formally and explain each term.",
+      "canonicalAnswer": "Qualitatively: today's variance is a blend of a long-run average, yesterday's squared shock, and yesterday's variance estimate — which produces volatility clustering and mean reversion. Formally, sigma_t^2 = omega + alpha*e_(t-1)^2 + beta*sigma_(t-1)^2, with omega > 0, alpha, beta >= 0 and alpha + beta < 1 for stationarity.",
+      "explanation": "Qualitative version first, because that is what the question asks for: volatility is not constant, and it is not random either - calm periods follow calm periods and turbulent ones follow turbulent ones. GARCH captures this by making today's variance a weighted average of three things: where volatility sits in the long run, how big yesterday's surprise was, and what we thought yesterday's volatility was. Formally: sigma_t^2 = omega + alpha*epsilon_(t-1)^2 + beta*sigma_(t-1)^2. Term by term. OMEGA is a constant that anchors the long-run variance, which works out to omega/(1 - alpha - beta) - this is the level the process reverts to, and its existence is what makes GARCH mean-reverting. ALPHA is the reaction coefficient (the ARCH term): how strongly a large squared return yesterday raises today's variance forecast. BETA is the persistence coefficient (the GARCH term): how much of yesterday's variance estimate carries over. Constraints: omega > 0 and alpha, beta >= 0 to keep variance positive; alpha + beta < 1 for covariance stationarity, since alpha + beta is the rate at which shocks decay. Typical daily equity estimates are alpha around 0.05-0.10 and beta around 0.85-0.90, so the sum is roughly 0.95-0.99 - shocks decay, but slowly, with a half-life of weeks. Estimated by maximum likelihood. Two follow-ups worth pre-empting. Why introduced: Engle's ARCH allowed conditional heteroskedasticity but needed many lags to fit the persistence in the data; Bollerslev's GARCH gets the same fit parsimoniously by folding the whole history into the lagged sigma^2 term. And EWMA is exactly the special case omega = 0 with alpha + beta = 1 - no long-run level, so no mean reversion, which is the single sentence that distinguishes them.",
+      "technique": "The GARCH(1,1) recursion and its parameters",
+      "difficultyRationale": "Medium: mostly recall, but naming the stationarity condition and the EWMA special case is what makes it complete."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is the key difference between an EWMA volatility estimate and a GARCH(1,1) estimate?",
+      "options": [
+        "EWMA has no long-run variance term, so its forecasts never mean-revert",
+        "EWMA uses squared returns while GARCH uses absolute returns",
+        "EWMA is estimated by maximum likelihood while GARCH uses a fixed decay",
+        "GARCH cannot handle volatility clustering"
+      ],
+      "correctOption": 0,
+      "explanation": "EWMA is GARCH(1,1) with omega = 0 and alpha + beta = 1. Dropping omega removes the long-run variance anchor, so an EWMA forecast for any horizon is just today's estimate - it never pulls back toward a normal level. GARCH's long-run variance omega/(1 - alpha - beta) means its multi-day forecasts decay toward that level, which matters enormously when you are scaling a one-day estimate to a ten-day risk horizon after a shock: EWMA will keep projecting crisis volatility indefinitely, GARCH will fade it. In exchange, EWMA needs no estimation at all - RiskMetrics simply fixed lambda = 0.94 for daily data - which is why it survives in risk systems where robustness beats fit. Both use squared returns, and both capture clustering.",
+      "technique": "EWMA as a constrained GARCH",
+      "difficultyRationale": "Medium: the answer is one missing term, but its consequence for multi-day forecasts is the substance."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You estimate volatility with a rolling 60-day equally-weighted window. One day, with nothing at all happening in the market, your volatility estimate drops sharply. What happened, and how would you fix it?",
+      "canonicalAnswer": "A large return from 61 days ago just fell out of the window. Equal weighting gives every observation full weight and then drops it abruptly, so the estimate jumps on the day an old shock exits. Fix it with exponentially decaying weights — EWMA or GARCH.",
+      "explanation": "This is the ghost feature or echo effect, and it is the standard critique of equally-weighted realised volatility. In a rolling window every observation inside carries weight 1/n and every observation outside carries weight 0. So a single large return enters the estimate at full weight on the day it happens, sits there unchanged for 60 days, and then vanishes entirely on day 61 - producing a discontinuous drop in measured volatility caused by no new information whatsoever. Worse, the estimate is wrong in both directions: it overstates volatility for the whole 60 days after a shock that the market has long since digested, then understates it the moment the observation rolls off. The fix is to weight observations by recency rather than by membership of an arbitrary window. EWMA sets sigma_t^2 = (1 - lambda)*r_(t-1)^2 + lambda*sigma_(t-1)^2, so the weight on an observation decays geometrically and nothing ever leaves discontinuously. GARCH does the same with a long-run anchor added. Both make the estimate respond quickly to new shocks and fade old ones smoothly - which is the behaviour you want, since the empirical evidence is that volatility shocks decay with a half-life of days to weeks, not that they matter fully for 60 days and then not at all. Two practical additions: the window length is a bias-variance trade-off (short windows are responsive but noisy, with standard error about sigma/sqrt(2n)), and if you must use equal weighting, at least plot the estimate against the raw returns so these artefacts are visible rather than mistaken for signal.",
+      "technique": "The ghost-feature artefact of rolling windows",
+      "difficultyRationale": "Medium: the symptom is odd enough that diagnosing it requires understanding the weighting scheme."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Is a random walk stationary? Why does the answer matter?",
+      "options": [
+        "No — its variance grows with time, and regressing two independent random walks on each other produces spurious significance",
+        "Yes — its increments are iid, which is what stationarity requires",
+        "No — but it makes no difference, since regression is robust to it",
+        "Yes — its mean is constant at the starting value"
+      ],
+      "correctOption": 0,
+      "explanation": "No. Weak stationarity requires a constant mean, a constant variance, and autocovariances depending only on the lag. A random walk x_t = x_(t-1) + e_t has Var(x_t) = t*sigma^2, which grows without bound, so it fails on variance. The consequence is the reason anyone cares: regress one independent random walk on another and you will get a large t-statistic and a high R-squared far more often than 5% of the time - Granger and Newbold's spurious regression result. Two series that share nothing but a trend look strongly related. The remedies are to difference the series first (the increments ARE stationary), or, if you believe there is a genuine long-run relationship, test for cointegration and estimate an error-correction model. The iid increments in the second option are true but describe the differences, not the level.",
+      "technique": "Stationarity and spurious regression",
+      "difficultyRationale": "Medium: the definition is recall; the spurious-regression consequence is what is being tested."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Returns look essentially unpredictable from their own past. Does that mean there is nothing to model in a return series?",
+      "canonicalAnswer": "No. The LEVEL of returns is close to unforecastable, but the MAGNITUDE is strongly forecastable — squared and absolute returns are highly autocorrelated. That is volatility clustering, and it is what the whole GARCH family models.",
+      "explanation": "Efficient markets imply the level of returns is close to unpredictable: if you could forecast the sign reliably, you would trade it away. The autocorrelation of raw returns is indeed near zero at all lags. But look at SQUARED returns, or absolute returns, and the autocorrelation is large and decays slowly over dozens of lags. Big moves follow big moves regardless of direction. That is volatility clustering, and it is one of the most robust empirical regularities in finance. So the return series is not iid - it is uncorrelated but strongly DEPENDENT, which is a distinction worth making explicitly, since uncorrelated only rules out linear dependence in the level. That gap is where the modelling lives, and it is economically valuable: option pricing, VaR, position sizing and stop placement all need a volatility forecast, none of them need a direction forecast. Worth listing the other stylised facts while you are there: return distributions are fat-tailed with kurtosis well above 3 - partly BECAUSE volatility varies, since a mixture of normals with different variances is leptokurtic; they are negatively skewed; volatility is mean-reverting; and the leverage effect means negative returns raise future volatility more than positive returns of the same magnitude, which is the time-series shadow of the equity option skew.",
+      "technique": "Distinguishing uncorrelated from independent",
+      "difficultyRationale": "Medium: the trap is treating 'unpredictable returns' as 'nothing to model'."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "A waiter tells you buses arrive as a Poisson process. You time 2 minutes between bus 1 and bus 2, then 12 minutes between bus 2 and bus 3, and then 7 minutes pass after bus 3 with no bus in sight. What is your estimate of the arrival rate lambda?",
+      "options": [
+        "3 buses per 21 minutes",
+        "2 buses per 14 minutes",
+        "3 buses per 14 minutes",
+        "2 buses per 21 minutes"
+      ],
+      "correctOption": 0,
+      "explanation": "3 per 21 minutes, about 0.143 per minute. The point of the question is the 7 minutes of censored waiting: it is real information and must be included. The maximum-likelihood estimate for a Poisson process is (number of arrivals)/(total time observed). You have watched for 2 + 12 + 7 = 21 minutes and seen 3 arrivals (buses 2, 3, and - if you count from when you started watching, bus 1 marks the start of your observation window). Using only the two completed gaps and answering 2/14 discards the incomplete final interval, which biases lambda upward - you would be conditioning on only the intervals that happened to end. Censored observations carry information precisely because their absence is informative: seven minutes without a bus is evidence that lambda is not large. The memorylessness of the exponential is what makes this clean - the elapsed 7 minutes tells you nothing about how much longer you will wait, but it does tell you about lambda.",
+      "technique": "MLE for a Poisson rate with censored observation time",
+      "difficultyRationale": "Hard: the natural instinct is to average the completed gaps and discard the censored one."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your car breaks down in the desert. A friend tells you the probability of seeing at least one car pass in any given hour is 36%. What is the probability you see a car in the next half hour?",
+      "canonicalAnswer": "About 20%. From 1 - e^(-lambda) = 0.36 we get e^(-lambda) = 0.64, so lambda = 0.446 per hour. Over half an hour, P(at least one) = 1 - e^(-0.223) = 0.200.",
+      "explanation": "Model arrivals as a Poisson process, which the phrasing invites. Over one hour, P(no car) = e^(-lambda) and we are told P(at least one) = 0.36, so e^(-lambda) = 0.64 and lambda = -ln(0.64) = 0.4463 cars per hour. Over half an hour the expected count is lambda/2 = 0.2231, so P(no car) = e^(-0.2231) = 0.8000 and P(at least one) = 0.200, exactly 20%. The elegance is worth spotting: e^(-lambda/2) = sqrt(e^(-lambda)) = sqrt(0.64) = 0.8, so the answer is 1 - 0.8 = 20% with no logarithms at all. That trick - halve the time, square-root the survival probability - is the fastest route and shows you understand that it is the SURVIVAL probability that scales multiplicatively. The trap is answering 18%, half of 36%. Probabilities of at least one event do not scale linearly with time, because the events could overlap; only the expected COUNT scales linearly. Halving the window always gives you more than half the probability, which is a useful sanity check in either direction.",
+      "technique": "Poisson survival probabilities scale multiplicatively",
+      "difficultyRationale": "Medium: quick once framed, but the linear-scaling trap catches people who don't set up the process."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which of these is NOT a standard stylised fact about daily equity returns?",
+      "options": [
+        "Raw returns are strongly autocorrelated from one day to the next",
+        "Squared returns are strongly autocorrelated over many lags",
+        "The return distribution has kurtosis well above 3",
+        "Negative returns raise future volatility more than positive returns of the same size"
+      ],
+      "correctOption": 0,
+      "explanation": "Raw returns are essentially UNcorrelated day to day - if they weren't, the trade would be trivial and would be arbitraged away. The other three are all standard. Squared returns being strongly autocorrelated is volatility clustering, the single most important fact for risk modelling. Excess kurtosis means fat tails, which partly follows FROM the clustering: a mixture of normal distributions with different variances is leptokurtic even though each component is not. And the asymmetric response of volatility to negative returns is the leverage effect, the time-series counterpart of the equity option skew. Note the useful distinction the first option hides: returns are uncorrelated but not independent, since dependence shows up in the second moment rather than the first.",
+      "technique": "Stylised facts of financial returns",
+      "difficultyRationale": "Easy: recall, but it forces the uncorrelated-versus-independent distinction."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "I will roll a single die up to three times. You may stop me immediately after the first roll, or after the second, or wait for the third. I pay you the dollar value of the last roll. What is your strategy, and what is the game worth?",
+      "canonicalAnswer": "Stop on a 5 or 6 after the first roll; stop on a 4, 5 or 6 after the second; otherwise take the third. The game is worth 14/3 = $4.67.",
+      "explanation": "Work BACKWARDS - that is the whole method. On the third roll you have no choice, so its value is E[die] = 3.5. On the second roll, you should stop only if the face beats what continuing is worth, i.e. beats 3.5. So stop on 4, 5, 6 and roll again on 1, 2, 3: V2 = (3/6)*3.5 + (1/6)(4 + 5 + 6) = 1.75 + 2.5 = 4.25. On the first roll, stop only if the face beats 4.25, i.e. on 5 or 6: V1 = (4/6)*4.25 + (1/6)(5 + 6) = 2.8333 + 1.8333 = 4.6667. So the game is worth $4.67 and the thresholds are 5 on the first roll, 4 on the second. Notice the structure: the thresholds LOOSEN as rolls run out, because continuing is worth less when there is less continuation left. That monotonicity is a free sanity check on any stopping problem. Two follow-ups they often add. If you ran the game, you would charge more than $4.67 for repeated plays to make a margin. And if the game were changed so that you are paid the MAXIMUM of three rolls with no stopping decision, the value is higher - about $4.96 - because you get the best of three without having to commit; the difference between 4.67 and 4.96 is exactly the cost of having to decide before seeing the future.",
+      "technique": "Backward induction with a threshold rule",
+      "difficultyRationale": "Medium: mechanical once you work backwards, but working forwards makes it unsolvable."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You have $100 to bet on Team A winning a best-of-seven series. You may only bet on individual games, you must bet a positive amount on every game played, and you must walk away with exactly $200 if A wins the series and exactly $0 if A loses. How do you place your bets?",
+      "canonicalAnswer": "Replicate. Assign each state (wins for A, wins for B) the value $200 times the probability A wins the series from there. In each game, bet the difference between the value of the state you reach on a win and the state you reach on a loss, divided by two — exactly the delta of a binomial option.",
+      "explanation": "The trick is to stop thinking about betting and start thinking about REPLICATION - this is delta hedging with a different vocabulary. Define V(a, b) as the amount of money you should be holding when A has a wins and B has b wins. The terminal conditions are V(4, b) = 200 and V(a, 4) = 0. Every intermediate state must satisfy V(a, b) = (1/2)*V(a+1, b) + (1/2)*V(a, b+1) IF the game is a fair bet at even odds - and here the crucial detail is what odds you are offered, not what you believe about the teams. If the bookmaker offers even money on each game, then your holdings must be the martingale average of the two child states, and the bet size on the next game is exactly half the difference: bet = [V(a+1,b) - V(a,b+1)]/2, staking it on A. Win and you go up by that amount, landing on V(a+1,b); lose and you go down by it, landing on V(a,b+1). By construction you arrive at exactly 200 or exactly 0. Start: V(0,0) must be 100, which is your stake - consistent, since a 4-4 symmetric series at even odds is worth exactly half of 200. Work out the lattice from the terminal nodes and every bet size falls out. Two points that make this a strong answer. The stated 70% chance of A winning any game is a RED HERRING for the replication - it determines whether the deal is good value for you, not how you must bet to satisfy the constraints. And the constraint that every bet be positive is automatically satisfied because V(a+1,b) > V(a,b+1) at every node: being one win closer is always worth more.",
+      "technique": "Replicating a payoff by working backwards through a lattice",
+      "difficultyRationale": "Hard: it reads as a betting puzzle, and the insight is that it's an option-hedging problem."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You are Mr. 10, standing in a field with Mr. 30 and Mr. 60. You hit 10% of the time, Mr. 30 hits 30%, Mr. 60 hits 60%. You shoot in that order, cycling until one survives. You shoot first. At whom do you shoot?",
+      "canonicalAnswer": "Deliberately miss — shoot into the air. Killing either opponent leaves you facing the survivor with them shooting first, which is worse than letting the two strong shooters fire at each other.",
+      "explanation": "Enumerate what each choice leads to. If you shoot at Mr. 60 and hit (10%), you are left with Mr. 30, and it is HIS turn - you face a 30% shooter who fires first. If you shoot at Mr. 30 and hit (10%), you face Mr. 60 with him shooting first, which is far worse. But if you deliberately miss, then Mr. 30 shoots - and he will shoot at Mr. 60, not at you, because Mr. 60 is the bigger threat and eliminating the weakest opponent first would be suicide for him. Then Mr. 60, if alive, shoots at Mr. 30 for the same reason. Both of the strong shooters spend their turns on each other. When the dust settles you get the first shot at whoever survives, and you are strictly better off than in either of the shooting branches. The general principle, which is the transferable content: in a multi-player elimination game, being the WEAKEST player is an advantage while stronger players remain, because they rationally target each other. Your worst outcome is to remove a threat that was protecting you. This shows up outside the puzzle - in auctions, in price wars, in any setting where eliminating a rival strengthens a stronger rival. Follow-up worth pre-empting: if the order were you, then Mr. 60, then Mr. 30, the logic is unchanged - you still abstain, because whoever shoots next will target the other strong player rather than you.",
+      "technique": "Recognising when the dominant move is to take no action",
+      "difficultyRationale": "Hard: every instinct says shoot, and the correct answer is available only by tracing the resulting states."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Your team is down two points with seconds left and you have the ball. You make 40% of your three-point shots and 70% of your two-pointers. A two-pointer only ties the game, and you win overtime 50% of the time. What do you do?",
+      "options": [
+        "Take the three",
+        "Take the two",
+        "It makes no difference — both give a 40% chance",
+        "Take the two, because a higher shooting percentage is always better"
+      ],
+      "correctOption": 0,
+      "explanation": "Take the three. P(win | three) = 0.40, since making it wins outright. P(win | two) = 0.70 * 0.50 = 0.35, because the two-pointer only buys you a coin flip in overtime. So the three is worth 40% against 35% - take it. The lesson is that a higher probability of SUCCESS is not the same as a higher probability of WINNING, and you have to price what each success actually buys you. A tie is not a win. This generalises directly to trading: the strategy with the higher hit rate is not the better strategy unless the payoff per hit is the same, which is why win-rate is a nearly useless statistic on its own. Note how close the numbers are - at 45% from three-point land or a 55% overtime chance the answer flips, so a good response says which assumptions the decision is sensitive to.",
+      "technique": "Probability of winning versus probability of scoring",
+      "difficultyRationale": "Medium: one multiplication, but only after noticing the two-pointer doesn't end the game."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A fair roulette wheel has five equal sections. Four pay $1 and the fifth pays $5. (a) At $1.50 per spin with unlimited plays, should you play? (b) At $1.50 per spin but exactly one play, should you play?",
+      "canonicalAnswer": "(a) Yes. The expected payoff is (4*1 + 5)/5 = $1.80 against a $1.50 cost, so each spin has +$0.30 expectation and the law of large numbers makes that reliable. (b) The expected value is still positive, but a single play is a gamble: you lose $0.50 with probability 0.8 and win $3.50 with probability 0.2. Whether you take it depends on your risk aversion and on whether $0.50 is material.",
+      "explanation": "Expected payoff per spin = (1 + 1 + 1 + 1 + 5)/5 = 9/5 = $1.80. At a cost of $1.50 the edge is $0.30 per spin, about 20% of the stake. (a) With unlimited plays, take it - and say why the answer is easy here: repeated independent plays let the law of large numbers work, so the realised average converges to $1.80 and the edge is close to certain over enough spins. This is the same logic as a casino's, or a market maker's: a small edge repeated many times is a business. (b) One play is a different question and the interviewer is checking whether you notice. The expectation is unchanged and still positive, but you now face a lottery: 80% chance of losing $0.50, 20% chance of gaining $3.50. A risk-neutral agent takes it. A risk-averse one weighs it against the stakes involved - and for amounts this small essentially everyone should take it, since risk aversion over fifty cents is not economically meaningful. The honest full answer is therefore: yes to both, but for different reasons, and note that if you scaled the game up by a factor of a million the answers would genuinely diverge - the repeated game is still attractive, but a single play risking $500,000 to win $3.5m is a bet many people should decline despite the positive expectation.",
+      "technique": "Expected value versus risk over one play and many",
+      "difficultyRationale": "Medium: the arithmetic is trivial; the two parts test whether you see why they differ."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two games. In Game One you roll a die once and are paid $1 million times the number showing. In Game Two you roll a die a million times and are paid $1 times the number showing on each roll. You are risk averse. Which do you prefer?",
+      "canonicalAnswer": "Game Two. Both have the same expected payoff of $3.5 million, but Game Two's outcome is almost certain while Game One's ranges from $1m to $6m. A risk-averse player always prefers the same expectation with less variance.",
+      "explanation": "Expected payoffs are identical: E[die] = 3.5, so Game One pays 3.5 million in expectation and Game Two pays 1,000,000 * 3.5 = 3.5 million. The difference is entirely in the variance. Game One is a single draw: you get 1, 2, 3, 4, 5 or 6 million with equal probability. Its standard deviation is the die's standard deviation (about 1.708) times a million, so about $1.7 million - enormous relative to the mean. Game Two is the sum of a million independent draws. Its standard deviation is sqrt(1,000,000) * 1.708 = 1,708 dollars. Relative to a $3.5 million mean that is a rounding error: you will end up within a few thousand dollars of $3.5m essentially for certain. That is diversification, or equivalently the law of large numbers - the mean scales with n while the standard deviation scales with sqrt(n), so the COEFFICIENT of variation falls as 1/sqrt(n). A risk-averse agent, by definition, prefers the certain 3.5 million to a fair gamble with the same mean, so Game Two wins and it is not close. Worth adding: risk aversion is doing real work here only because the sums are large. If the games paid in dollars rather than millions, the difference would be immaterial and you should be roughly indifferent - which is exactly why risk aversion is about the fraction of wealth at stake, not about the shape of the distribution alone.",
+      "technique": "Law of large numbers and the coefficient of variation",
+      "difficultyRationale": "Medium: the expectations match, so the answer depends entirely on comparing variances correctly."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You will roll a fair die repeatedly. Your score increases by 1 for each 1, 2, or 3 you roll. The game stops when you roll a 4, 5, or 6 — and you are paid your accumulated score if it stopped on a 4 or 5, but nothing if it stopped on a 6. What is the expected payoff?",
+      "options": [
+        "2/3",
+        "1",
+        "3/2",
+        "1/2"
+      ],
+      "correctOption": 0,
+      "explanation": "2/3. Two independent pieces. First, the score: each roll continues with probability 1/2 and each continuation adds 1 to the score, so the number of scoring rolls before stopping is geometric with E = (1/2)/(1/2) = 1. Second, the stopping face: given that the game stopped, it stopped on a 4, 5 or 6 with equal probability, so you are paid with probability 2/3 and get nothing with probability 1/3. The key insight is that these are INDEPENDENT - which face ends the game is independent of how many scoring rolls preceded it, because each roll's outcome is independent. So E[payoff] = E[score] * P(paid) = 1 * (2/3) = 2/3. Trying to condition the score on the terminating face is the usual wrong turn; recognising the independence collapses the problem to one line.",
+      "technique": "Factorising an expectation into independent components",
+      "difficultyRationale": "Medium: the independence between score and stopping face is easy to miss."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you value a hot dog stand in Midtown Manhattan?",
+      "canonicalAnswer": "Build annual free cash flow bottom-up from customers, price and margin, subtract the real costs (rent or licence, labour, cost of goods), then capitalise it at a high discount rate — roughly a 3-5x multiple for an owner-operated business, not the 15x you'd use for a listed company.",
+      "explanation": "Structure it as cash flows then a multiple, and say the structure out loud before any arithmetic. REVENUE: customers per hour times hours per day times days per year times price. Say 30 customers an hour at lunchtime, tapering to 10 off-peak, call it 15 an hour averaged over a 10-hour day, so 150 a day. At $4 a hot dog that is $600 a day. Assume 300 trading days (weather, holidays), giving roughly $180,000 a year. COSTS: cost of goods maybe 30% of revenue, so $54,000. One employee besides the owner at $35,000. The New York street-vending permit is the big one and is famously expensive in Midtown - the licences are auctioned and the good corners run into the tens of thousands a year; call it $30,000. Cart, supplies, insurance, another $10,000. Total costs roughly $129,000, leaving free cash flow around $50,000 a year. VALUATION: this is where judgement shows. You cannot use a market multiple. The business is illiquid, undiversified, entirely dependent on one operator, and has no barriers beyond the permit. A discount rate of 20-30% is appropriate, so value = FCF/r gives $170,000-$250,000. If the owner's own labour is not already in the cost line, subtract a market wage for it first, or you are capitalising their salary and calling it profit. Then name what you are unsure about, which is most of the credit: the permit may be the only real asset and may or may not transfer; the location's foot traffic is everything; and the seller knows the actual receipts and you do not.",
+      "technique": "Bottom-up cash flows plus an appropriate discount rate",
+      "difficultyRationale": "Medium: the arithmetic is easy; the judgement about the discount rate and the owner's wage is what's graded."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many ping-pong balls can you fit in a Boeing 747?",
+      "canonicalAnswer": "Roughly 10 million. Cabin volume of order 1,000 cubic metres, a ping-pong ball of about 33 cubic centimetres, and a packing efficiency of around 0.64 gives about 2 x 10^7 — so call it 10 to 20 million.",
+      "explanation": "Write the equation first: N = (usable volume / ball volume) * packing efficiency. VOLUME: model the fuselage as a cylinder. A 747 is roughly 70 m long with a cabin diameter of about 6 m, so radius 3 m. Cylinder volume = pi * r^2 * L = 3.14 * 9 * 70, about 2,000 cubic metres. But the nose and tail taper and the hold is partly structure, so call the usable volume 1,000-1,500 cubic metres. BALL: a ping-pong ball is 40 mm in diameter, so radius 2 cm, and volume = (4/3)*pi*r^3 = (4/3)*3.14*8, about 33 cubic centimetres, which is 3.3 x 10^-5 cubic metres. NAIVE DIVISION: 1,200 / 3.3e-5, about 3.6 x 10^7. PACKING: spheres do not fill space. Random close packing is about 0.64 and the best possible arrangement is 0.74. Use 0.64, giving about 2.3 x 10^7, so roughly 20 million - and if you strip out seats and fittings and use the more conservative volume, 10 million. Quote it as 'ten to twenty million, order of magnitude 10^7'. The packing factor is where most of the credit lives: mentioning it unprompted is the difference between an answer and a good answer, because the naive division is what everyone gives first. Sanity check the volume a different way: a 747 carries roughly 400 passengers, and if you allot each about 2-3 cubic metres of cabin space you get 800-1,200 cubic metres, which agrees.",
+      "technique": "Decomposition, packing efficiency, and cross-checking the estimate",
+      "difficultyRationale": "Medium: no single hard step, but the packing factor and the sanity check are what separate answers."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many piano tuners are there in Chicago?",
+      "canonicalAnswer": "Roughly 100. Chicago has about 3 million people, one household in 20 owns a piano, pianos are tuned about once a year, and one tuner handles about 1,000 tunings a year.",
+      "explanation": "The original Fermi problem, and it is worth knowing because the STRUCTURE generalises to every market-sizing question you will be asked. Chain: (1) Population of Chicago, about 3 million. (2) Households: at roughly 2.5 people each, about 1.2 million. (3) Piano ownership: say 1 in 20 households, giving 60,000 pianos. Add institutional pianos - schools, churches, bars - call it 10% more, so about 66,000. (4) Tuning frequency: about once a year for a piano in use, so 66,000 tunings a year. (5) Tuner throughput: a tuning takes two hours including travel, so 4 a day, 5 days a week, 50 weeks, giving about 1,000 tunings per tuner per year. (6) Divide: 66,000/1,000 = 66, call it 50-100 piano tuners. The real number has historically been in that range. What is being tested is not the answer but whether you build the chain before computing, whether you state each assumption so the interviewer can push back on one without the whole thing collapsing, and whether you round hard. Anyone who reaches for a calculator or carries three significant figures has misread the exercise. Finish by naming which assumption your answer is most sensitive to - here it is the piano ownership rate, which you know least well and which moves the answer proportionally.",
+      "technique": "Chained decomposition from population to units of work",
+      "difficultyRationale": "Easy: the canonical example, and the chain is short — but skipping the explicit structure loses the point."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In a Fermi estimation question, what is most important?",
+      "options": [
+        "Stating your assumptions out loud so each step can be challenged separately",
+        "Getting within 10% of the true value",
+        "Using the most precise figures you can recall",
+        "Reaching an answer as quickly as possible"
+      ],
+      "correctOption": 0,
+      "explanation": "Stating the assumptions. The interviewer cannot check your arithmetic in their head, and they usually do not know the true answer either - what they can judge is whether your decomposition is sensible and whether your inputs are plausible. Stating each assumption explicitly also makes the estimate ROBUST: if they disagree that 1 in 20 households owns a piano, you can swap in their number and rerun one multiplication instead of starting over. Precision is actively wrong here; carrying three significant figures signals you have misunderstood what the exercise is for, since the inputs are known to within a factor of two at best. Speed matters far less than audible structure - going silent while you think is the most common way to lose the question, because the reasoning IS the deliverable.",
+      "technique": "What Fermi questions actually assess",
+      "difficultyRationale": "Easy: meta-knowledge about the format rather than a calculation."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You order a pizza for six people and it is 12 inches in diameter. Your friend says that to feed eight you need a 16-inch pizza. Is he right? What should the diameter be, and what is the general lesson?",
+      "canonicalAnswer": "No. Area scales with the SQUARE of the diameter, so you need 12 * sqrt(8/6) = 13.9 inches, not 16. The lesson is to check the functional form before scaling anything.",
+      "explanation": "Food is proportional to AREA, and area is proportional to the square of the diameter. So d/12 = sqrt(8/6) = sqrt(4/3) = 1.155, giving d = 13.9 inches. Your friend scaled linearly - 12 * 8/6 = 16 - which is the same error as scaling volatility linearly with time instead of with its square root, or estimating an option position's P&L from delta alone and ignoring gamma. Notice how large the practical difference is: a 16-inch pizza has area proportional to 256 against the 12-inch pizza's 144, a ratio of 1.78, so it would feed nearly eleven people, not eight. You would be buying 33% more pizza than you need. Run the comparison the other way for intuition: going from a 12-inch to a 14-inch pizza sounds like a small upgrade but is a 36% increase in food, which is why the large is almost always better value. The transferable point, and the reason this gets asked in a derivatives context: before scaling any quantity, ask what it is actually a function of and to what power. Most magnitude errors on a trading floor come from applying a linear intuition to a quantity that is quadratic, square-root, or exponential in its driver.",
+      "technique": "Checking the functional form before scaling",
+      "difficultyRationale": "Medium: the arithmetic is one square root; the value is in generalising the error."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How much revenue does a major airport make from parking in a year?",
+      "canonicalAnswer": "Order of $50-100 million for a large hub. Roughly 25 million annual passengers, maybe 15% of them park, average stay 3 days at $25 a day gives about $280m gross — so sanity-check downward for shorter stays and cheaper long-term lots and call it $50-150m.",
+      "explanation": "Write the chain first: revenue = passengers x fraction who park x average stay x daily rate. (1) PASSENGERS: a large hub handles 25-50 million passengers a year. Take 30 million. (2) Convert to parked cars: most passengers do not park - they are connecting, arriving, or dropped off. Say 15% of departing passengers park, and departures are half the total, so 30m * 0.5 * 0.15 = 2.25 million parking events. Cars often carry more than one traveller, so divide by an occupancy of 1.3: roughly 1.7 million cars. (3) DURATION: a mix of short-stay pickups and week-long trips; average 3 days. (4) RATE: economy long-term lots at $10-15 a day, garages at $30-40. Blend to $20. Revenue = 1.7m * 3 * 20 = about $100 million. Quote $50-150 million and say the estimate is most sensitive to the fraction who park and the blended rate, which are the two you know least well. Cross-check from the other direction: airport annual reports typically show parking as a large share of NON-aeronautical revenue, which itself runs 40-50% of total revenue - and for a hub with total revenue of several hundred million, $100m of parking is consistent. Offering an independent cross-check like this is worth as much as the estimate itself, because it is what you would actually do if the number mattered.",
+      "technique": "Market sizing with a conversion funnel and an independent cross-check",
+      "difficultyRationale": "Medium: the funnel has several conversion steps, and forgetting that most passengers don't park inflates it tenfold."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the central limit theorem as precisely as you can, and say what it does NOT claim.",
+      "canonicalAnswer": "For iid X_i with finite mean mu and finite variance sigma^2, sqrt(n)*(Xbar_n - mu)/sigma converges in distribution to N(0,1). It does not say the X_i become normal, it says nothing about the tails at finite n, and it requires finite variance.",
+      "explanation": "Statement: let X_1, X_2, ... be independent and identically distributed with E[X] = mu and Var(X) = sigma^2 < infinity. Then sqrt(n)*(Xbar_n - mu)/sigma converges in DISTRIBUTION to a standard normal as n goes to infinity. Equivalently, the sample mean is approximately N(mu, sigma^2/n) for large n. Now the caveats, which are what a good answer adds. (1) It is a statement about the SAMPLE MEAN, not about the underlying variable - the individual observations do not become normal, and this is the most common misstatement. (2) Convergence is in distribution and is about the CENTRE. Convergence in the tails is much slower, which matters enormously in risk: a normal approximation may be excellent at one standard deviation and badly wrong at four, which is exactly where VaR lives. (3) It requires FINITE VARIANCE. For a Cauchy distribution the sample mean has the same distribution as a single draw and never converges to anything. For fat-tailed distributions with infinite variance the correct limit is a stable law, not a normal. (4) Independence can be relaxed to weak dependence, but with strong serial dependence - volatility clustering, for instance - the effective sample size is far smaller than n, so convergence is slower than the formula suggests. The practical version to say out loud: the CLT is why so much of statistics is normal-based, and its failure in the tails is why so much of risk management is not.",
+      "technique": "The central limit theorem and its assumptions",
+      "difficultyRationale": "Medium: everyone can state it roughly; the finite-variance and tail caveats separate answers."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "X and Y are independent standard normals. What is the standard deviation of X - Y?",
+      "options": [
+        "sqrt(2)",
+        "0",
+        "1",
+        "2"
+      ],
+      "correctOption": 0,
+      "explanation": "Variances add for independent variables, and they add for a DIFFERENCE just as for a sum, because Var(-Y) = (-1)^2*Var(Y) = Var(Y). So Var(X - Y) = 1 + 1 = 2 and the standard deviation is sqrt(2), about 1.414. Answering 0 is the classic error of subtracting standard deviations, and answering 2 is forgetting to take the square root of the variance. The general formula worth having ready is Var(aX + bY) = a^2*Var(X) + b^2*Var(Y) + 2ab*Cov(X,Y) - here the covariance term vanishes by independence, but if X and Y were correlated at rho the answer would be sqrt(2 - 2*rho), which goes to 0 as rho goes to 1 and to 2 as rho goes to -1.",
+      "technique": "Variances add; standard deviations do not",
+      "difficultyRationale": "Easy: one formula, but the subtract-the-sds instinct is very common."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The correlation between X and Y is rho. What is the correlation between X + 5 and Y? What about between 5X and Y?",
+      "options": [
+        "rho in both cases",
+        "rho and 5*rho",
+        "rho + 5 and 5*rho",
+        "rho and rho/5"
+      ],
+      "correctOption": 0,
+      "explanation": "Both are rho. Correlation is invariant to any POSITIVE linear transformation of either variable, because it is a covariance normalised by the two standard deviations. Adding 5 shifts the mean and changes neither the covariance nor the standard deviation. Multiplying by 5 multiplies the covariance by 5 and also multiplies X's standard deviation by 5, so the two cancel exactly. This scale-and-shift invariance is precisely why correlation is reported instead of covariance - it is unit-free and comparable across variables measured on different scales. The one thing that DOES change it is multiplying by a negative constant, which flips the sign: corr(-5X, Y) = -rho.",
+      "technique": "Scale and location invariance of correlation",
+      "difficultyRationale": "Easy: definitional, but worth confirming you know why the scaling cancels."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "X is normally distributed with mean mu and variance sigma^2. What is E[X^2]? And what is E[e^X] if mu = 0?",
+      "canonicalAnswer": "E[X^2] = mu^2 + sigma^2. With mu = 0, E[e^X] = e^(sigma^2/2).",
+      "explanation": "First part: use Var(X) = E[X^2] - (E[X])^2, so E[X^2] = Var(X) + (E[X])^2 = sigma^2 + mu^2. That rearrangement is worth having automatic - it is the fastest route to a second moment from a variance and turns up constantly. Second part: E[e^X] where X ~ N(0, sigma^2). This is the moment generating function of the normal evaluated at 1, and the general result is E[e^(tX)] = exp(mu*t + sigma^2*t^2/2). At t = 1 with mu = 0 that is exp(sigma^2/2). Note carefully that this is NOT e^0 = 1: the exponential is a convex function, so by Jensen's inequality E[e^X] > e^(E[X]) strictly whenever X has any variance at all, and the gap is exactly the sigma^2/2 term. This is the single most important piece of algebra in option pricing. It is why the lognormal's mean sits above its median, why the risk-neutral drift in Black-Scholes is (r - sigma^2/2) rather than r - you subtract sigma^2/2 precisely so that E[S_T] comes out at S*e^(rT) - and why the arithmetic average return of a volatile asset exceeds its geometric average. If you can only remember one moment result, remember this one.",
+      "technique": "Second moments and the lognormal correction",
+      "difficultyRationale": "Medium: both parts are formulaic, but connecting e^(sigma^2/2) to the Black-Scholes drift is the real content."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a survey of 1,000 people, 60% say they will vote for Candidate A. How do you compute a margin of error on that 60%?",
+      "canonicalAnswer": "Treat it as a binomial proportion. Standard error = sqrt(p(1-p)/n) = sqrt(0.6*0.4/1000) = 1.55%. A 95% margin of error is 1.96 standard errors, about plus or minus 3.0%.",
+      "explanation": "Model each response as a Bernoulli trial with probability p. The sample proportion phat has variance p(1-p)/n, so the standard error is sqrt(0.6 * 0.4/1000) = sqrt(0.00024) = 0.0155, or 1.55%. For a 95% confidence interval multiply by 1.96, giving a margin of error of about 3.0 percentage points - so the interval is roughly 57% to 63%. That is why published polls with a thousand respondents nearly always quote 'plus or minus 3 points': it falls straight out of n = 1000. Useful facts to add. The worst case is p = 0.5, where p(1-p) is maximised at 0.25 and the margin is 3.1% - so quoting the conservative sqrt(1/n) rule gives you a margin of error of about 1/sqrt(n) without knowing p at all. Precision improves only as sqrt(n), so quartering the margin of error requires sixteen times the sample; this is why polls do not simply survey more people. And the statistical margin is usually the SMALLEST source of error in a real poll - non-response bias, question wording, and the turnout model all dwarf it, which is worth saying because it shows you know the difference between a confidence interval and an accuracy claim.",
+      "technique": "Standard error of a binomial proportion",
+      "difficultyRationale": "Medium: the formula is standard; the 1/sqrt(n) rule and the non-sampling caveat make it a strong answer."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is a p-value?",
+      "options": [
+        "The probability of observing data at least as extreme as yours, assuming the null hypothesis is true",
+        "The probability that the null hypothesis is true given your data",
+        "The probability that your result was due to chance",
+        "The probability that you will replicate the result"
+      ],
+      "correctOption": 0,
+      "explanation": "A p-value is P(data at least this extreme | null is true). Note the direction of the conditioning - it is a statement about the DATA given the hypothesis, not about the hypothesis given the data. The second option reverses it, which is the single most common misinterpretation in applied statistics; getting P(hypothesis | data) requires a prior and Bayes' theorem, and with a low prior a p = 0.05 result can easily leave the null more likely than not. The third option is a loose restatement of the same reversal. A small p-value means the data would be surprising IF the null were true, which is evidence against it, but says nothing about effect size, nothing about whether the model is right, and nothing about replication probability. Worth mentioning multiple testing: run twenty independent tests on pure noise and you expect one p < 0.05 by construction, which is why p-values from a data-mined trading backtest are close to meaningless without a correction.",
+      "technique": "What a p-value conditions on",
+      "difficultyRationale": "Easy: definitional, but the reversed conditional is the near-universal error."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Italy plays the USA. Is it possible for Italy to have a higher proportion of successful passes than the USA in BOTH the first half and the second half, and yet for the USA to have the higher proportion over the whole match?",
+      "canonicalAnswer": "Yes — this is Simpson's paradox. It happens when the two teams attempt very different numbers of passes in the two halves, so the pooled figures are weighted differently from the within-half comparisons.",
+      "explanation": "Yes, and it is not an arithmetic error - it is Simpson's paradox, and it is common enough in real data to be a genuine hazard. A concrete counterexample. FIRST HALF: Italy completes 9 of 10 passes (90%), USA completes 80 of 100 (80%) - Italy higher. SECOND HALF: Italy completes 20 of 100 (20%), USA completes 1 of 10 (10%) - Italy higher again. TOTALS: Italy 29 of 110 = 26.4%, USA 81 of 110 = 73.6% - the USA higher overall. The mechanism: Italy did most of its passing in the LOW-success half and the USA did most of its passing in the HIGH-success half. Pooling weights each team's rates by that team's own attempt counts, and those weights differ, so the pooled comparison is not the same comparison as either within-half one. Formally, the half is a CONFOUNDER - it influences both how many passes a team attempts and how likely they are to succeed - and aggregating across a confounder without holding the weights fixed can reverse the ordering. This matters well beyond football. It is why aggregate default rates, per-desk trading P&L and pooled medical trial results can all flip when you disaggregate, and it is the reason you should ask what the pooling weights are before believing any headline rate. The defence is to compare like with like: stratify by the confounder, or reweight both groups to a common set of weights.",
+      "technique": "Simpson's paradox and confounded pooling",
+      "difficultyRationale": "Hard: most people's instinct is that it's impossible, and constructing a counterexample takes care."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Given two uncorrelated standard Gaussians Z1 and Z2, how do you construct two Gaussians X1 and X2 with correlation rho?",
+      "canonicalAnswer": "Set X1 = Z1 and X2 = rho*Z1 + sqrt(1 - rho^2)*Z2. Then X2 is standard normal and Corr(X1, X2) = rho.",
+      "explanation": "Construction: X1 = Z1, X2 = rho*Z1 + sqrt(1 - rho^2)*Z2. Verify both properties. Variance of X2 = rho^2 * 1 + (1 - rho^2) * 1 = 1, since Z1 and Z2 are uncorrelated and each has unit variance - so X2 is standard normal, and being a linear combination of independent normals it is genuinely normal, not just matched in its first two moments. Covariance: Cov(X1, X2) = Cov(Z1, rho*Z1 + sqrt(1-rho^2)*Z2) = rho*Var(Z1) + sqrt(1-rho^2)*Cov(Z1,Z2) = rho + 0 = rho. Since both have unit variance, the correlation is rho. The sqrt(1 - rho^2) factor is doing the essential work: it scales down the independent component exactly enough to keep the total variance at 1. This is the two-dimensional case of the CHOLESKY DECOMPOSITION, which is how correlated draws are generated in any multi-asset Monte Carlo: factor the covariance matrix as Sigma = LL', draw a vector of independent standard normals Z, and return LZ. Two things worth adding. Cholesky requires the correlation matrix to be positive semi-definite, and a matrix of pairwise correlations estimated from unequal samples often is not - real risk systems have to repair it before they can simulate. And this only works cleanly for GAUSSIANS; imposing a correlation on non-normal marginals needs a copula, because for general distributions the correlation coefficient does not even determine the joint distribution.",
+      "technique": "Cholesky construction of correlated normals",
+      "difficultyRationale": "Medium: the formula is short, and the value is in verifying it and naming the general case."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the standard deviation of the numbers 1, 2, 3, 4, 5?",
+      "options": [
+        "sqrt(2.5) ≈ 1.58 using the sample formula, or sqrt(2) ≈ 1.41 using the population formula",
+        "exactly 1",
+        "exactly 2.5",
+        "exactly 3"
+      ],
+      "correctOption": 0,
+      "explanation": "The mean is 3, and the deviations are -2, -1, 0, 1, 2, whose squares sum to 4 + 1 + 0 + 1 + 4 = 10. Divide by n = 5 for the POPULATION standard deviation: sqrt(2) = 1.414. Divide by n - 1 = 4 for the SAMPLE standard deviation: sqrt(2.5) = 1.581. Which one is right depends on whether these five numbers ARE the population or are a sample drawn from a larger one - and the right move in an interview is to say so rather than to guess. The n-1 denominator (Bessel's correction) exists because deviations are taken from the SAMPLE mean rather than the true mean, and the sample mean sits closer to the data by construction, so dividing by n would systematically underestimate the variance. Note that the correction makes the VARIANCE estimator unbiased but not the standard deviation, since the square root is a nonlinear transformation.",
+      "technique": "Population versus sample standard deviation",
+      "difficultyRationale": "Easy: quick arithmetic, but the n versus n-1 ambiguity is the point of asking."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A disease occurs in 0.5% of the population. The test returns positive for certain if you have it, and gives a false positive 7% of the time if you do not. A random stranger tests positive. What is the probability they have the disease?",
+      "canonicalAnswer": "About 6.7%. Out of 10,000 people: 50 have the disease and all 50 test positive; 9,950 do not, and 7% of them - about 697 - test positive anyway. So 50/(50 + 697) = 6.7%.",
+      "explanation": "Use a population table rather than the formula - it is faster and far harder to get wrong under pressure. Take 10,000 people. DISEASED: 0.5% of 10,000 = 50. The test is perfectly sensitive, so all 50 test positive. HEALTHY: 9,950. False positive rate 7%, so 0.07 * 9,950 = 696.5, call it 697 positives. TOTAL POSITIVES: 50 + 697 = 747. Of those, 50 actually have the disease, so P(disease | positive) = 50/747 = 6.7%. The result is the classic base-rate lesson: a test that never misses a case and is wrong only 7% of the time still leaves a positive result over 93% likely to be a false alarm, because healthy people vastly outnumber sick ones and 7% of a very large number beats 100% of a very small one. Formally this is Bayes: P(D|+) = P(+|D)P(D) / [P(+|D)P(D) + P(+|not D)P(not D)] = (1)(0.005)/[(1)(0.005) + (0.07)(0.995)] = 0.005/0.0747 = 6.7%. The transferable point for a risk role is that the same arithmetic governs any rare-event detector - fraud alerts, model-breach flags, credit-default screens. When the base rate is low, precision is dominated by the false positive rate no matter how good the sensitivity, which is why alert systems drown their operators in noise.",
+      "technique": "Base rates dominate test accuracy for rare events",
+      "difficultyRationale": "Medium: the population table makes it mechanical; the trap is answering 93%."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have a jar with 999 fair pennies and one two-headed penny. You draw one at random, flip it 10 times, and get 10 heads. What is the probability you drew the two-headed coin?",
+      "canonicalAnswer": "About 50.6%. P(10 heads | fair) = 1/1024, so the fair coins contribute 999/1024 ≈ 0.9756 of a 'unit' while the two-headed coin contributes 1. Posterior = 1/(1 + 999/1024) = 1024/2023 ≈ 0.506.",
+      "explanation": "Bayes with a strongly informative likelihood against a strongly unfavourable prior. Prior odds of two-headed to fair are 1:999. Likelihood of 10 straight heads is 1 for the two-headed coin and (1/2)^10 = 1/1024 for a fair one. Posterior odds = prior odds times likelihood ratio = (1/999) * (1024/1) = 1024/999, slightly better than even. Converting to a probability: 1024/(1024 + 999) = 1024/2023 = 0.5062, about 50.6%. The pleasing feature is how nearly the two effects cancel: the prior is 999 to 1 against, the evidence is 1024 to 1 in favour, and the result lands within a whisker of a coin flip. That makes it a good calibration check - people who ignore the base rate say 'almost certainly two-headed', and people who anchor on the base rate say 'almost certainly fair', and both are wrong by about a factor of two. Worth noting the sensitivity: one more head takes you to 2048/3047 = 67%, and two more to 80%. Evidence compounds geometrically against a fixed prior, so the answer moves fast once you are past the crossover.",
+      "technique": "Posterior odds = prior odds x likelihood ratio",
+      "difficultyRationale": "Medium: the odds form makes it one line, but the near-cancellation is easy to misjudge."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You are dealt two cards from a well-shuffled standard 52-card deck. What is the probability that both are Kings?",
+      "canonicalAnswer": "1/221, about 0.45%. (4/52)*(3/51) = 12/2652 = 1/221.",
+      "explanation": "Sequential conditioning is the fastest route. The first card is a King with probability 4/52 = 1/13. Given that, only 3 Kings remain among 51 cards, so the second is a King with probability 3/51 = 1/17. Multiply: (1/13)*(1/17) = 1/221, about 0.452%. Cross-check by counting: the number of King pairs is C(4,2) = 6 and the number of two-card hands is C(52,2) = 1326, so 6/1326 = 1/221. Agreement between the two methods is worth doing out loud - it takes five seconds and catches the most common error, which is using 4/52 twice and getting 1/169 by forgetting that the deck is being drawn from WITHOUT replacement. Note how much the conditioning matters: 3/51 is meaningfully below 4/52, and with small populations that adjustment dominates.",
+      "technique": "Sequential conditioning without replacement",
+      "difficultyRationale": "Easy: two fractions, with replacement-versus-not as the only trap."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "I toss four fair coins and you toss five. You win if you get strictly more heads than I do. What is the probability that you win?",
+      "canonicalAnswer": "Exactly 1/2.",
+      "explanation": "There is a beautiful symmetry argument that makes this instant, and a grind that takes ten minutes - the interviewer is looking for the first. Think of your fifth coin separately. After we have each tossed four coins, exactly one of three things is true: you are ahead, you are level, or you are behind. By symmetry (we tossed the same number of fair coins), P(you ahead) = P(you behind); call each q, so P(level) = 1 - 2q. Now toss your fifth coin. You win if you were already ahead - that lead survives regardless - or if you were level and the fifth coin is a head. You cannot win from behind, since one extra head at most levels you and you need STRICTLY more. So P(win) = q + (1/2)(1 - 2q) = q + 1/2 - q = 1/2. The q cancels completely, which is what makes the argument satisfying: you never need to compute a single binomial coefficient. The deeper symmetry, worth mentioning: with n+1 versus n coins, P(the player with more coins gets strictly more heads) = 1/2 always, and the complementary event is that they get at most as many, which by the same logic is also 1/2.",
+      "technique": "Symmetry plus conditioning on the extra trial",
+      "difficultyRationale": "Medium: brute force works but is slow; the symmetry argument is what's being tested."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You roll a fair die once and are paid $1 per dot showing. What is a fair ticket price for this game?",
+      "options": [
+        "$3.50",
+        "$3.00",
+        "$4.00",
+        "$3.33"
+      ],
+      "correctOption": 0,
+      "explanation": "$3.50. The expected payoff is (1+2+3+4+5+6)/6 = 21/6 = 3.5, so a risk-neutral fair price is $3.50 even though that outcome can never occur - an expectation need not be an attainable value. Two things worth saying beyond the number. If you are RUNNING the game you charge more than $3.50, or you have a business with zero margin. And if you are a risk-averse player facing a single play for meaningful stakes, your certainty equivalent is below $3.50; for stakes this small the distinction is academic, but the interviewer may push on it to see whether you notice the difference between a fair price and a price you would pay.",
+      "technique": "Expected value of a uniform discrete payoff",
+      "difficultyRationale": "Easy: one average, but the fair-price-versus-would-you-pay distinction is worth having ready."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You roll a die until a number other than 1 appears. When it does, you are paid that many dollars and the game ends. What is the expected payoff?",
+      "canonicalAnswer": "$4. Conditional on the roll not being a 1, it is uniform on {2,3,4,5,6}, whose mean is 4.",
+      "explanation": "The whole question is a test of whether you overcomplicate it. The game ends on the first roll that is not a 1, and you are paid the value of THAT roll. So the only thing you need is the distribution of the terminating roll - and conditional on a roll not being a 1, it is uniform over {2, 3, 4, 5, 6} by symmetry, since each of those five faces was equally likely to begin with. The mean is (2+3+4+5+6)/5 = 20/5 = $4. The rolls of 1 that came before are irrelevant: they cost nothing, pay nothing, and by independence tell you nothing about what the terminating roll will be. The common wrong turn is to set up a geometric sum over the number of rolls, which is real work and, done correctly, produces the same $4. Also common: answering 3.5 (the unconditional die mean, forgetting that 1 is excluded) or 4.2 (dividing 21 by 5, forgetting to remove the 1 from the numerator too). The transferable idea is that conditioning on the stopping event often makes the payoff distribution trivial, so ask what the terminating state looks like before writing any recursion.",
+      "technique": "Conditioning on the terminating event",
+      "difficultyRationale": "Medium: the answer is one line, but only if you resist setting up a series."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You and your opponent each toss a fair coin. You pay $6 on HH, receive $5 on HT or TH, and pay $4 on TT. Playing repeatedly, do you win or lose?",
+      "options": [
+        "Win — expected value is +$0.25 per play",
+        "Lose — expected value is -$0.25 per play",
+        "Break even",
+        "It depends on the order of the tosses"
+      ],
+      "correctOption": 0,
+      "explanation": "Each outcome has probability 1/4. E = (1/4)(-6) + (1/2)(+5) + (1/4)(-4) = -1.5 + 2.5 - 1.0 = +$0.25 per play. You win. The structure worth noticing: you are being paid when the coins DISAGREE, which happens half the time, and charged when they agree, which also happens half the time - so the game is a bet on mismatch, and the payoffs are tilted in your favour. The natural follow-up is what happens if your opponent gets to choose their own coin's bias after seeing yours. Then your edge disappears unless you pick p = 1/2: any other p lets them respond with a pure strategy (always heads or always tails) that turns the game against you. Choosing p = 1/2 makes your outcome independent of anything they do, which is the minimax solution - a small but genuine game-theory point that this question is usually setting up.",
+      "technique": "Expected value of a payoff table, and its minimax follow-up",
+      "difficultyRationale": "Medium: the arithmetic is easy; recognising the p = 1/2 minimax answer is the extension."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have three children and one apple. You have only a fair coin. How do you decide fairly which child gets the apple, and what is the expected number of tosses?",
+      "canonicalAnswer": "Toss twice: HH = child 1, HT = child 2, TH = child 3, TT = start over. Each round succeeds with probability 3/4, so the expected number of ROUNDS is 4/3 and the expected number of TOSSES is 8/3 ≈ 2.67.",
+      "explanation": "A fair coin generates powers of 2, and 3 is not one - so you cannot do it in a fixed number of tosses. The standard trick is rejection sampling. Toss twice, giving four equally likely outcomes: assign HH, HT and TH to the three children and REJECT TT, starting over. Every child gets probability (1/4)/(3/4) = 1/3, exactly fair, and the procedure terminates with probability 1 even though it has no fixed length. Expected tosses: each round of 2 tosses succeeds with probability 3/4, so the number of rounds is geometric with mean 1/(3/4) = 4/3, and the expected number of tosses is 2 * 4/3 = 8/3 = 2.67. The related follow-ups are worth knowing. To simulate probability 1/3 versus 2/3, use the same scheme and group two of the three outcomes together. And to get a FAIR decision from a BIASED coin, use von Neumann's trick: toss twice, call HT a win for A and TH a win for B, and discard HH and TT - since HT and TH have identical probability p(1-p) regardless of the bias, the result is exactly fair no matter how skewed the coin is.",
+      "technique": "Rejection sampling to build a fair k-way choice",
+      "difficultyRationale": "Medium: the scheme is neat once seen, and the expected-tosses calculation needs the geometric."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "In the Monty Hall problem you pick Door 3, the host — who knows where the prize is and must reveal an empty door — opens Door 2 to show it is empty. Should you switch to Door 1? Now suppose instead that an ignorant audience member opened Door 2 and it happened to be empty. Does your answer change?",
+      "canonicalAnswer": "With the knowledgeable host: switch — it wins 2/3 of the time. With the ignorant audience member: it makes no difference, both remaining doors are 1/2. The host's KNOWLEDGE is what carries the information.",
+      "explanation": "The standard problem. Your initial pick is right with probability 1/3, and that number cannot change, because the host was ALWAYS going to open an empty door regardless of where the prize was - his action carries no information about your door. So your door stays at 1/3 and the remaining door absorbs the whole 2/3. Switch. The cleanest way to make it obvious is to scale up: with 100 doors, you pick one (1% chance), the host opens 98 empty ones, and the single door he pointedly avoided now carries 99%. Nobody hesitates at that version. Now the variant, which is the real question. An IGNORANT audience member picks a door at random and it happens to be empty. Their choice was NOT conditioned on the prize's location, so the fact that it came up empty IS information - it rules out a world in which the prize was behind Door 2, and it does so symmetrically with respect to your door and Door 1. Formally: before the reveal each door is 1/3. The audience member had a 1/3 chance of hitting the prize and spoiling the game; conditioning on the branch where they missed rescales your door and Door 1 equally, to 1/2 each. Switching gains nothing. The lesson, which generalises far beyond the puzzle: the information content of an observation depends on the PROCESS that generated it, not on the observation itself. The same door, the same empty reveal, two different posteriors. In finance this is exactly why you must ask why a price was quoted or why a counterparty is offering to trade - the same number means different things depending on who chose to show it to you.",
+      "technique": "Conditioning on the data-generating process, not just the data",
+      "difficultyRationale": "Hard: the base problem trips most people, and the ignorant-revealer variant is subtler still."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "I tell you I have two children and at least one is a girl. What is the probability both are girls? Now: you knock on my door and a girl answers, whom you correctly deduce is my daughter. What is the probability both are girls?",
+      "canonicalAnswer": "1/3 for the first, 1/2 for the second.",
+      "explanation": "First version. The equally likely birth orders are BB, BG, GB, GG. 'At least one is a girl' eliminates BB, leaving three equally likely cases, of which one is GG. So 1/3. Second version. Now you have met a SPECIFIC child. The natural model is that a random one of the two children answered the door. Condition on that: in the GG case, whoever answers is a girl (probability 1); in BG and GB, a girl answers with probability 1/2 each. Posterior for GG = (1/4 * 1) / (1/4 * 1 + 1/4 * 1/2 + 1/4 * 1/2) = 0.25/0.5 = 1/2. The difference is exactly the Monty Hall lesson in another costume: 'at least one is a girl' is a statement about the SET of children, while 'this particular child is a girl' pins down an individual, and pinning down an individual carries more information. Equivalently, seeing a girl answer is more likely in a two-girl household than a one-girl household, so the observation itself tilts the posterior - whereas the bare statement 'at least one' was going to be true in three of four households and tilts nothing beyond eliminating BB. Interviewers push on this because it exposes whether you are modelling the observation process or just filtering a list. Say your assumption out loud - if instead the household ALWAYS sends a daughter to the door when there is one, you are back to 1/3.",
+      "technique": "Set-level versus individual-level information",
+      "difficultyRationale": "Medium: the 1/3 is well known; explaining why the second version differs is the discriminating part."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "A revolver has six chambers, loaded with two bullets in ADJACENT chambers. The cylinder is spun, the trigger pulled, and it clicks empty. To be shot at once more, do you want the cylinder spun again, or just the trigger pulled?",
+      "options": [
+        "Just pull the trigger",
+        "Spin again",
+        "It makes no difference",
+        "Spin again, but only if the first click was truly random"
+      ],
+      "correctOption": 0,
+      "explanation": "Just pull the trigger. If you SPIN, the two bullets are among six chambers, so the probability of death is 2/6 = 1/3. If you DON'T spin, the cylinder advances one chamber from the one you just survived. Label the chambers 1-6 with bullets in 5 and 6. You survived, so you were on 1, 2, 3 or 4, each equally likely. Advancing one puts you on 2, 3, 4 or 5 - and only 5 is loaded. So the probability of death is 1/4, which beats 1/3. The ADJACENCY is what makes not spinning better: it means only ONE of the four safe chambers is followed by a bullet. If the two bullets were placed at random rather than adjacently, more of the safe chambers would be followed by a loaded one and the advantage would shrink or vanish. This is a nice example of information from a survived trial being genuinely usable - having survived tells you which chambers you are not on, and the geometry converts that into an edge.",
+      "technique": "Updating on survival with a known loading geometry",
+      "difficultyRationale": "Hard: requires enumerating the surviving positions and using the adjacency, not just counting bullets."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Four face-down cards show water, earth, wind and fire. You turn them over one at a time. You WIN if you have turned over both water and earth; you LOSE the moment you turn over fire. What is the probability you win?",
+      "canonicalAnswer": "1/3.",
+      "explanation": "The elegant route ignores the turning entirely and looks only at the ORDER. You win exactly when both water and earth appear before fire in the shuffled sequence - wind is irrelevant, since turning it over neither wins nor loses. So restrict attention to the three relevant cards: water, earth and fire. All 3! = 6 orderings of those three among themselves are equally likely, and you win precisely when fire is LAST. Fire is last in 2 of the 6 orderings (water-earth-fire and earth-water-fire), so the probability is 2/6 = 1/3. Equivalently and even faster: by symmetry each of the three relevant cards is equally likely to be the last of the three, so P(fire is last) = 1/3. The general principle is worth extracting because it recurs constantly: when a question is about which of several events happens LAST or FIRST, discard every irrelevant element and use symmetry over the remaining ones. The brute-force alternative - conditioning on each first card, then each second card - takes ten times as long and is where arithmetic errors come from.",
+      "technique": "Reduce to the relevant subset, then use symmetry over orderings",
+      "difficultyRationale": "Medium: brute force works but is slow; spotting that only three cards matter is the intended route."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You roll three fair dice. What is the probability that the difference between the highest and lowest showing is exactly four? Give three decimals without a calculator.",
+      "canonicalAnswer": "0.222 — specifically 48/216 = 2/9.",
+      "explanation": "A difference of exactly 4 means the pair (low, high) is (1,5) or (2,6). Take (1,5). Count the outcomes where the minimum is 1, the maximum is 5, and the third die is anywhere in [1,5]. Use inclusion-exclusion on 'all three dice lie in {1,...,5}': that is 5^3 = 125 outcomes. Subtract those missing the 1 (all in {2..5}: 4^3 = 64) and those missing the 5 (all in {1..4}: 4^3 = 64), then add back those missing both (all in {2,3,4}: 3^3 = 27). So 125 - 64 - 64 + 27 = 24 ordered outcomes with min exactly 1 and max exactly 5. By identical reasoning (2,6) gives another 24. Total 48 out of 216 = 2/9 = 0.222. The method is what matters: for 'min is exactly a and max is exactly b', count everything inside the range and strip out the cases that fail to attain each endpoint. Trying to enumerate by hand instead is where people lose the question - there are 216 outcomes and no realistic way to list them under pressure.",
+      "technique": "Inclusion-exclusion for exact min and max",
+      "difficultyRationale": "Medium: the setup is short, but the inclusion-exclusion has to be run carefully in both directions."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You roll three fair dice. What is the probability that the highest number showing is exactly 4? Three decimals, no calculator.",
+      "canonicalAnswer": "0.171 — specifically 37/216.",
+      "explanation": "The standard trick for 'the maximum is exactly k' is a difference of two easy counts. P(max <= 4) means all three dice land in {1,2,3,4}, which happens in 4^3 = 64 of the 216 outcomes. P(max <= 3) means all three land in {1,2,3}: 3^3 = 27 outcomes. The event 'max is exactly 4' is the difference: 64 - 27 = 37 outcomes, so 37/216 = 0.1713. Note how much easier 'at most' is than 'exactly' - the at-most event is a simple product, while the exactly event is not - which is why converting to a difference of CDFs is worth reaching for automatically whenever you see 'the maximum is', 'the minimum is', or 'the longest run is'. Sanity check the answer's size: the maximum of three dice is much more likely to be high than low, and indeed P(max = 6) = (216 - 125)/216 = 91/216 = 0.42, so 0.17 for a max of 4 sits sensibly on that increasing scale.",
+      "technique": "Convert 'exactly k' into a difference of two CDF counts",
+      "difficultyRationale": "Medium: quick once you use the CDF difference, laborious otherwise."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A fair coin is tossed until either three heads OR three tails have appeared (not necessarily consecutively). What is the expected number of tosses?",
+      "options": [
+        "33/8 = 4.125",
+        "4",
+        "5",
+        "9/2 = 4.5"
+      ],
+      "correctOption": 0,
+      "explanation": "4.125. The game lasts between 3 and 5 tosses. It ends at exactly 3 if all three match: probability 2/8 = 1/4. Otherwise, work with the count of the leading side. A clean route is to compute P(game lasts 5). After 4 tosses the game is still alive precisely when the split is 2-2, which has probability C(4,2)/16 = 6/16 = 3/8 - and from a 2-2 split it always takes exactly one more toss. P(exactly 3) = 1/4 = 4/16. P(exactly 4) = 1 - 4/16 - 6/16 = 6/16. So E = 3(4/16) + 4(6/16) + 5(6/16) = (12 + 24 + 30)/16 = 66/16 = 33/8 = 4.125. The elegant step is realising that surviving four tosses is exactly the event of a 2-2 split, which turns the whole problem into one binomial coefficient. A natural follow-up: with a BIASED coin the expected number of tosses is LOWER, because a lopsided coin reaches three of its favoured side faster - the fair coin is the worst case, which is a nice symmetry-and-convexity argument to have ready.",
+      "technique": "Enumerate by game length via the surviving-state probability",
+      "difficultyRationale": "Medium: the 2-2 split observation collapses it; without it the enumeration is messy."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "X and Y are independent uniform on [0,1]. What is the probability that their product exceeds 1/2?",
+      "canonicalAnswer": "(1 - ln 2)/2 ≈ 0.1534.",
+      "explanation": "Integrate over the region. For a given x, we need y > 1/(2x), which is only possible when 1/(2x) < 1, i.e. x > 1/2. So P = integral from 1/2 to 1 of [1 - 1/(2x)] dx = [x - (1/2)ln x] from 1/2 to 1 = (1 - 0) - (1/2 - (1/2)ln(1/2)) = 1 - 1/2 - (1/2)ln 2 = (1 - ln 2)/2. Numerically ln 2 = 0.693, so the answer is 0.307/2 = 0.1534. Two sanity checks worth doing out loud. The answer must be well below 1/2, because the product of two numbers each below 1 is pushed toward zero - indeed E[XY] = E[X]E[Y] = 1/4, and the distribution of the product is heavily skewed toward small values. And the region of integration is the area above the hyperbola xy = 1/2 inside the unit square, which is visibly a small corner near (1,1) - about 15% of the square looks right by eye. A useful alternative route: log-transform. ln X and ln Y are each exponential(1) in magnitude, so ln(XY) is the negative of a Gamma(2,1), and P(XY > 1/2) = P(Gamma(2,1) < ln 2) = 1 - e^(-ln2)(1 + ln 2) = 1 - (1/2)(1.693) = 0.1534, which agrees.",
+      "technique": "Integrating a joint density over a nonlinear region",
+      "difficultyRationale": "Medium: the integral is elementary, but setting the limits correctly is where it goes wrong."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "We agree to meet under the station clock some time between 1pm and 2pm. Each of us arrives uniformly at random in that hour and waits at most 15 minutes. What is the probability we meet?",
+      "canonicalAnswer": "7/16 = 0.4375.",
+      "explanation": "Geometric probability. Let X and Y be our arrival times in minutes after 1pm, each uniform on [0, 60] and independent - so the sample space is the 60 x 60 square, uniformly weighted. We meet when |X - Y| <= 15, which is the band around the diagonal. Compute the complement, which is easier: the two corner triangles where |X - Y| > 15. Each is a right triangle with legs 45, so area (1/2)(45)(45) = 1012.5, and there are two of them, total 2025. Total area is 3600. So P(miss) = 2025/3600 = 0.5625 and P(meet) = 1 - 0.5625 = 0.4375 = 7/16. In closed form, with a wait time w in an interval of length T, P(meet) = 1 - ((T-w)/T)^2 = 1 - (45/60)^2 = 1 - 9/16 = 7/16. That formula is worth remembering because the question is usually re-asked with different numbers. Two things the closed form makes obvious: the probability is quadratic in the waiting time, so doubling your patience more than doubles your chance of meeting; and you need to wait about 30% of the window to get to even odds, which is more than most people guess.",
+      "technique": "Geometric probability on the unit square, via the complement",
+      "difficultyRationale": "Medium: the picture makes it easy, and the complement is much less error-prone than the band."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Break a stick at two uniformly random points. What is the probability that the three pieces can form a triangle?",
+      "canonicalAnswer": "1/4.",
+      "explanation": "Let the break points be X and Y, uniform and independent on [0,1]. The triangle inequality requires every piece to be shorter than 1/2 - equivalently, no single piece exceeds half the stick, since if one does the other two together cannot reach it. Work on the unit square. Suppose X < Y: the pieces are X, Y - X and 1 - Y, and the three conditions are X < 1/2, Y - X < 1/2, and 1 - Y < 1/2 (i.e. Y > 1/2). That region is the triangle with vertices (0, 1/2), (1/2, 1/2), (1/2, 1), whose area is (1/2)(1/2)(1/2) = 1/8. The case Y < X contributes an identical 1/8 by symmetry. Total 1/4. The reformulation is what makes it tractable: 'can form a triangle' is exactly 'no piece exceeds 1/2', which turns three inequalities into a clean region. A useful cross-check by a different route: the probability that a SPECIFIC piece exceeds 1/2 is 1/4 for each of the three pieces (the two cuts must both land in the same half), those three events are mutually exclusive, so P(some piece too long) = 3/4 and P(triangle) = 1/4. Getting the same answer two ways is worth the extra thirty seconds. Note the answer changes completely under a different breaking process - break once, then break the longer piece, and the probability is different - so state the model.",
+      "technique": "Reformulating a geometric constraint as a region on the square",
+      "difficultyRationale": "Hard: the triangle inequality must first be reduced to 'no piece exceeds half', then integrated."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are making chocolate chip cookies: N chips are scattered at random into dough that is then split into 100 equal cookies. How many chips do you need so that every cookie has at least one chip with probability at least 90%?",
+      "canonicalAnswer": "About 700. Each chip lands in a given cookie with probability 1/100, so a given cookie is empty with probability (0.99)^N; by the Poisson approximation the expected number of empty cookies is 100*e^(-N/100), and setting that to about 0.105 gives N ≈ 690.",
+      "explanation": "This is the coupon-collector structure in continuous disguise. Each of the N chips lands independently and uniformly, so a given cookie receives a Poisson(N/100) number of chips in the limit, and is empty with probability e^(-N/100). The expected number of empty cookies is 100*e^(-N/100). For rare independent-ish events, P(no empty cookies) is approximately e^(-100*e^(-N/100)) by a second Poisson approximation. Set that to 0.90: 100*e^(-N/100) = -ln(0.9) = 0.10536, so e^(-N/100) = 0.0010536, giving N/100 = -ln(0.0010536) = 6.856 and N = 686, call it about 700 chips. Sanity-check the shape of the answer: with only 100 chips you would expect 100*e^(-1) = 37 empty cookies, and with 500 you would still expect 100*e^(-5) = 0.67 - so needing roughly 7 chips per cookie on average to be 90% confident that NONE is empty is the right order. The general lesson is the coupon-collector one: covering every cell requires about n*ln(n) draws rather than n, because the last few cells are very hard to hit. Here 100*ln(100) = 460 gets you to even odds, and the extra confidence costs another ~230.",
+      "technique": "Poisson approximation for occupancy problems",
+      "difficultyRationale": "Hard: needs two nested Poisson approximations and the coupon-collector n log n intuition."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the expected number of tosses of a coin with P(head) = p needed to get two heads in a row?",
+      "canonicalAnswer": "(1 + p)/p^2. For a fair coin that is 6.",
+      "explanation": "Set up states by how much progress you have toward HH. Let E0 be the expected additional tosses from no progress and E1 from having just seen one head. From state 0: you toss once; with probability p you move to state 1, with probability 1-p you stay at state 0. So E0 = 1 + p*E1 + (1-p)*E0. From state 1: you toss once; with probability p you finish, with probability 1-p you fall all the way back to state 0 (a tail destroys the run entirely). So E1 = 1 + (1-p)*E0. Substituting: E0 = 1 + p[1 + (1-p)E0] + (1-p)E0, which gives E0 - p(1-p)E0 - (1-p)E0 = 1 + p, so E0*[1 - (1-p)(1+p)] = 1 + p, and since 1 - (1-p)(1+p) = 1 - (1 - p^2) = p^2, we get E0 = (1+p)/p^2. For p = 1/2: (1.5)/(0.25) = 6. Extending to three in a row, the same method gives E = (1 + p + p^2)/p^3, which is 14 for a fair coin - and the pattern (1 + p + ... + p^(k-1))/p^k is worth recognising, since these get asked with k = 2, 3 and occasionally 4. The point of the method is that the state must capture everything relevant about the past, and here that is just the length of the current run.",
+      "technique": "Setting up expected-value recursions over run-length states",
+      "difficultyRationale": "Medium: the recursion is standard; the trap is forgetting that a tail resets you to zero, not to one back."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You toss a fair coin repeatedly. What is the expected number of tosses to first see HTH? Is it the same as for HHT?",
+      "canonicalAnswer": "HTH takes 10 tosses on average; HHT takes only 8. They are NOT the same, despite both patterns having probability 1/8 in any three fixed positions.",
+      "explanation": "The asymmetry is the whole point, and it comes from OVERLAP. When you are hunting HTH and you fail at the last step - you have HT and then get another T - you lose everything. But when you fail after HTH by... more precisely, HTH can overlap with itself: the last H of one occurrence can be the first H of the next, so a partial match of length 1 survives certain failures. HHT has no such self-overlap; its prefix H and its suffix T share nothing. The counter-intuitive consequence is that the MORE self-overlapping pattern takes LONGER, because overlapping patterns cluster together when they do appear, and clustering means longer gaps between clusters. States for HTH: E0 (nothing), E1 (have H), E2 (have HT). E0 = 1 + E1 (a T keeps you at nothing, an H advances - careful: from E0, H goes to E1 and T stays at E0, so E0 = 1 + (1/2)E1 + (1/2)E0). E1 = 1 + (1/2)E1 + (1/2)E2 (another H keeps you at 'have H'; a T advances to HT). E2 = 1 + (1/2)(0) + (1/2)E0... but a T from HT gives HTT, which leaves you with nothing, so E2 = 1 + (1/2)(0) + (1/2)E0. Solving: from the first, E0 = 2 + E1. Substituting through gives E0 = 10. Running the same machinery for HHT gives 8. The transferable insight, worth stating: patterns with self-overlap have longer waiting times, and this is why in the non-transitive Penney's game a second player can always choose a sequence that beats the first player's - there is no best pattern, only patterns that beat other patterns.",
+      "technique": "Overlap structure drives pattern waiting times",
+      "difficultyRationale": "Hard: the states are fiddly, and the reason the two patterns differ is genuinely non-obvious."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Four boxes in a row; a pebble starts in Box 1. Heads moves it forward one box, tails forward two. From Box 2 a head returns it to Box 1 and a tail advances it to Box 4; from Box 3 the same rule applies. The game ends at Box 4. What is the expected number of tosses to finish?",
+      "options": [
+        "4",
+        "2",
+        "3",
+        "6"
+      ],
+      "correctOption": 0,
+      "explanation": "4. Let E1 be the expected tosses from Box 1. One toss takes you to Box 2 or Box 3, each with probability 1/2. From either of those, the next toss ends the game (tails, to Box 4) or returns you to Box 1 (heads), each with probability 1/2. So the structure is: two tosses always happen, and with probability 1/2 you are back where you started. That gives E1 = 2 + (1/2)*E1, hence (1/2)E1 = 2 and E1 = 4. The simplification that makes this quick is noticing that Box 2 and Box 3 behave IDENTICALLY - the rule from each is the same - so you never need to distinguish them and the four-state problem collapses to two states. Looking for that kind of state-merging before writing equations saves most of the work in recursion problems.",
+      "technique": "Merging equivalent states before solving the recursion",
+      "difficultyRationale": "Medium: easy once you spot that boxes 2 and 3 are interchangeable."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A population starts at 100. Each generation it either doubles or goes to zero, each with probability 1/2. What is the expected number of generations until extinction?",
+      "options": [
+        "2",
+        "1",
+        "Infinite — it may never go extinct",
+        "100"
+      ],
+      "correctOption": 0,
+      "explanation": "2. Extinction happens on the first generation with probability 1/2, on the second with probability 1/4, and so on - the number of generations is geometric with p = 1/2, so the expectation is 1/p = 2. Extinction is certain (probability 1), since surviving n generations has probability 2^(-n), which goes to zero. The interesting tension, and the reason this gets asked, is that the EXPECTED POPULATION is 100 * (2 * 1/2)^n = 100 forever - it never decays - while the population itself goes extinct with probability 1 in an expected 2 generations. The expectation is dominated by vanishingly rare paths with astronomically large populations. This is exactly the difference between the arithmetic and geometric mean of a multiplicative process, and it is why 'positive expected value' is not sufficient for a repeated-bet strategy: a bet that doubles or wipes out your capital on a coin flip has zero drift in expectation and certain ruin in practice.",
+      "technique": "Geometric waiting time, and expectation versus almost-sure behaviour",
+      "difficultyRationale": "Medium: the arithmetic is trivial; the expectation-versus-ruin tension is the substance."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many ways can you invest $20,000 across five funds in increments of $1,000, allowing a fund to receive nothing?",
+      "canonicalAnswer": "C(24, 4) = 10,626.",
+      "explanation": "This is stars and bars. You are distributing 20 indistinguishable units of $1,000 among 5 distinguishable funds, with zero allowed. Represent an allocation as 20 stars and 4 bars: the bars split the stars into 5 groups, and every arrangement of the 24 symbols corresponds to exactly one allocation. So the count is C(20 + 5 - 1, 5 - 1) = C(24, 4) = (24*23*22*21)/(4*3*2*1) = 255024/24 = 10,626. The general formula to have automatic: the number of non-negative integer solutions to x1 + ... + xk = n is C(n + k - 1, k - 1). If instead every fund had to receive at least $1,000, give each one unit up front and distribute the remaining 15, giving C(15 + 4, 4) = C(19, 4) = 3,876. The key recognition is that the money is INDISTINGUISHABLE while the funds are DISTINGUISHABLE - swap that around and it becomes a partition problem with no closed form, which is a good thing to say if the interviewer varies the question.",
+      "technique": "Stars and bars for indistinguishable items into distinct bins",
+      "difficultyRationale": "Medium: one formula, but only if you recognise the structure rather than trying to enumerate."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Seven coins are arranged in a circle, all heads-up. You may flip any three ADJACENT coins at a time, as many times as you like. What is the minimum number of such moves needed to turn every coin face-down?",
+      "canonicalAnswer": "Seven — you must use every one of the seven possible triples exactly once, which flips each coin three times.",
+      "explanation": "Work modulo 2, since flipping a coin twice is the same as not flipping it. Number the positions 0-6 and let x_i = 1 if you use the move starting at position i. Coin j is covered by the moves starting at j, j-1 and j-2, so the requirement 'every coin is flipped an odd number of times' becomes the linear system x_j + x_(j-1) + x_(j-2) = 1 (mod 2) for every j. First, a parity bound. Each move flips 3 coins, so m moves produce 3m coin-flips, and that must equal a sum of 7 odd numbers, which is odd. So m must be ODD - ruling out 2, 4 and 6 immediately. m = 1 flips only 3 of the 7 coins. m = 3 gives 9 coin-flips across 7 coins with every count odd, so the counts are either five 1s and two 2s (two even counts - fails) or six 1s and one 3. The second requires one coin to lie in all three moves, but the only three arcs containing a given coin are those starting at c-2, c-1 and c, whose union spans just 5 positions - so two coins go uncovered. m = 3 is impossible. m = 5 can be ruled out the same way, or more cleanly by solving the system: the associated polynomial is 1 + t + t^2, and gcd(1 + t + t^2, t^7 + 1) = 1 over GF(2), because t^7 + 1 factors as (t+1)(t^3+t+1)(t^3+t^2+1) and 1 + t + t^2 is none of those. A trivial gcd means the homogeneous system has only the zero solution, so the inhomogeneous system has a UNIQUE solution - and x = (1,1,1,1,1,1,1) plainly satisfies it, since each coin is then covered exactly 3 times. Unique solution, so the answer is exactly 7 moves. The transferable technique is to lead with the parity count: for any flipping puzzle, working modulo 2 turns it into linear algebra and usually eliminates most candidate answers before you try a single configuration.",
+      "technique": "Reducing a flipping puzzle to linear algebra over GF(2)",
+      "difficultyRationale": "Hard: the parity bound is only the start; proving 3 and 5 impossible needs the covering argument or the polynomial gcd."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You roll a fair die four times. What is the probability you see at least one 6?",
+      "canonicalAnswer": "1 - (5/6)^4 = 671/1296 ≈ 0.518.",
+      "explanation": "'At least one' should trigger the complement automatically - counting the ways to get exactly one, exactly two, exactly three and exactly four 6s is four binomial terms, while the complement is a single product. P(no 6 on a given roll) = 5/6, and the rolls are independent, so P(no 6 at all) = (5/6)^4 = 625/1296 = 0.482. Therefore P(at least one 6) = 1 - 0.482 = 0.518, or 671/1296. This is the de Mere problem that helped start probability theory: the fact that it sits just above 1/2 was a real edge for 17th-century gamblers. Two things worth adding. The naive answer 4 * (1/6) = 2/3 is wrong because it double-counts the outcomes with more than one 6 - though as a first-order approximation it is not bad when the probability is small, which is why 'expected number' and 'probability of at least one' converge for rare events. And the general form P(at least one) = 1 - (1-p)^n is worth having: it is the same formula behind the birthday problem, the coupon collector, and the Poisson approximation 1 - e^(-np).",
+      "technique": "Complementary counting for 'at least one'",
+      "difficultyRationale": "Easy: one line, and the 4/6 double-counting trap is the only real hazard."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A fair coin is tossed 10 times. What is the probability of getting at least 8 heads?",
+      "canonicalAnswer": "7/128 ≈ 0.0547. The counts are C(10,8) + C(10,9) + C(10,10) = 45 + 10 + 1 = 56, over 2^10 = 1024.",
+      "explanation": "Here the complement is NOT the shortcut - 'at least 8 out of 10' has only three terms while its complement has eight, so count directly. C(10,8) = 45, C(10,9) = 10, C(10,10) = 1, summing to 56. Divide by 2^10 = 1024: 56/1024 = 7/128 = 0.0547. The lesson is that complementary counting is a tool, not a reflex - use it when the complement has FEWER cases, which is true for 'at least one' and false here. Two checks. By symmetry, P(at least 8 heads) = P(at most 2 heads), which is the same 56/1024 - and noticing that symmetry halves your work if the question is phrased the other way. And the number is worth remembering as a calibration anchor: a run of 8 or more heads in 10 tosses happens about one time in 18, which is far more often than most people's intuition suggests, and is why apparent 'streaks' in short samples of trading performance are not evidence of anything.",
+      "technique": "Knowing when NOT to use the complement",
+      "difficultyRationale": "Medium: easy arithmetic, but the point is judging which direction is shorter."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two sealed envelopes contain m and 2m dollars; you get one at random. Without opening yours, what is the expected gain from switching? Your opponent reasons the same way about their envelope. Resolve the paradox.",
+      "canonicalAnswer": "Zero. The fallacy is writing 'my envelope has X, so the other has 2X or X/2 with probability 1/2 each, giving 1.25X'. That treats X as fixed when it is a random variable, and silently assumes an improper prior over m. Correctly: your envelope is m or 2m with probability 1/2, and so is theirs, so both have expectation 1.5m and switching gains nothing.",
+      "explanation": "The seductive wrong argument: 'let my envelope contain X. The other contains 2X or X/2, each with probability 1/2, so its expectation is 0.5(2X) + 0.5(X/2) = 1.25X > X. Switch.' Since your opponent can say the same thing, and since you could then switch back forever, something is broken. What is broken is that X is being treated as a known constant when it is a random variable whose distribution depends on which envelope you got. Set it up properly. The pair is (m, 2m). You hold m with probability 1/2 and 2m with probability 1/2, so E[yours] = 1.5m. Switching gives you exactly the other one, whose expectation is also 1.5m. Gain: zero. By symmetry it could not have been anything else - the two envelopes are exchangeable, and no argument that treats them symmetrically can favour one. The deeper error in the 1.25X argument is that P(other = 2X | mine = X) = 1/2 for EVERY X requires a uniform prior over all scales of m, which is improper - no such probability distribution exists. With any legitimate prior, large values of X make it more likely you are holding the bigger envelope, and the two effects cancel in expectation. Second part: if you both PEEK, the symmetry is broken by information. Now you know your value and can compare it against your beliefs about the likely range of m - if you open yours and find an implausibly large amount, you should not switch. With a proper prior, there is always a threshold rule, and switching is correct only below it.",
+      "technique": "Spotting an improper prior hiding inside a conditioning argument",
+      "difficultyRationale": "Hard: the wrong answer is genuinely persuasive, and naming the improper prior is what resolves it."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A deck of 52 cards is shuffled. What is the probability that the ace of spades lies directly above the ace of hearts?",
+      "options": [
+        "1/52",
+        "1/51",
+        "1/2652",
+        "1/26"
+      ],
+      "correctOption": 0,
+      "explanation": "1/52... let's reason it out. There are 51 adjacent positions in the deck, and 52! equally likely arrangements. Count the arrangements with the ace of spades immediately above the ace of hearts: glue them together as a single block, giving 51 objects to arrange in 51! ways. So the probability is 51!/52! = 1/52. The symmetry route is faster and is what the question is testing: pick any card - the ace of hearts - and ask what sits immediately above it. Every one of the other 51 cards is equally likely to be there, and there is also a chance the ace of hearts is on top with nothing above it. Being careful: P(ace of hearts is not on top) = 51/52, and given that, the card above is uniform over the remaining 51, so the answer is (51/52)*(1/51) = 1/52. Both routes agree. Reaching for the symmetry argument rather than counting arrangements is the habit worth building.",
+      "technique": "Symmetry over positions rather than counting arrangements",
+      "difficultyRationale": "Easy: one line by symmetry, and the glue-them-together check confirms it."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have two empty jars and 100 marbles: 50 white and 50 black. Distribute all 100 into the two jars however you like. A jar will then be picked at random and one marble drawn at random from it. How do you maximise the probability of drawing white?",
+      "canonicalAnswer": "Put ONE white marble alone in the first jar, and the other 99 marbles (49 white, 50 black) in the second. P(white) = (1/2)(1) + (1/2)(49/99) = 0.5 + 0.2475 = 0.7475, just under 3/4.",
+      "explanation": "The instinct is to split them evenly, which gives exactly 1/2 - no better than a coin flip and no better than any symmetric arrangement. The insight is that you control the CONDITIONAL probabilities inside each jar, and you should make one of them as close to certain as possible while paying as little as you can for it. A single white marble alone in a jar gives that jar a conditional probability of 1. The cost is that you have removed one white marble from the other jar - but with 99 marbles left, that jar still holds 49 white out of 99, essentially 1/2. So P(white) = (1/2)(1) + (1/2)(49/99) = 0.7475. The upper bound is instructive: you can never beat 3/4, because even in the best case one jar is at most probability 1 and the other is at most just under 1/2 - and you approach that bound as the total number of marbles grows. The transferable idea is that when an outcome is an average of conditional probabilities with FIXED weights, you should make the distribution of conditionals as unequal as possible. This is also why the answer to the mirror question - minimise white - is the same construction with a single BLACK marble alone, and why minimising white does NOT automatically maximise black in the way you might guess unless you re-derive it.",
+      "technique": "Making conditional probabilities unequal when the weights are fixed",
+      "difficultyRationale": "Medium: the even split is the natural answer, and the whole question is whether you look for asymmetry."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A bug sits in one corner of a cubic room with side length 1 and wants to walk (not fly) to the opposite corner. What is the shortest path?",
+      "canonicalAnswer": "Unfold the cube. The shortest walkable path has length sqrt(5) ≈ 2.236, not the 3 you get by walking along three edges or the sqrt(2) + 1 ≈ 2.414 you get by crossing one face diagonally and then one edge.",
+      "explanation": "The trick is to UNFOLD the surface into a flat plane, where the shortest path is a straight line. The bug must cross two faces. Unfold those two adjacent unit squares into a 1 x 2 rectangle, and the two opposite corners are now separated by a straight line of length sqrt(1^2 + 2^2) = sqrt(5) = 2.236. Fold it back and that straight line becomes a path across two faces, crossing the shared edge at its midpoint. Compare the alternatives to show it is better: walking along three edges gives 3; crossing one face on the diagonal and then one edge gives sqrt(2) + 1 = 2.414; the straight-line-through-the-air distance would be sqrt(3) = 1.732 but flying is forbidden. So sqrt(5) it is. Two things worth adding. There are several such paths by symmetry - you can choose different pairs of faces - and they all have the same length. And the general lesson is the useful one: when a problem lives on a curved or folded surface, look for a transformation that flattens it, because straight lines are the only geodesics you can compute in your head.",
+      "technique": "Unfolding a surface to turn a geodesic into a straight line",
+      "difficultyRationale": "Easy: one idea, but without the unfolding it's guesswork."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two jugs hold equal volumes V, one of pure alcohol and one of pure water. You pour a quantity Q of water into the alcohol jug, mix thoroughly, then pour the same quantity Q of the mixture back. Compare the final concentration of alcohol in the alcohol jug with the concentration of water in the water jug.",
+      "canonicalAnswer": "They are exactly equal, for any Q and without any calculation — conservation of volume forces it.",
+      "explanation": "Resist the algebra; there is a conservation argument that settles it in one line and is far more impressive. Both jugs start with volume V and end with volume V. Whatever alcohol is now missing from the alcohol jug must be sitting in the water jug. For the alcohol jug to be back at volume V, exactly that same volume must have been replaced by water - so the water now in the alcohol jug equals the alcohol now in the water jug. Since the two jugs have equal total volume, the CONCENTRATIONS are equal too: the alcohol jug's water fraction equals the water jug's alcohol fraction, and therefore the alcohol jug's alcohol fraction equals the water jug's water fraction. Done, with no dependence on Q, on how well you mixed, or on how many times you repeat the procedure. If you want the numbers: after pouring Q of water in, the alcohol jug holds V alcohol and Q water, so pouring back Q of mixture returns Q*V/(V+Q) of alcohol and Q*Q/(V+Q) of water - and grinding through confirms the equality, which is exactly the point that you did not need to. The transferable habit is to look for a conserved quantity before setting up equations; it is the same instinct that makes put-call parity and no-arbitrage arguments quick.",
+      "technique": "Conservation argument instead of algebra",
+      "difficultyRationale": "Medium: the algebra works but is slow, and the elegance of the conservation route is the signal."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You shuffle a deck of 52 cards and deal them face up one at a time, calling out the position number as you go. What is the expected number of cards that land in their 'own' position (card k in position k)?",
+      "canonicalAnswer": "Exactly 1, regardless of deck size.",
+      "explanation": "Define an indicator X_k = 1 if card k lands in position k, else 0. The number of matches is X = sum of X_k. By symmetry, card k is equally likely to be in any of the 52 positions, so E[X_k] = 1/52. Linearity of expectation gives E[X] = 52 * (1/52) = 1 - and crucially, linearity holds WITHOUT independence, which is what makes this trivial. The X_k are strongly dependent (if 51 cards are in place the 52nd must be too), and none of that matters. The answer is 1 for a deck of any size, which is the striking part: 5 cards or 5 million, you expect exactly one match. The distribution of the number of matches converges to Poisson(1), so P(no match at all) tends to e^(-1) = 0.368 - the classic derangement result, and a good number to have ready for the follow-up. The general habit is the one worth internalising: whenever a question asks for the expected COUNT of something, write it as a sum of indicators and use linearity. It converts most 'expected number of' problems into a one-line calculation and sidesteps every dependence issue.",
+      "technique": "Indicator variables plus linearity, without independence",
+      "difficultyRationale": "Medium: the technique is simple once known, and the independence-free part is what people doubt."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A hundred passengers board a hundred-seat plane. The first passenger has lost their boarding pass and sits in a uniformly random seat. Every subsequent passenger takes their own seat if free, otherwise a uniformly random free seat. What is the probability the last passenger gets their own seat?",
+      "canonicalAnswer": "1/2.",
+      "explanation": "The elegant argument. Consider only two seats: seat 1 (the first passenger's own) and seat 100 (the last passenger's). Every displaced passenger, when forced to choose randomly, is equally likely to take seat 1 as seat 100 - there is nothing distinguishing them at any point in the process. The game ends the moment one of those two seats is taken: if seat 1 goes first, everyone thereafter finds their own seat free and passenger 100 gets seat 100; if seat 100 goes first, passenger 100 does not. By symmetry those two are equally likely, so the answer is 1/2, independent of the number of passengers. The formal route is a recursion: let P(n) be the probability for n passengers. The first passenger sits in their own seat (probability 1/n, last passenger wins), the last passenger's seat (probability 1/n, last passenger loses), or someone else's seat k (probability (n-2)/n), which makes passenger k the new 'displaced' passenger in an identical smaller problem. That gives P(n) = 1/n + sum over the recursive branches, and it solves to 1/2 for all n >= 2. Both routes are worth knowing, but lead with the symmetry - it takes fifteen seconds and shows you looked for the invariant rather than grinding.",
+      "technique": "Finding the symmetry that collapses a recursion",
+      "difficultyRationale": "Hard: the recursion is intimidating, and the two-seat symmetry is a genuine insight."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A cereal company puts one of four different toys in each box, uniformly at random. How many boxes do you expect to buy to collect all four?",
+      "canonicalAnswer": "25/3 ≈ 8.33 boxes.",
+      "explanation": "Break the wait into stages by how many distinct toys you already have. Once you hold k distinct toys, the chance that the next box is new is (4-k)/4, so the number of boxes to get the next new one is geometric with mean 4/(4-k). Sum over k = 0, 1, 2, 3: 4/4 + 4/3 + 4/2 + 4/1 = 1 + 1.333 + 2 + 4 = 8.333 boxes. The shape of that sum is the whole lesson: the first toy is free, the second takes 1.33 boxes, but the LAST one alone takes 4 boxes - half the total effort goes into the final toy. In general the answer is n*H_n = n(1 + 1/2 + ... + 1/n), which is approximately n*ln(n) + 0.577n. For n = 4 that approximation gives 4(1.386) + 2.31 = 7.85, close to the exact 8.33. The n*log(n) growth is worth carrying around: to collect 100 distinct coupons takes about 519 draws, not 100, and the same formula governs how many random samples you need to cover every cell of a partition - which is exactly the chocolate-chip-cookie problem in a different costume.",
+      "technique": "Decompose the wait into geometric stages",
+      "difficultyRationale": "Easy: the decomposition is standard, and the n log n growth is the transferable part."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You start with $10 and repeatedly bet $1 on a fair coin, stopping when you reach $0 or $100. What is the probability you reach $100? Now suppose each bet is slightly unfavourable, with a 49% chance of winning. What happens?",
+      "canonicalAnswer": "Fair: 10/100 = 10%. At 49% the probability collapses to about 0.9% — an eleven-fold reduction from a one-point change in the edge.",
+      "explanation": "FAIR CASE. Your wealth is a martingale, so by optional stopping the expected final wealth equals the starting wealth: 10 = 100*p + 0*(1-p), giving p = 0.10. The general result is that starting at a with barriers at 0 and N, the probability of hitting N first is a/N. Clean, and it does not depend on the bet size. UNFAVOURABLE CASE. With win probability q and loss probability 1-q, let r = (1-q)/q. The probability of reaching N from a is (1 - r^a)/(1 - r^N). With q = 0.49, r = 0.51/0.49 = 1.0408. Then r^10 = 1.49 and r^100 = 54.6... so P = (1 - 1.49)/(1 - 54.6) = (-0.49)/(-53.6) = 0.0091, about 0.9%. So a 1% edge against you takes your chance from 10% to under 1% - a factor of eleven. The lesson is the important one for anyone who trades: the ruin probability is EXPONENTIAL in the edge and in the distance to the barrier, not linear. A tiny systematic disadvantage, repeated enough times, is not a small disadvantage - it is close to certain ruin. That is the house edge in a casino, the bid-ask spread for an overtrading account, and the reason position sizing matters more than hit rate.",
+      "technique": "Optional stopping for the fair case, the ratio formula for the biased one",
+      "difficultyRationale": "Medium: the fair case is one line; the biased case needs the ratio formula and its exponential reading."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Prove that in any group of 6 people, there are either 3 who all know each other, or 3 who are all mutual strangers.",
+      "canonicalAnswer": "Pick any person A. Among the other 5, either at least 3 are acquaintances of A or at least 3 are strangers to A (pigeonhole). Say 3 acquaintances: if any two of them know each other, they plus A form a mutual triangle; if none do, those three are mutual strangers.",
+      "explanation": "This is the Ramsey number R(3,3) = 6, and the proof is a clean pigeonhole argument worth being able to produce on demand. Fix any person A. A has 5 relationships, each either 'knows' or 'stranger'. By pigeonhole, one of the two categories contains at least ceil(5/2) = 3 people. CASE 1: A knows at least 3 people, call them X, Y, Z. If any pair among X, Y, Z know each other - say X and Y - then A, X, Y form a mutual acquaintance triangle. If no pair among them knows each other, then X, Y, Z are three mutual strangers. Either way we are done. CASE 2: A is a stranger to at least 3 people. The identical argument runs with the roles swapped: if any pair among them are strangers, they plus A form a stranger triangle; otherwise all three know each other. Both cases yield the conclusion, so the claim holds. Worth adding that 6 is TIGHT - with 5 people there is a counterexample: arrange them in a pentagon where each person knows exactly their two neighbours, and you get no triangle of either kind. Being able to say 'and here is why 5 is not enough' is what turns a recited proof into a demonstration that you understand it.",
+      "technique": "Pigeonhole on a two-colouring, then case analysis",
+      "difficultyRationale": "Medium: the proof is short but has to be structured correctly to actually be a proof."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "The expected number of tosses of a fair coin to get the first head is 2. Given that the first head has not appeared in the first 5 tosses, what is the expected number of ADDITIONAL tosses needed?",
+      "canonicalAnswer": "Still 2. The geometric distribution is memoryless.",
+      "explanation": "Memorylessness: P(X > m + n | X > m) = P(X > n) for a geometric variable. The coin has no record of the five tails; each toss is independent with probability 1/2, so from any point at which you have not yet succeeded, the expected additional wait is 1/p = 2. The geometric is the ONLY discrete distribution with this property, and the exponential is the only continuous one - which is why the exponential shows up everywhere that a 'hazard rate' is assumed constant, from Poisson arrivals to default intensity models. Two consequences worth having ready. Total expected tosses conditional on having already used 5 is 5 + 2 = 7, not 2 - be clear which quantity is being asked for. And the gambler's fallacy is precisely the denial of this property: a run of tails does not make a head 'due', and any strategy premised on that is worthless. In a trading context the same error appears as 'this strategy has lost five days running, it must be about to turn', which is only true if you have an actual mean-reversion model, not merely a losing streak.",
+      "technique": "Memorylessness of the geometric distribution",
+      "difficultyRationale": "Medium: the answer is immediate if you know the property, and counter-intuitive if you don't."
     }
   ]
 }

@@ -4,7 +4,7 @@
 // were added in v2 and have no v1 counterpart.
 //
 // TopicId is `KnownTopicId | (string & {})` rather than a closed union: the
-// union half keeps editor autocomplete for the 19 seeded ids, the `string`
+// union half keeps editor autocomplete for the 24 seeded ids, the `string`
 // half lets user-created topics carry runtime-generated slugs. Custom ids are
 // registered at load time so topicLabel() can render them.
 export type KnownTopicId =
@@ -26,7 +26,12 @@ export type KnownTopicId =
   | "out-of-the-box"
   | "derivatives-greeks"
   | "var-risk-theory"
-  | "statistics";
+  | "statistics"
+  | "fixed-income"
+  | "portfolio-theory"
+  | "time-series-vol"
+  | "optimal-stopping"
+  | "estimation-fermi";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type TopicId = KnownTopicId | (string & {});
@@ -56,6 +61,11 @@ export const TOPICS: TopicInfo[] = [
   { id: "derivatives-greeks", label: "Derivatives/Greeks" },
   { id: "var-risk-theory", label: "VaR/risk theory" },
   { id: "statistics", label: "Statistics" },
+  { id: "fixed-income", label: "Fixed income & the yield curve" },
+  { id: "portfolio-theory", label: "Portfolio theory & CAPM" },
+  { id: "time-series-vol", label: "Time series & volatility modelling" },
+  { id: "optimal-stopping", label: "Optimal stopping & game strategy" },
+  { id: "estimation-fermi", label: "Fermi estimation & valuation" },
 ];
 
 const SEED_LABEL_BY_ID = new Map<string, string>(TOPICS.map((t) => [t.id, t.label]));
@@ -74,7 +84,7 @@ export function registerCustomTopics(topics: TopicInfo[]): void {
   for (const t of topics) labelById.set(t.id, t.label);
 }
 
-/** The 19 seeded topics plus whatever the user has added, for pickers. */
+/** The 24 seeded topics plus whatever the user has added, for pickers. */
 export function allTopics(): TopicInfo[] {
   return [...TOPICS, ...customTopics];
 }
@@ -84,7 +94,7 @@ export function topicLabel(id: string): string {
   return labelById.get(id) ?? id;
 }
 
-/** True for one of the 19 seeded ids (not user-created ones). */
+/** True for one of the 24 seeded ids (not user-created ones). */
 export function isKnownTopicId(value: string): value is KnownTopicId {
   return SEED_LABEL_BY_ID.has(value);
 }

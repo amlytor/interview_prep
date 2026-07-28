@@ -137,7 +137,9 @@ const browser = await launch();
   await page.getByRole("button", { name: /Bank 1 checked question unseen/ }).click();
   await page.waitForTimeout(400);
   const afterBank = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
-  const banked = afterBank.questions.find((q) => q.prompt.includes("HTH"));
+  // Match the generated prompt exactly: the seeded bank also contains a
+  // recursive-states question mentioning HTH, and it would match first.
+  const banked = afterBank.questions.find((q) => q.prompt === "Expected number of flips to see HTH?");
   check("banked unseen enters the bank", banked !== undefined);
   check("banked unseen is marked unseen", banked?.answerSeen === false, `answerSeen=${banked?.answerSeen}`);
   check("suspect questions are NOT bulk-approved", afterBank.stagedQuestions.length === 1);

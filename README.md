@@ -67,7 +67,7 @@ nothing leaves your machine at all.
 - **Mock Interview** — a timed, mixed-topic session (default 5 questions, configurable).
   No feedback is shown until you finish; the debrief screen grades everything at once
   and gives you a per-question breakdown plus session-level weak topics.
-- **Your own topics** — the 19 seeded topics aren't a fixed set. "+ New topic" on
+- **Your own topics** — the 24 seeded topics aren't a fixed set. "+ New topic" on
   the Topics page lets you add your own: give it a title, pick its prerequisites,
   write the note. It then behaves exactly like a seeded topic — mastery ring,
   unlock rules, Learn mode, quiz generation, trickle-down credit. Or paste raw,
@@ -82,15 +82,16 @@ nothing leaves your machine at all.
 - **Settings** — AI provider and model, per-provider API keys, a personal
   spend-awareness note, backup, and JSON export/import of all your data.
 
-Seed content lives in `src/data/studyNotes.json` (19 authored notes, whose
+Seed content lives in `src/data/studyNotes.json` (24 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
-(97 authored questions), merged with the original starter bank for ~115 seeded
-questions across the taxonomy. Topics you add yourself live in your browser
-alongside your progress, not in these files.
+(185 authored questions), merged with the original starter bank for ~200 seeded
+questions across the taxonomy. Every topic has questions. Topics you add
+yourself live in your browser alongside your progress, not in these files.
 
-The derivatives half of the bank (52 questions on Greeks, put-call parity,
-barriers, digitals, stochastic calculus, and hedging, plus 10 on VaR and risk
-theory) covers the canonical material a derivatives interview draws on. The
+Coverage spans the material a quant finance or quant risk interview actually
+draws on: probability and combinatorics, derivatives and the Greeks, VaR and
+risk theory, fixed income and the yield curve, portfolio theory and CAPM, time
+series and volatility modelling, optimal stopping, and Fermi estimation. The
 questions are written for this app — each carries its own worked explanation,
 the technique it tests, and why it sits at its stated difficulty.
 
@@ -252,8 +253,8 @@ original v1 schema is migrated automatically on first load, and the old
 src/
   types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
   data/
-    studyNotes.json      19 authored study notes + the prerequisite graph (source of truth)
-    seedQuestions.json   97 authored seed questions (source of truth)
+    studyNotes.json      24 authored study notes + the prerequisite graph (source of truth)
+    seedQuestions.json   185 authored seed questions (source of truth)
   lib/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files

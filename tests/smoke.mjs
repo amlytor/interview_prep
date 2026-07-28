@@ -1,4 +1,4 @@
-import { APP_URL, launch, nav, reporter } from "./harness.mjs";
+import { APP_URL, SEEDED_TOPICS, launch, nav, reporter } from "./harness.mjs";
 
 const { check, finish } = reporter();
 
@@ -67,8 +67,10 @@ check("provider persisted", saved.provider === "deepseek");
 // --- Custom topic creation --------------------------------------------------
 await nav(page, /Topics/);
 await page.waitForSelector(".topic-card");
+// Derived, not hardcoded: the seeded taxonomy grows as topics are added, and
+// the assertions below are about the DELTA from creating one custom topic.
 const seededCount = await page.locator(".topic-card").count();
-check("seeded topics render", seededCount === 19, `${seededCount} topics`);
+check("seeded topics render", seededCount === SEEDED_TOPICS, `${seededCount} topics`);
 
 await page.getByRole("button", { name: "+ New topic" }).click();
 await page.waitForSelector("#topicTitle");
@@ -95,7 +97,7 @@ check("note source is user", newNote?.source === "user");
 await page.getByRole("button", { name: "← All topics" }).click();
 await page.waitForSelector(".topic-card");
 const afterCount = await page.locator(".topic-card").count();
-check("new topic appears in the tree", afterCount === 20, `${afterCount} topics`);
+check("new topic appears in the tree", afterCount === seededCount + 1, `${afterCount} topics`);
 // Prereqs are depth-2 and depth-3, so it should be placed in the deepest tier.
 const tierHeadings = await page.locator(".tier-heading").allTextContents();
 const lastTier = page.locator(".topic-grid").last();
@@ -117,7 +119,7 @@ check("custom topic offered in Drill filters",
 await page.reload({ waitUntil: "networkidle" });
 await nav(page, /Topics/);
 await page.waitForSelector(".topic-card");
-check("survives a reload", (await page.locator(".topic-card").count()) === 20);
+check("survives a reload", (await page.locator(".topic-card").count()) === seededCount + 1);
 check("label survives (not a raw slug)",
   (await page.locator(".topic-card-title", { hasText: "Reflection principle" }).count()) === 1);
 
@@ -130,7 +132,8 @@ await page.waitForTimeout(400);
 const afterDelete = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
 check("topic deleted", afterDelete.customTopics.length === 0);
 check("its note deleted", !afterDelete.studyNotes.some((n) => n.topicId === "reflection-principle"));
-check("seeded topics untouched", afterDelete.studyNotes.length === 19, `${afterDelete.studyNotes.length} notes`);
+check("seeded topics untouched", afterDelete.studyNotes.length === SEEDED_TOPICS,
+  `${afterDelete.studyNotes.length} notes`);
 
 check("no runtime errors", errors.length === 0, errors.slice(0, 3).join(" | "));
 

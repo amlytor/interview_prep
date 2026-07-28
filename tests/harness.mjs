@@ -1,8 +1,16 @@
 // Shared bits for the end-to-end suites.
 import { chromium } from "playwright";
+import { readFileSync } from "node:fs";
 
 export const APP_URL = process.env.APP_URL ?? "http://localhost:4173/";
 export const MOCK_URL = process.env.MOCK_URL ?? "http://localhost:4599/v1";
+
+// Read from the seed file rather than hardcoded, so adding a topic doesn't
+// break unrelated suites. The assertions that use this are about the DELTA
+// from creating or deleting a custom topic, not about the taxonomy's size.
+export const SEEDED_TOPICS = JSON.parse(
+  readFileSync(new URL("../src/data/studyNotes.json", import.meta.url), "utf8"),
+).notes.length;
 
 /**
  * Launch Chromium. Honours CHROMIUM_PATH for environments with a pre-installed
