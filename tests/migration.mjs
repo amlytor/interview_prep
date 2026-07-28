@@ -152,5 +152,78 @@ const browser = await launch();
   await page.close();
 }
 
+// ===========================================================================
+// 4. Seed content added after a user's data was written reaches them on load.
+//
+// Without the backfill in normalizeCurrent(), stored data is returned as-is and
+// new seed questions only ever appear on fresh installs — pulling an update
+// would add nothing. This simulates a user whose bank predates the derivatives
+// set: strip those questions out, reload, and they should come back without
+// disturbing anything else.
+// ===========================================================================
+{
+  const page = await browser.newPage();
+  await page.goto(APP_URL);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: "networkidle" });
+
+  const before = await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
+    // Count by id prefix, not by topic: a couple of legacy starter questions
+    // also carry the derivatives tag but aren't part of the authored bank.
+    const derivs = d.questions.filter((q) => q.id.startsWith("sq-derivatives-greeks-"));
+    // Pretend this user's data was written before the derivatives set landed,
+    // and give them some history + an edit that must survive the backfill.
+    d.questions = d.questions.filter((q) => !q.id.startsWith("sq-derivatives-greeks-"));
+    d.questions[0].prompt = "EDITED BY THE USER";
+    d.attempts = [{
+      id: "a-keep", questionId: d.questions[0].id, timestamp: 1000, source: "drill",
+      answerMode: "free-text", userAnswer: "x", verdict: "correct",
+    }];
+    const note = d.studyNotes.find((n) => n.topicId === "derivatives-greeks");
+    note.body = "stale seeded body";
+    const bayes = d.studyNotes.find((n) => n.topicId === "bayes-theorem");
+    bayes.body = "MY OWN WORDS";
+    bayes.modified = true;
+    localStorage.setItem("quantprep_data_v2", JSON.stringify(d));
+    return { seeded: derivs.length, count: d.questions.length };
+  });
+  check("fixture: seed bank ships derivatives questions", before.seeded > 20, `${before.seeded}`);
+
+  await page.reload({ waitUntil: "networkidle" });
+  const after = await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
+    return {
+      derivs: d.questions.filter((q) => q.id.startsWith("sq-derivatives-greeks-")).length,
+      total: d.questions.length,
+      edited: d.questions.some((q) => q.prompt === "EDITED BY THE USER"),
+      attempts: d.attempts.length,
+      dupes: d.questions.length - new Set(d.questions.map((q) => q.id)).size,
+      seededNote: d.studyNotes.find((n) => n.topicId === "derivatives-greeks")?.body,
+      editedNote: d.studyNotes.find((n) => n.topicId === "bayes-theorem")?.body,
+    };
+  });
+
+  check("backfill: missing seed questions are restored on load",
+    after.derivs === before.seeded, `${after.derivs} of ${before.seeded}`);
+  check("backfill: the user's own edit is not overwritten", after.edited);
+  check("backfill: attempt history untouched", after.attempts === 1);
+  check("backfill: no duplicate ids introduced", after.dupes === 0, `dupes=${after.dupes}`);
+  check("backfill: an untouched seeded note is refreshed from the seed file",
+    after.seededNote !== "stale seeded body" && (after.seededNote?.length ?? 0) > 1000,
+    `${after.seededNote?.slice(0, 40)}`);
+  check("backfill: an edited note is NOT refreshed", after.editedNote === "MY OWN WORDS");
+
+  // Idempotence: a second load must not append the same questions again.
+  await page.reload({ waitUntil: "networkidle" });
+  const twice = await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
+    return { total: d.questions.length, dupes: d.questions.length - new Set(d.questions.map((q) => q.id)).size };
+  });
+  check("backfill: idempotent across reloads",
+    twice.total === after.total && twice.dupes === 0, `${twice.total} vs ${after.total}`);
+  await page.close();
+}
+
 await browser.close();
 finish();

@@ -1,4 +1,4 @@
-import type { AppData, Question, Settings, SrsState } from "../types";
+import type { AppData, Question, Settings, SrsState, StudyNote } from "../types";
 import { SEED_QUESTIONS } from "./seedQuestions";
 import { seedQuestionBank, seedStudyNotes, DROPPED_V1_SEED_IDS } from "./seedData";
 import { V1_LABEL_TO_ID, isKnownTopicId } from "./topics";
@@ -67,7 +67,7 @@ function normalizeSettings(raw: unknown): Settings {
   };
 }
 
-/** The full seeded bank: trimmed v1 starter questions + the 35 authored ones. */
+/** The full seeded bank: trimmed v1 starter questions + the authored ones. */
 function mergedSeedBank(): Question[] {
   return [...SEED_QUESTIONS, ...seedQuestionBank()];
 }
@@ -159,11 +159,54 @@ function normalizeCurrent(parsed: AppData): AppData {
   parsed.srs = parsed.srs.map((s) => ({ ...s, trickleCredit: s.trickleCredit ?? 0 }));
   if (!Array.isArray(parsed.studyNotes) || parsed.studyNotes.length === 0) {
     parsed.studyNotes = seedStudyNotes();
+  } else {
+    parsed.studyNotes = refreshSeedNotes(parsed.studyNotes);
   }
   if (!Array.isArray(parsed.stagedQuestions)) parsed.stagedQuestions = [];
   if (!Array.isArray(parsed.customTopics)) parsed.customTopics = [];
+  parsed.questions = withNewSeedQuestions(parsed.questions);
   parsed.version = CURRENT_VERSION;
   return parsed;
+}
+
+/**
+ * Append seed-bank questions the stored data doesn't have yet.
+ *
+ * Without this, questions added to seedQuestions.json would only ever reach
+ * fresh installs — an existing user pulling the update would see nothing new,
+ * because loadData() returns their stored bank untouched. Matching is by id, so
+ * this is idempotent, and nothing already present is modified: edits, attempt
+ * history and answerSeen flags all survive.
+ *
+ * Safe against resurrection: there is no way to delete a seeded question in the
+ * app (deleteCustomTopic only reaches user-created topics), so an absent seed id
+ * always means "never had it", never "deliberately removed".
+ */
+function withNewSeedQuestions(questions: Question[]): Question[] {
+  const present = new Set(questions.map((q) => q.id));
+  const missing = seedQuestionBank().filter((q) => !present.has(q.id));
+  return missing.length ? [...questions, ...missing] : questions;
+}
+
+/**
+ * Pull authored note bodies forward when the seed file's copy has been revised.
+ *
+ * Only notes the user has never touched are refreshed — `modified` is set by
+ * every edit path, and an AI-drafted body sets source to "ai" — so a rewrite of
+ * a seeded note can't overwrite anyone's own work. Notes for topics added to the
+ * seed file since the user's data was written are appended.
+ */
+function refreshSeedNotes(stored: StudyNote[]): StudyNote[] {
+  const seeds = new Map(seedStudyNotes().map((n) => [n.topicId, n]));
+  const refreshed = stored.map((note) => {
+    const seed = seeds.get(note.topicId);
+    if (!seed || note.modified || note.source !== "authored") return note;
+    return note.body === seed.body ? note : { ...note, body: seed.body, prereqs: seed.prereqs };
+  });
+
+  const present = new Set(stored.map((n) => n.topicId));
+  const added = [...seeds.values()].filter((n) => !present.has(n.topicId));
+  return added.length ? [...refreshed, ...added] : refreshed;
 }
 
 export function loadData(): AppData {

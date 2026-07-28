@@ -84,9 +84,23 @@ nothing leaves your machine at all.
 
 Seed content lives in `src/data/studyNotes.json` (19 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
-(35 authored questions), merged with the original starter bank for ~53 seeded
+(97 authored questions), merged with the original starter bank for ~115 seeded
 questions across the taxonomy. Topics you add yourself live in your browser
 alongside your progress, not in these files.
+
+The derivatives half of the bank (52 questions on Greeks, put-call parity,
+barriers, digitals, stochastic calculus, and hedging, plus 10 on VaR and risk
+theory) covers the canonical material a derivatives interview draws on. The
+questions are written for this app — each carries its own worked explanation,
+the technique it tests, and why it sits at its stated difficulty.
+
+Adding to the seed files reaches existing installs, not just fresh ones:
+`loadData()` appends any seed question your stored data is missing and refreshes
+authored notes you haven't edited. Both match on identity and skip anything
+you've touched, so your attempt history, edits, and progress are never
+overwritten. Because question ids are numbered per topic in file order, new
+questions for a topic must be **appended** after that topic's existing entries —
+inserting one in the middle renumbers the rest and duplicates them.
 
 ## Setup
 
@@ -239,7 +253,7 @@ src/
   types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
   data/
     studyNotes.json      19 authored study notes + the prerequisite graph (source of truth)
-    seedQuestions.json   35 authored seed questions (source of truth)
+    seedQuestions.json   97 authored seed questions (source of truth)
   lib/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files
@@ -284,9 +298,11 @@ npm run test:e2e   # end-to-end suites (build first)
 ```
 
 `npm run test:e2e` drives a real browser against the production build. It starts
-the preview server and a mock OpenAI-compatible provider, then runs three
+the preview server and a mock OpenAI-compatible provider, then runs five
 suites: `smoke` (provider switching, custom-topic lifecycle), `migration`
-(upgrading old saved data, export/import round-trip), `provider` (a full
+(upgrading old saved data, export/import round-trip, and backfilling seed
+content added since your data was written without touching your edits),
+`provider` (a full
 grading round-trip through a non-Anthropic endpoint, asserting the exact wire
 format), `backup` (auto-save to a real file handle, debouncing, reconnect after
 permission lapses, and the unsupported-browser fallback), and `diagnostic` (the

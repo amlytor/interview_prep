@@ -27,6 +27,10 @@ interface RawQuestion {
   explanation: string;
   options?: string[];
   correctOption?: number;
+  // v3 fields. Optional because the original 35 questions predate them — an
+  // authored question that omits them just renders without the extra context.
+  technique?: string;
+  difficultyRationale?: string;
 }
 
 // One approved amendment to the authored prerequisite graph: the
@@ -69,9 +73,14 @@ export function seedStudyNotes(): StudyNote[] {
 const CHOICE_IDS = ["a", "b", "c", "d", "e", "f"];
 
 /**
- * The 35 questions from seedQuestions.json, adapted to the internal Question
- * shape. Ids are deterministic (sq-<topic>-<n>) so migrations and re-imports
- * never duplicate them.
+ * The questions from seedQuestions.json, adapted to the internal Question
+ * shape. Ids are deterministic (sq-<topic>-<n>, numbered per topic in file
+ * order) so migrations and re-imports never duplicate them.
+ *
+ * IMPORTANT: numbering is positional within a topic, so new questions for a
+ * topic must be APPENDED after that topic's existing entries. Inserting one in
+ * the middle would renumber every later question in the same topic, and the
+ * backfill in storage.ts would then re-add them all as duplicates.
  */
 export function seedQuestionBank(): Question[] {
   const counters = new Map<string, number>();
@@ -94,6 +103,9 @@ export function seedQuestionBank(): Question[] {
       custom: false,
       origin: "seed",
     };
+
+    if (q.technique) base.technique = q.technique;
+    if (q.difficultyRationale) base.difficultyRationale = q.difficultyRationale;
 
     if (q.type === "multiple_choice" && q.options && q.correctOption !== undefined) {
       base.choices = q.options.map((text, i) => ({ id: CHOICE_IDS[i], text }));

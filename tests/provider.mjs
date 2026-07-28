@@ -29,23 +29,38 @@ await page.getByRole("button", { name: "Save Settings" }).click();
 await page.waitForTimeout(300);
 
 // --- Grade a real free-text answer through that provider --------------------
-// Drill's question selection isn't deterministic, so pin the bank to a single
-// free-text question rather than hunting for one and hoping.
-await page.evaluate(() => {
-  const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
-  d.questions = [{
-    id: "test-free-text", prompt: "Expected flips of a fair coin until the first head?",
-    topics: ["geometric-distribution"], difficulty: "easy", answerMode: "free-text",
-    canonicalAnswer: "2", explanation: "E = 1/p = 2.", createdAt: 1, custom: false, origin: "seed",
-  }];
-  d.attempts = [];
-  d.srs = [];
-  localStorage.setItem("quantprep_data_v2", JSON.stringify(d));
-});
-await page.reload({ waitUntil: "networkidle" });
+// Drill's question selection isn't deterministic, so pin it to a single
+// free-text question rather than hunting for one and hoping. Note this marks
+// the rest of the bank as seen rather than deleting it: loadData backfills any
+// seed question that's missing, so a deleted bank simply comes back on reload —
+// and a multiple-choice question has no textarea to type into.
+async function pinFreeTextQuestion() {
+  await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
+    d.questions = d.questions.filter((q) => q.id !== "test-free-text");
+    d.questions.forEach((q) => { q.answerSeen = true; });
+    d.questions.push({
+      id: "test-free-text", prompt: "Expected flips of a fair coin until the first head?",
+      topics: ["geometric-distribution"], difficulty: "easy", answerMode: "free-text",
+      canonicalAnswer: "2", explanation: "E = 1/p = 2.", createdAt: 1, custom: false,
+      origin: "seed", answerSeen: false,
+    });
+    // No attempts anywhere, so the pinned question is the only fresh one and
+    // pickPractice is guaranteed to serve it.
+    d.attempts = [];
+    d.srs = [];
+    localStorage.setItem("quantprep_data_v2", JSON.stringify(d));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+}
+
+await pinFreeTextQuestion();
 
 await nav(page, /Drill/);
 await page.waitForTimeout(400);
+check("the pinned free-text question is the one served",
+  ((await page.locator(".question-prompt").first().textContent()) ?? "").includes("until the first head"),
+  (await page.locator(".question-prompt").first().textContent())?.slice(0, 60));
 check("no 'set up a provider' warning once configured",
   (await page.getByText("No AI provider set up").count()) === 0);
 
@@ -138,6 +153,10 @@ check("overrides are stored per provider",
   JSON.stringify(savedOverrides));
 
 // Grade an answer, then generate a quiz, and compare what each actually sent.
+// Re-pin first: the earlier attempt made the question stale, which would let
+// Drill serve something else — possibly a multiple-choice question with no
+// textarea, and with no grading call to inspect.
+await pinFreeTextQuestion();
 await nav(page, /Drill/);
 await page.locator("textarea").first().fill("Another attempt.");
 await page.getByRole("button", { name: /Submit/i }).first().click();

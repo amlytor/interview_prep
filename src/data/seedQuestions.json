@@ -16,7 +16,7 @@
       "type": "free_text",
       "prompt": "You roll a fair six-sided die repeatedly until you roll a 6, counting the final roll. What is the expected number of rolls?",
       "canonicalAnswer": "6",
-      "explanation": "Geometric with p = 1/6. E = 1/p = 6. 'Including the final roll' changes nothing \u2014 the geometric already counts the success trial."
+      "explanation": "Geometric with p = 1/6. E = 1/p = 6. 'Including the final roll' changes nothing — the geometric already counts the success trial."
     },
     {
       "topicId": "geometric-distribution",
@@ -39,9 +39,14 @@
       "difficulty": "medium",
       "type": "multiple_choice",
       "prompt": "You roll a fair die until you see a 1 or a 2. What is the expected number of rolls?",
-      "options": ["2", "3", "6", "7/3"],
+      "options": [
+        "2",
+        "3",
+        "6",
+        "7/3"
+      ],
       "correctOption": 1,
-      "explanation": "Rolling with replacement \u2192 geometric, not the without-replacement shortcut. p = 2/6 = 1/3, so E = 3."
+      "explanation": "Rolling with replacement → geometric, not the without-replacement shortcut. p = 2/6 = 1/3, so E = 3."
     },
     {
       "topicId": "without-replacement-shortcut",
@@ -57,7 +62,7 @@
       "type": "free_text",
       "prompt": "A bag has 4 red and 2 blue balls. Drawing without replacement, what is the expected draw number of the first blue ball?",
       "canonicalAnswer": "7/3 (about 2.33)",
-      "explanation": "N = 6, k = 2. E = (N+1)/(k+1) = 7/3 \u2248 2.33."
+      "explanation": "N = 6, k = 2. E = (N+1)/(k+1) = 7/3 ≈ 2.33."
     },
     {
       "topicId": "without-replacement-shortcut",
@@ -73,32 +78,37 @@
       "type": "free_text",
       "prompt": "A bag has 5 red and 5 blue balls. You draw without replacement until you have drawn all 5 red balls. What is the expected number of draws?",
       "canonicalAnswer": "About 9.17 (55/6)",
-      "explanation": "This is the LAST red, so flip the shortcut. Equivalent to N - (N+1)/(k_other+1) + 1 with N=10, k_other=5 blue: 10 - 11/6 + 1 = 55/6 \u2248 9.17. Sanity: the last red sits near the end, so ~9 of 10 draws makes sense."
+      "explanation": "This is the LAST red, so flip the shortcut. Equivalent to N - (N+1)/(k_other+1) + 1 with N=10, k_other=5 blue: 10 - 11/6 + 1 = 55/6 ≈ 9.17. Sanity: the last red sits near the end, so ~9 of 10 draws makes sense."
     },
     {
       "topicId": "complementary-counting",
       "difficulty": "medium",
       "type": "free_text",
       "prompt": "In a room of 30 people, what is the probability that at least two share a birthday? (365 days, uniform.) Set up the calculation.",
-      "canonicalAnswer": "1 - (365/365 \u00d7 364/365 \u00d7 ... \u00d7 336/365), about 70%",
-      "explanation": "Complement: P(all different) = product of 365/365 down to 336/365 (30 terms). Subtract from 1 \u2248 0.706. Multiply the chain, don't add; it runs over all 30 people."
+      "canonicalAnswer": "1 - (365/365 × 364/365 × ... × 336/365), about 70%",
+      "explanation": "Complement: P(all different) = product of 365/365 down to 336/365 (30 terms). Subtract from 1 ≈ 0.706. Multiply the chain, don't add; it runs over all 30 people."
     },
     {
       "topicId": "symmetry-condition-first",
       "difficulty": "medium",
       "type": "multiple_choice",
       "prompt": "Two fair dice are rolled. What is the probability they show the same number (any double)?",
-      "options": ["1/36", "1/12", "1/6", "1/2"],
+      "options": [
+        "1/36",
+        "1/12",
+        "1/6",
+        "1/2"
+      ],
       "correctOption": 2,
-      "explanation": "First die lands anywhere; second must match it \u2192 1/6. Equivalently 6 doubles / 36 outcomes. 1/36 would be one specific double."
+      "explanation": "First die lands anywhere; second must match it → 1/6. Equivalently 6 doubles / 36 outcomes. 1/36 would be one specific double."
     },
     {
       "topicId": "gamblers-ruin",
       "difficulty": "medium",
       "type": "free_text",
-      "prompt": "You flip a fair coin: +\u00a31 on heads, \u2212\u00a31 on tails, starting at \u00a30. What is the probability you reach +\u00a33 before hitting \u2212\u00a33?",
+      "prompt": "You flip a fair coin: +£1 on heads, −£1 on tails, starting at £0. What is the probability you reach +£3 before hitting −£3?",
       "canonicalAnswer": "1/2",
-      "explanation": "Boundaries: p(\u22123)=0, p(+3)=1. Fair coin, start exactly halfway \u2192 by symmetry p(0)=1/2. (General fair formula p(k)=(k+N)/2N gives 3/6=1/2.)"
+      "explanation": "Boundaries: p(−3)=0, p(+3)=1. Fair coin, start exactly halfway → by symmetry p(0)=1/2. (General fair formula p(k)=(k+N)/2N gives 3/6=1/2.)"
     },
     {
       "topicId": "coupon-collector",
@@ -106,7 +116,7 @@
       "type": "free_text",
       "prompt": "You roll a fair die repeatedly until you have seen all six faces at least once. What is the expected number of rolls?",
       "canonicalAnswer": "14.7 (= 6(1 + 1/2 + 1/3 + 1/4 + 1/5 + 1/6))",
-      "explanation": "Coupon collector. Each stage is geometric: stage k has p = (7-k)/6, expected 6/(7-k). Sum: 6/6+6/5+6/4+6/3+6/2+6/1 = 6\u00b7H(6) \u2248 14.7. Uses linearity of expectation to add the stages."
+      "explanation": "Coupon collector. Each stage is geometric: stage k has p = (7-k)/6, expected 6/(7-k). Sum: 6/6+6/5+6/4+6/3+6/2+6/1 = 6·H(6) ≈ 14.7. Uses linearity of expectation to add the stages."
     },
     {
       "topicId": "bayes-theorem",
@@ -114,7 +124,7 @@
       "type": "free_text",
       "prompt": "A disease affects 1% of people. A test is 90% accurate in both directions (90% true positive, 90% true negative). You test positive. What is the probability you actually have the disease?",
       "canonicalAnswer": "About 8.3% (9/108)",
-      "explanation": "Per 1000: 10 sick \u2192 9 test positive; 990 healthy \u2192 99 false positives. P(sick | +) = 9/(9+99) = 9/108 \u2248 8.3%. The rare base rate means false positives swamp true positives. Count only positive-testing sick people (9, not 10)."
+      "explanation": "Per 1000: 10 sick → 9 test positive; 990 healthy → 99 false positives. P(sick | +) = 9/(9+99) = 9/108 ≈ 8.3%. The rare base rate means false positives swamp true positives. Count only positive-testing sick people (9, not 10)."
     },
     {
       "topicId": "bayes-theorem",
@@ -122,7 +132,7 @@
       "type": "free_text",
       "prompt": "Bag A has 3 red and 1 blue ball; Bag B has 1 red and 3 blue. You pick a bag at random (50/50) and draw a red ball. What is the probability you picked Bag A?",
       "canonicalAnswer": "3/4 (75%)",
-      "explanation": "Per 100 picks: 50 A \u00d7 3/4 = 37.5 reds; 50 B \u00d7 1/4 = 12.5 reds; 50 reds total. P(A | red) = 37.5/50 = 3/4. (Bayes: (3/4\u00b71/2)/(1/2) = 3/4.)"
+      "explanation": "Per 100 picks: 50 A × 3/4 = 37.5 reds; 50 B × 1/4 = 12.5 reds; 50 reds total. P(A | red) = 37.5/50 = 3/4. (Bayes: (3/4·1/2)/(1/2) = 3/4.)"
     },
     {
       "topicId": "bayes-theorem",
@@ -137,18 +147,28 @@
       "difficulty": "medium",
       "type": "multiple_choice",
       "prompt": "A family has two children. Given that at least one is a boy, what is the probability both are boys?",
-      "options": ["1/2", "1/3", "1/4", "2/3"],
+      "options": [
+        "1/2",
+        "1/3",
+        "1/4",
+        "2/3"
+      ],
       "correctOption": 1,
-      "explanation": "Sample space {BB, BG, GB, GG}; 'at least one boy' removes GG, leaving 3 equally likely cases, one of which is BB \u2192 1/3."
+      "explanation": "Sample space {BB, BG, GB, GG}; 'at least one boy' removes GG, leaving 3 equally likely cases, one of which is BB → 1/3."
     },
     {
       "topicId": "conditional-probability",
       "difficulty": "medium",
       "type": "multiple_choice",
       "prompt": "A family has two children. Given that the OLDER child is a boy, what is the probability both are boys?",
-      "options": ["1/2", "1/3", "1/4", "2/3"],
+      "options": [
+        "1/2",
+        "1/3",
+        "1/4",
+        "2/3"
+      ],
       "correctOption": 0,
-      "explanation": "Pinning down the older child leaves {BB, BG} \u2192 1/2. Contrast with 'at least one is a boy' (1/3): naming a specific child gives more information."
+      "explanation": "Pinning down the older child leaves {BB, BG} → 1/2. Contrast with 'at least one is a boy' (1/3): naming a specific child gives more information."
     },
     {
       "topicId": "combinatorics",
@@ -156,7 +176,7 @@
       "type": "free_text",
       "prompt": "How many ways can you arrange the letters A, B, C, D in a row?",
       "canonicalAnswer": "24",
-      "explanation": "Order matters: 4 \u00d7 3 \u00d7 2 \u00d7 1 = 4! = 24."
+      "explanation": "Order matters: 4 × 3 × 2 × 1 = 4! = 24."
     },
     {
       "topicId": "combinatorics",
@@ -172,15 +192,15 @@
       "type": "free_text",
       "prompt": "You flip a fair coin 3 times. What is the probability of getting exactly 2 heads?",
       "canonicalAnswer": "3/8",
-      "explanation": "C(3,2) = 3 arrangements (HHT, HTH, THH); each has probability (1/2)^3 = 1/8; total 3 \u00d7 1/8 = 3/8. Binomial with n=3, k=2, p=1/2."
+      "explanation": "C(3,2) = 3 arrangements (HHT, HTH, THH); each has probability (1/2)^3 = 1/8; total 3 × 1/8 = 3/8. Binomial with n=3, k=2, p=1/2."
     },
     {
       "topicId": "combinatorics",
       "difficulty": "hard",
       "type": "free_text",
       "prompt": "From a standard 52-card deck, what is the probability a 5-card hand contains exactly 2 aces? Set up the expression.",
-      "canonicalAnswer": "[C(4,2) \u00d7 C(48,3)] / C(52,5) \u2248 3.99%",
-      "explanation": "'Exactly k of a special type': choose 2 aces from 4 and 3 non-aces from 48, over all hands. C(4,2)\u00b7C(48,3)/C(52,5) = 103,776/2,598,960 \u2248 0.0399."
+      "canonicalAnswer": "[C(4,2) × C(48,3)] / C(52,5) ≈ 3.99%",
+      "explanation": "'Exactly k of a special type': choose 2 aces from 4 and 3 non-aces from 48, over all hands. C(4,2)·C(48,3)/C(52,5) = 103,776/2,598,960 ≈ 0.0399."
     },
     {
       "topicId": "pigeonhole",
@@ -195,7 +215,7 @@
       "difficulty": "medium",
       "type": "free_text",
       "prompt": "You pick 6 distinct numbers from 1 to 10. Prove at least two of them sum to 11.",
-      "canonicalAnswer": "The pairs summing to 11 are the boxes: {1,10},{2,9},{3,8},{4,7},{5,6} \u2014 5 boxes. Picking 6 numbers forces two into one box.",
+      "canonicalAnswer": "The pairs summing to 11 are the boxes: {1,10},{2,9},{3,8},{4,7},{5,6} — 5 boxes. Picking 6 numbers forces two into one box.",
       "explanation": "Construct 5 boxes as the pairs that sum to 11; 6 picks into 5 boxes guarantees a pair by pigeonhole."
     },
     {
@@ -204,7 +224,7 @@
       "type": "free_text",
       "prompt": "Ten people throw their hats into a pile and each picks up a random hat. What is the expected number of people who get their own hat back?",
       "canonicalAnswer": "1",
-      "explanation": "Linearity: each person recovers their own hat with probability 1/10; sum over 10 people = 10 \u00d7 1/10 = 1. Works despite dependence between picks."
+      "explanation": "Linearity: each person recovers their own hat with probability 1/10; sum over 10 people = 10 × 1/10 = 1. Works despite dependence between picks."
     },
     {
       "topicId": "linearity-of-expectation",
@@ -212,7 +232,7 @@
       "type": "free_text",
       "prompt": "You roll a fair die 100 times. What is the expected number of 6s?",
       "canonicalAnswer": "100/6 (about 16.7)",
-      "explanation": "Linearity: each roll is a 6 with probability 1/6; 100 \u00d7 1/6 = 100/6."
+      "explanation": "Linearity: each roll is a 6 with probability 1/6; 100 × 1/6 = 100/6."
     },
     {
       "topicId": "linearity-of-expectation",
@@ -220,7 +240,7 @@
       "type": "free_text",
       "prompt": "In a group of 30 people, what is the expected number of pairs of people who share a birthday? (365 days.)",
       "canonicalAnswer": "About 1.19 (= C(30,2)/365 = 435/365)",
-      "explanation": "Linearity over pairs: C(30,2) = 435 pairs, each shares a birthday with probability 1/365. 435/365 \u2248 1.19."
+      "explanation": "Linearity over pairs: C(30,2) = 435 pairs, each shares a birthday with probability 1/365. 435/365 ≈ 1.19."
     },
     {
       "topicId": "linearity-of-expectation",
@@ -228,7 +248,7 @@
       "type": "free_text",
       "prompt": "Shuffle a 52-card deck and flip through it. What is the expected number of times an Ace appears immediately before a King?",
       "canonicalAnswer": "4/13 (about 0.31)",
-      "explanation": "Linearity over the 51 adjacent position-pairs: each is Ace-then-King with probability (4/52)(4/51). 51 \u00d7 (4/52)(4/51) = 16/52 = 4/13. The 51s cancel \u2014 a sign the setup is right."
+      "explanation": "Linearity over the 51 adjacent position-pairs: each is Ace-then-King with probability (4/52)(4/51). 51 × (4/52)(4/51) = 16/52 = 4/13. The 51s cancel — a sign the setup is right."
     },
     {
       "topicId": "recursive-states",
@@ -236,7 +256,7 @@
       "type": "free_text",
       "prompt": "You flip a fair coin repeatedly. What is the expected number of flips to get two heads in a row (HH)?",
       "canonicalAnswer": "6",
-      "explanation": "States by progress. E1 = 1 + \u00bd(0) + \u00bd E0; E0 = 1 + \u00bd E1 + \u00bd E0. Solving: E0 = 6. (HT is only 4 \u2014 a near miss doesn't reset you the same way.) Collect all E terms on one side before dividing to avoid a sign error."
+      "explanation": "States by progress. E1 = 1 + ½(0) + ½ E0; E0 = 1 + ½ E1 + ½ E0. Solving: E0 = 6. (HT is only 4 — a near miss doesn't reset you the same way.) Collect all E terms on one side before dividing to avoid a sign error."
     },
     {
       "topicId": "continuous-distributions",
@@ -268,23 +288,799 @@
       "type": "free_text",
       "prompt": "One sheep and 100 perfectly rational, survival-first tigers are on an island with only grass. A tiger that eats the sheep becomes a sheep. Will the sheep be eaten?",
       "canonicalAnswer": "No (100 is even).",
-      "explanation": "Parity argument. 1 tiger: eats safely. 2: eating is suicide (you become prey). Each added tiger flips the outcome. Odd \u2192 eaten, even \u2192 safe. 100 is even \u2192 sheep is safe."
+      "explanation": "Parity argument. 1 tiger: eats safely. 2: eating is suicide (you become prey). Each added tiger flips the outcome. Odd → eaten, even → safe. 100 is even → sheep is safe."
     },
     {
       "topicId": "out-of-the-box",
       "difficulty": "hard",
       "type": "free_text",
-      "prompt": "A deck of 52 is turned over two cards at a time: both black \u2192 dealer's pile, both red \u2192 your pile, mixed \u2192 discarded. More cards in your pile wins \u00a3100; a tie pays nothing. What would you pay to play?",
-      "canonicalAnswer": "\u00a30 (nothing).",
-      "explanation": "Every discarded pair removes one red and one black equally, so red pairs always equal black pairs. Your pile always ties the dealer's \u2192 you can never have more \u2192 probability of winning is 0."
+      "prompt": "A deck of 52 is turned over two cards at a time: both black → dealer's pile, both red → your pile, mixed → discarded. More cards in your pile wins £100; a tie pays nothing. What would you pay to play?",
+      "canonicalAnswer": "£0 (nothing).",
+      "explanation": "Every discarded pair removes one red and one black equally, so red pairs always equal black pairs. Your pile always ties the dealer's → you can never have more → probability of winning is 0."
     },
     {
       "topicId": "out-of-the-box",
       "difficulty": "hard",
       "type": "free_text",
       "prompt": "Five pirates (ranked by seniority) split 100 gold coins. The senior proposes a split; if at least half (including the proposer) approve, it passes, else the proposer is thrown overboard and the next proposes. Pirates are rational: survive first, maximise gold second, and prefer fewer pirates if indifferent. What does the senior propose?",
-      "canonicalAnswer": "98 to himself, 0 and 1 and 0 and 1 (i.e. {98, 0, 1, 0, 1} giving 1 coin each to the 3rd and 5th pirates \u2014 buy the two who would otherwise get 0).",
-      "explanation": "Work backwards. With 1 pirate he takes all. With 2, senior takes all (his own vote is 50%). With 3, buy pirate 3 with 1 coin \u2192 {99,0,1}. With 4, buy pirate 3 (gets 0 in the 3-pirate case) \u2192 {99,0,1,0}. With 5, senior needs 2 more votes; buy the two who get 0 in the 4-pirate case (pirates 2 and 4) with 1 coin each \u2192 {98,1,0,1,0}."
+      "canonicalAnswer": "98 to himself, 0 and 1 and 0 and 1 (i.e. {98, 0, 1, 0, 1} giving 1 coin each to the 3rd and 5th pirates — buy the two who would otherwise get 0).",
+      "explanation": "Work backwards. With 1 pirate he takes all. With 2, senior takes all (his own vote is 50%). With 3, buy pirate 3 with 1 coin → {99,0,1}. With 4, buy pirate 3 (gets 0 in the 3-pirate case) → {99,0,1,0}. With 5, senior needs 2 more votes; buy the two who get 0 in the 4-pirate case (pirates 2 and 4) with 1 coin each → {98,1,0,1,0}."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "All Black-Scholes assumptions hold and the stock pays no dividends. The stock is at $100, the riskless rate is 5% per annum, and you are looking at a one-year European call struck at-the-money. Volatility is exactly zero. What is the call worth, and how would you hedge it if you had sold it?",
+      "canonicalAnswer": "About $4.88 - specifically 100 - 100*e^(-0.05). Hedge by buying one share, funded by borrowing the present value of the strike.",
+      "explanation": "With sigma = 0 the stock is riskless and grows deterministically: S(T) = 100*e^(0.05) = 105.13. The call finishes in the money for certain, so it is just a forward contract on the stock struck at 100. Its value is S - K*e^(-rT) = 100 - 100*e^(-0.05) = 100 - 95.12 = $4.88. Sanity check with Black-Scholes: as sigma goes to 0, d1 and d2 both go to +infinity when S > K*e^(-rT), so N(d1) = N(d2) = 1 and C = S - K*e^(-rT). The delta is exactly 1, so the hedge is static: buy one share and borrow 95.12. No rebalancing is ever needed, because with zero volatility there is no gamma.",
+      "technique": "Zero-volatility limit of Black-Scholes",
+      "difficultyRationale": "Easy: one substitution into the formula, but only if you notice that zero vol turns the option into a forward."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two standard options are identical in every respect except maturity: one expires in one month, the other in one year. Both are struck at-the-money. Which has the higher gamma?",
+      "options": [
+        "The one-month option",
+        "The one-year option",
+        "They have equal gamma",
+        "It depends on the interest rate"
+      ],
+      "correctOption": 0,
+      "explanation": "The short-dated one. For an at-the-money option, gamma is roughly 1/(S*sigma*sqrt(T)) times a constant, so it blows up as T goes to zero. Intuitively, delta must travel from near 0.5 all the way to either 0 or 1 by expiry; the less time is left, the more violently delta has to move for a given change in spot. This is why short-dated at-the-money options are the dangerous ones to be short: enormous gamma, and the theta bill to match. Note the qualifier at-the-money - far from the strike the ordering reverses, because a deep out-of-the-money one-month option has essentially no gamma at all while the one-year option still has some.",
+      "technique": "Gamma versus time to maturity",
+      "difficultyRationale": "Easy: a standard fact, but the at-the-money qualifier is what makes the answer clean."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Consider a European call and a European put on the same non-dividend-paying stock, same maturity, both struck exactly at-the-money, and assume the interest rate is zero. The call has unlimited upside and the put's payoff is capped at the strike, so the call's potential payoffs look strictly more attractive. Yet put-call parity says the two are worth the same. Reconcile these.",
+      "canonicalAnswer": "Parity gives C - P = S - K*e^(-rT) = 0 when K = S and r = 0, so C = P. The call's larger payoffs are exactly offset by their lower probability: the lognormal distribution is right-skewed, so upside moves are bigger but rarer, and the two expectations match.",
+      "explanation": "Parity first: C - P = S - K*e^(-rT). With r = 0 and K = S this is S - S = 0, so C = P exactly. Now the intuition. Under the risk-neutral measure the stock is a martingale, so E[S(T)] = S. The lognormal distribution has a long right tail and a short left one - the median finishes below the mean. So yes, the call's winning outcomes are unboundedly large, but they happen less than half the time; the put's winning outcomes are capped but happen more than half the time. The two effects cancel to the penny, which is what parity is telling you. A cleaner way to see it: C - P is a payoff of S(T) - K at expiry, which is just a forward. If you own the forward for free (r = 0, K = S), you own something with zero value. The skew of the payoffs is a red herring; the only thing that matters is that the expectations agree.",
+      "technique": "Put-call parity as a no-arbitrage identity",
+      "difficultyRationale": "Medium: parity itself is easy, but you have to explain away a plausible-sounding argument."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Sketch the delta of a standard European call as a function of the current stock price, with time still to run before expiry. What shape is it?",
+      "options": [
+        "A straight line from 0 at S = 0 to 1 at high S",
+        "A smooth S-shaped curve rising from 0 to 1, passing near 0.5 around the strike",
+        "A step function jumping from 0 to 1 at the strike",
+        "A bell-shaped curve peaking at the strike"
+      ],
+      "correctOption": 1,
+      "explanation": "Delta is N(d1), and d1 is an increasing function of S, so delta is a cumulative-normal shape: an S-curve running from 0 to 1, steepest near the strike (that steepness IS gamma). The step function is the delta AT expiry, when there is no time left to smooth it out - and the way to remember the whole picture is that as T goes to zero the S-curve tightens into that step. The bell shape is gamma, not delta.",
+      "technique": "Delta as a cumulative distribution function",
+      "difficultyRationale": "Easy: recall, but the confusion between the pre-expiry curve and the at-expiry step is the standard trip-up."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A Black-Scholes world with no dividends. You have a European call with one year to maturity struck exactly at-the-money, and the interest rate is 6%. Is the option's delta greater than or less than 0.5? What does the answer depend on?",
+      "canonicalAnswer": "Greater than 0.5, and it does not depend on the volatility - it is greater than 0.5 for every sigma > 0, because r > 0 makes d1 strictly positive.",
+      "explanation": "Delta = N(d1) with d1 = [ln(S/K) + (r + sigma^2/2)T] / (sigma*sqrt(T)). At-the-money means ln(S/K) = 0, so with T = 1 this reduces to d1 = (r + sigma^2/2)/sigma = 0.06/sigma + sigma/2. Both terms are strictly positive for any sigma > 0, so d1 > 0 and N(d1) > 0.5 always. The answer does not depend on sigma at all - it is unconditionally above 0.5. The economics: 'at-the-money' here means struck at SPOT, not at the FORWARD. Since r > 0, the forward price S*e^(rT) is above the strike, so the option is really in-the-money on a forward basis. If instead the option were struck at-the-money-forward, d1 would be sigma*sqrt(T)/2, still positive - the lognormal's median sits below its mean, so even then delta exceeds 0.5, just by less.",
+      "technique": "Reading the sign of d1",
+      "difficultyRationale": "Medium: the algebra is short, but the point is recognising that spot-ATM is not forward-ATM."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Same setup as the previous question - a one-year at-the-money European call, interest rate 6% - but now the stock pays a continuous dividend yield of 3%. Can you still say whether delta is above or below 0.5, and what does it depend on now?",
+      "canonicalAnswer": "Still above 0.5 for these numbers, but the argument is no longer automatic: delta = e^(-qT)*N(d1) and the discount factor pulls against you. The minimum over sigma is about 0.58. With a large enough dividend yield relative to r the conclusion would flip.",
+      "explanation": "With continuous dividends, delta = e^(-qT)*N(d1), where d1 = [(r - q + sigma^2/2)T] / (sigma*sqrt(T)) for a spot-ATM strike. Two changes fight each other: (r - q) = 0.03 is still positive so N(d1) > 0.5, but the prefactor e^(-0.03) = 0.9704 shaves the delta down. So you have to check whether the product can dip below 0.5. With T = 1, d1 = 0.03/sigma + sigma/2, which is minimised at sigma = sqrt(0.06) = 0.245, giving d1 = 0.245 and N(d1) = 0.597. Multiply by 0.9704: the minimum possible delta is about 0.579, comfortably above 0.5. So the answer is 'greater than 0.5' - but the honest answer in an interview is to say it depends on the size of q relative to r, and then show the check. If q exceeded r by enough, both the drift term and the discount factor would push the other way and delta would fall below 0.5.",
+      "technique": "Delta with a continuous dividend yield",
+      "difficultyRationale": "Hard: requires optimising d1 over sigma to prove the bound rather than asserting it."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are long a call on a stock and you have delta-hedged the position. You hear that the CEO has been arrested and the stock plunges $10. Do you now borrow and buy stock, or sell stock and lend? Explain the mechanism.",
+      "canonicalAnswer": "You buy stock (funded by borrowing). Long the call means long gamma; as spot falls, the call's delta falls, so the short stock leg of your hedge is now too large and you buy some back.",
+      "explanation": "Being long a call and delta-hedged means you are SHORT delta shares of stock. The call's delta is N(d1), an increasing function of S. The stock falls $10, so delta drops - say from 0.60 to 0.35. Your hedge should now be short 0.35 shares, but you are short 0.60. You buy back 0.25 shares, and since buying costs cash you borrow to fund it. This is the whole mechanic of being long gamma: the hedge forces you to buy after the market has fallen and sell after it has risen. You buy low and sell high mechanically, which is exactly why long gamma has positive P&L from realised movement - and exactly why you paid theta for the privilege. One caveat worth raising: a $10 gap is not a continuous move. Delta hedging assumes you can rebalance through the move. On a genuine gap you take the gamma P&L on the whole jump at once, which for a long-gamma position is a windfall, and for a short-gamma one is a disaster.",
+      "technique": "Delta rehedging with positive gamma",
+      "difficultyRationale": "Medium: the direction is easy to get backwards if you forget the hedge is the opposite sign of the option."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In the Black-Scholes call formula C = S*N(d1) - K*e^(-rT)*N(d2), what is N(d2)?",
+      "options": [
+        "The option's delta",
+        "The risk-neutral probability that the call finishes in the money",
+        "The real-world probability that the stock rises",
+        "The expected stock price at expiry given that the option is exercised"
+      ],
+      "correctOption": 1,
+      "explanation": "N(d2) is the risk-neutral probability of finishing in the money, which is why the second term reads as 'pay the strike, but only in the states where you exercise, discounted'. N(d1) is the delta - and, more precisely, it is the probability of exercise under the measure that uses the STOCK as numeraire, which is why S*N(d1) is the discounted risk-neutral expectation of receiving the share conditional on exercise. Two different probabilities under two different measures, which is why they are different numbers. And note 'risk-neutral', not 'real-world': N(d2) uses drift r, not the stock's actual expected return, so it is not a forecast of anything.",
+      "technique": "Reading the two terms of the Black-Scholes formula",
+      "difficultyRationale": "Easy: definitional, but the delta/probability mix-up is extremely common."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Consider a European cash-or-nothing digital that pays $1 if the stock finishes above the strike K and nothing otherwise. What is it worth, and how does it relate to the price of a standard European call struck at K?",
+      "canonicalAnswer": "e^(-rT)*N(d2). It equals minus the derivative of the vanilla call price with respect to the strike: digital = -dC/dK.",
+      "explanation": "Direct route: the payoff is $1 times the indicator that S(T) > K, so the value is the discounted risk-neutral probability of that event, which is exactly e^(-rT)*N(d2). Structural route, which is the answer they want: a digital is the limit of a tight call spread. Buy a call struck at K, sell one struck at K + h, and divide by h. That spread pays 1 whenever you finish above K + h, ramps linearly in between, and as h goes to zero it converges to the digital. So digital = -dC/dK, and differentiating the Black-Scholes formula with respect to K duly gives e^(-rT)*N(d2). The practical consequence matters more than the formula: nobody can actually trade the limit. A digital is hedged as a finite call spread, which means it is always slightly over- or under-hedged, and the residual gets nastier the closer to expiry and the closer to the strike you are. The related asset-or-nothing digital, paying one share if S(T) > K, is worth S*N(d1) - and note that the vanilla call is just asset-or-nothing minus K cash-or-nothing.",
+      "technique": "Digital as the derivative of a call with respect to strike",
+      "difficultyRationale": "Medium: the pricing is one line; deriving it as a call-spread limit is the part that shows understanding."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How does the price of a European cash-or-nothing digital call vary with volatility? Answer intuitively first, then rigorously.",
+      "canonicalAnswer": "It is not monotonic. Vega is positive when the digital is out-of-the-money, negative when it is in-the-money, and roughly zero at-the-money. The sign of the digital's vega is the opposite of the sign of d1.",
+      "explanation": "Intuition: the digital pays a fixed amount, so extra volatility does not buy you a bigger payoff the way it does for a vanilla - all it does is move probability mass around. If you are out-of-the-money, more vol raises the chance of reaching the strike, so the price rises. If you are already in-the-money, more vol raises the chance of falling back through the strike, so the price falls. At-the-money, where the odds are already near 50/50, extra vol has almost nothing left to do. Rigorously: the price is e^(-rT)*N(d2), so d(price)/d(sigma) = e^(-rT)*phi(d2)*d(d2)/d(sigma). Since d2 = d1 - sigma*sqrt(T), a short calculation gives d(d2)/d(sigma) = -d1/sqrt(T)... more usefully, d(d2)/d(sigma) = -d1*sqrt(T)/(sigma*sqrt(T)) = -d1/sigma. Either way the sign is the opposite of the sign of d1: negative vega when d1 > 0 (in the money), positive when d1 < 0 (out of the money). This is why digitals are awkward risk: a book of them has vega that flips sign as spot moves through the strikes, so you cannot describe your vol exposure with a single number.",
+      "technique": "Sign analysis of a Greek via the chain rule",
+      "difficultyRationale": "Hard: the intuition is gettable but the rigorous sign argument requires differentiating d2 correctly."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Compare the delta of a standard European call with the delta of a down-and-out call on the same underlying, as spot approaches the down barrier.",
+      "options": [
+        "They are identical, since both are calls",
+        "The barrier option's delta is always lower because the option is cheaper",
+        "The barrier option's delta rises steeply and can exceed 1 near the barrier",
+        "The barrier option's delta goes to zero at the barrier, like a deep out-of-the-money call"
+      ],
+      "correctOption": 2,
+      "explanation": "At the barrier the down-and-out call is worth exactly zero; a small move up and it is worth something material again. That means the value function is very steep just above the barrier, so delta is large - and it can exceed 1, which no vanilla call's delta ever does. This is the classic reason barrier books are hard to run: as spot approaches the barrier your required hedge explodes in size, and it must be unwound instantly if the barrier trades. Trading that hedge is precisely what pushes spot around near the barrier. For an up-and-out call the pathology is worse still: near the barrier the option is about to die while being in the money, so the value function is DOWNWARD sloping and delta goes negative - you hedge a call by going long stock.",
+      "technique": "Barrier option risk near the barrier",
+      "difficultyRationale": "Medium: needs you to reason from the shape of the value function rather than recall a formula."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is it never optimal to exercise an American call on a non-dividend-paying stock early, while a deep in-the-money American put may well be worth exercising early?",
+      "canonicalAnswer": "Exercising a call early throws away remaining time value and pays the strike sooner than necessary, losing the interest on K. Exercising a put early RECEIVES K sooner and earns interest on it, which can outweigh the small remaining optionality when deep in the money.",
+      "explanation": "The call. Exercising gives you S - K today. Instead you could sell the option, which is worth at least S - K*e^(-rT) > S - K. You would be destroying value twice over: you give up the insurance that the stock might fall below K, and you pay the strike now rather than at T, forfeiting the interest on K. So the American call equals the European call, and you would always sell rather than exercise. The put reverses the interest term. Exercising gives you K - S, and K arrives now and starts earning interest. The remaining optionality is the chance the stock falls even further - and once you are deep in the money that chance is worth little, because the stock can only fall to zero. When the interest on K dominates the residual optionality, you exercise. Hence the American put is strictly more valuable than the European put whenever r > 0, and there is no closed-form Black-Scholes price for it. Two corollaries worth having ready: with r = 0 the put's early exercise premium vanishes too; and with DIVIDENDS, early exercise of a call can become optimal, but only immediately before an ex-dividend date.",
+      "technique": "Early exercise and the time value of the strike",
+      "difficultyRationale": "Medium: both halves need the interest-on-strike argument, not just 'time value is positive'."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under what circumstances would you exercise an American call early, and roughly what condition has to hold?",
+      "canonicalAnswer": "Only immediately before an ex-dividend date, and only if the dividend exceeds the time value you give up - roughly D > K*(1 - e^(-r*(T-t))) plus the remaining volatility value.",
+      "explanation": "Dividends are the only thing that can make early call exercise rational, because they are the only leakage from the stock that the option holder does not receive. If you exercise just before the stock goes ex-dividend, you own the share and collect D; if you wait, the stock drops by roughly D and you get nothing. So you weigh D against what you give up: the interest saved by paying the strike late, K*(1 - e^(-r*(T-t))), plus the remaining volatility value of the option. A necessary condition is therefore D > K*(1 - e^(-r*(T-t))). It follows that exercise, if it happens at all, happens at the LAST instant before an ex-dividend date and never in between - waiting is free until then. This is also why American call pricing on a dividend payer needs a tree or a Black approximation rather than the plain formula.",
+      "technique": "Dividend-driven early exercise",
+      "difficultyRationale": "Medium: the timing (last instant before ex-div, never between) is the part that separates a real answer from a vague one."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You sold a one-year European call ten months ago and have been delta-hedging ever since. The option is now well in the money and your hedge is long about 0.90 shares. Over the final two months you watch the stock drift gently downward. Are you buying stock or selling stock? Be explicit about your assumptions.",
+      "canonicalAnswer": "It depends on whether the drift down is large relative to how fast time decay is pinning delta to 1, so both are possible. If the stock stays comfortably in the money, delta rises toward 1 as expiry nears and you BUY. If the fall is big enough to bring spot back near the strike, delta collapses and you SELL.",
+      "explanation": "You are short the call, so your hedge is LONG delta shares - currently 0.90. Delta now depends on two things moving at once. Spot falling pushes delta down. Time passing pushes delta toward its expiry value, which for an in-the-money call is 1 - the S-curve is tightening into a step, and you are on the high side of it. So: Scenario A, the drift is gentle and the option stays comfortably in the money. Time dominates, delta goes 0.90 -> 0.95 -> 0.99, and you are steadily BUYING stock even as the price falls. Scenario B, the fall is large enough that spot approaches the strike. Now you are near the step, gamma is enormous, and delta falls hard toward 0.5 and below - you SELL, in size, and fast. The useful thing to say out loud is that this is what being short gamma feels like: your hedge is not a smooth function of price alone, and near expiry near the strike, tiny moves force big trades in whichever direction hurts. Being short a nearly-expiring at-the-money option is the position that blows people up.",
+      "technique": "Delta near expiry: spot effect versus time effect",
+      "difficultyRationale": "Hard: the answer is genuinely conditional, and getting full credit requires laying out both regimes."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You use sigma = 15% to value a one-year option. You now value a four-year option with the same strike, but you set T - t = 1 in the formula, so one unit of time now means four years. What volatility do you plug in?",
+      "options": [
+        "15%",
+        "30%",
+        "60%",
+        "7.5%"
+      ],
+      "correctOption": 1,
+      "explanation": "Volatility scales with the square root of time, so over four years the total is 15% * sqrt(4) = 30%. Since you have redefined the unit of time so that T - t = 1, all of that total has to go into sigma: you plug in 30%. The quantity Black-Scholes actually cares about is sigma*sqrt(T), and you must keep it invariant - 0.15*sqrt(4) = 0.30*sqrt(1). Answering 60% is the classic error of scaling linearly with time instead of with its square root.",
+      "technique": "Square-root-of-time volatility scaling",
+      "difficultyRationale": "Easy: one scaling rule, but the linear-scaling trap catches people who rush."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "An interviewer asks: a three-month at-the-money call on a $100 stock, implied vol 40, interest rate zero, no dividends. Ten seconds, in your head. Then tell me how the answer changes if it is a put.",
+      "canonicalAnswer": "About $8. The put is also about $8, by put-call parity with r = 0 and K = S.",
+      "explanation": "Use the at-the-money approximation C ~ 0.4 * S * sigma * sqrt(T). Here that is 0.4 * 100 * 0.40 * 0.5 = $8. Where the 0.4 comes from: for an at-the-money option with r = 0, the exact Black-Scholes price is S*[N(x/2) - N(-x/2)] where x = sigma*sqrt(T), and for small x that is approximately S * x * phi(0) = S * x * 0.3989. So the rule is 'about 40% of spot times vol times root-time', and it is accurate to within a percent or two for typical x. Sanity check: sigma*sqrt(T) = 0.40 * 0.5 = 0.20, i.e. a one-standard-deviation move is $20, and the option is worth about 40% of that, which is $8. The put: parity says C - P = S - K*e^(-rT), which with r = 0 and K = S is zero. So P = C = $8. Worth stating explicitly - the whole point of the follow-up is to see whether you reach for parity or start recomputing.",
+      "technique": "The 0.4*S*sigma*sqrt(T) at-the-money approximation",
+      "difficultyRationale": "Medium: the approximation is a must-know, and the parity follow-up tests whether you use it reflexively."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A customer asks you to price a 100-day European call and you quote $100. A minute later he asks for the same option with 200 days to maturity. How does the second quote compare?",
+      "options": [
+        "Higher",
+        "Lower, because of time decay",
+        "The same",
+        "It depends on whether the option is in or out of the money"
+      ],
+      "correctOption": 0,
+      "explanation": "Higher. A longer-dated call is worth more: more time means more volatility (sigma*sqrt(T) grows) and a bigger discount on the strike you eventually pay. Formally, for a call on a non-dividend payer the value is increasing in maturity because the 200-day option dominates - you could always just not exercise early. 'Lower, because of time decay' inverts the meaning of theta: theta is what happens to a FIXED option as the calendar advances, not a comparison between two different options. It is not, incidentally, doubled - value grows with sqrt(T), so roughly $141, not $200.",
+      "technique": "Monotonicity of option value in maturity",
+      "difficultyRationale": "Easy: the theta confusion is the only real trap."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Assume a Black-Scholes world with a zero interest rate and no dividends. You have a one-year at-the-money European call, spot is $100, and the standard deviation of the terminal stock price given today's price is $10. Is the call worth closer to $1, $5, or $10?",
+      "canonicalAnswer": "Closer to $5 - it is about $4.",
+      "explanation": "Use the at-the-money rule C ~ 0.4 * S * sigma * sqrt(T). Here S*sigma*sqrt(T) is exactly the standard deviation of the terminal price, $10, so C ~ 0.4 * 10 = $4. Of the three offered, $5. The elegant way to say it: an at-the-money option with zero rates is worth about 40% of a one-standard-deviation move in the underlying, whatever the units. The precise constant is phi(0) = 0.3989, so $3.99. Two checks to keep yourself honest. $10 would be the whole standard deviation, and the option only pays on the upside, so it must be well under that. $1 would be 10% of a standard deviation, which is far too cheap for something with a roughly 50% chance of finishing in the money. If instead the terminal standard deviation were $20, the same rule gives about $8, so the answer would be closest to $10.",
+      "technique": "Sizing an option from the standard deviation of the terminal price",
+      "difficultyRationale": "Hard: requires recognising that the given standard deviation IS S*sigma*sqrt(T), then bounding the answer."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are long a straddle struck at $25, the underlying is at $25, and the straddle cost you $5. What price movement are you looking for?",
+      "canonicalAnswer": "A move of more than $5 in either direction by expiry - to below $20 or above $30, which is a 20% move.",
+      "explanation": "The long straddle is a call plus a put at the same strike. At expiry the payoff is |S(T) - 25|, so you break even when |S(T) - 25| = 5, i.e. at $20 or $30. Anything between those and you lose; the worst case is spot pinned at $25, where you lose the whole $5. So you need a 20% move in either direction. Two refinements that are worth adding. First, this is the expiry breakeven - before expiry you can also profit from a rise in implied volatility without spot moving at all, since you are long vega. Second, the $5 premium implies a market view of how big the move will be: using C ~ 0.4*S*sigma*sqrt(T) and doubling it for the straddle, $5 = 0.8*25*sigma*sqrt(T), so sigma*sqrt(T) = 0.25. That is a one-standard-deviation move of $6.25, which is bigger than your $5 breakeven - unsurprising, since a straddle wins on the tails and a $5 move is inside one standard deviation.",
+      "technique": "Straddle breakeven and the implied move",
+      "difficultyRationale": "Medium: the breakeven is easy; backing out the implied move is what makes it a real answer."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Compare a Eurodollar futures contract, marked to market daily, with an otherwise identical forward contract settled only at maturity. Both are quoted at the same rate. Which rate should be higher in equilibrium, and what does that tell you about which contract to buy and which to sell?",
+      "canonicalAnswer": "The futures rate should be higher than the forward rate (the convexity adjustment). At an equal quote, you buy the forward and sell the futures.",
+      "explanation": "The difference comes from daily settlement interacting with the level of rates. Consider being long the futures PRICE, which is a short-rates position. If rates fall you make money - and you receive that cash immediately, at a time when it can only be reinvested at the new low rate. If rates rise you lose money - and you must fund that loss immediately, at a time when borrowing is expensive. Your gains arrive when they are worth least and your losses when they hurt most. That is a systematic disadvantage, and nobody would accept it unless compensated. The compensation shows up in the quote: the futures RATE must be set above the forward rate, so that the long-price side is paid to bear it. This is exactly the standard convexity adjustment, and it grows with maturity and with rate volatility. So if both are quoted at the same 5%, the futures is mispriced relative to the forward: sell the futures (take the advantaged side) and buy the forward. A cleaner way to state the general principle: when the marked-to-market flows are positively correlated with the financing rate, futures prices exceed forward prices; when negatively correlated, the reverse.",
+      "technique": "Futures-forward convexity adjustment",
+      "difficultyRationale": "Hard: requires reasoning about the correlation between settlement flows and the reinvestment rate, not just naming the adjustment."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You are pricing a call by Monte Carlo. Should you simulate the geometric Brownian motion of the call price itself, or of the underlying?",
+      "options": [
+        "The underlying",
+        "The call price",
+        "Either - they give the same answer",
+        "The call, because it is what you are pricing"
+      ],
+      "correctOption": 0,
+      "explanation": "Simulate the underlying. You know its dynamics by assumption; you do not know the call's - its drift and volatility are state-dependent functions of the very price you are trying to find, so 'simulating the call as a GBM' is circular and, worse, wrong: the call price is not a geometric Brownian motion. The procedure is to simulate paths of S under the risk-neutral measure, apply the payoff function to each terminal value, average, and discount at r. Everything option-specific lives in the payoff function, which is why the same simulation engine prices vanillas, digitals, Asians and barriers with only the payoff swapped out.",
+      "technique": "Risk-neutral Monte Carlo: simulate the state variable, not the derivative",
+      "difficultyRationale": "Easy: recall of the method, though the circularity is worth being able to name."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You are long mortgage-backed securities and you expect a bond market rally. Would you rather have positive or negative convexity?",
+      "options": [
+        "Positive convexity",
+        "Negative convexity",
+        "Neither - convexity is irrelevant in a rally",
+        "Negative, because it pays more carry"
+      ],
+      "correctOption": 0,
+      "explanation": "Positive convexity. In a rally, positive convexity means your duration extends as prices rise, so you make more than a linear duration estimate predicts. Negative convexity does the opposite: as rates fall, homeowners refinance, your bonds prepay, duration shortens, and your upside is cut short exactly when you wanted it. That is the defining feature of MBS - you are effectively SHORT a prepayment option to the homeowner, so an MBS book carries negative convexity by construction. You are compensated with extra yield, which is fine until the rally arrives. This is also why MBS hedgers buy duration in a rally and sell in a selloff - the convexity hedging flow that amplifies rate moves.",
+      "technique": "Convexity and the embedded prepayment option",
+      "difficultyRationale": "Medium: needs you to connect prepayment to short optionality, not just recall the sign."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What is wrong with the following strategy for hedging a short call: hold one share whenever the stock is above the strike, and hold none whenever it is below?",
+      "canonicalAnswer": "It appears to be free but is not. Brownian paths cross the strike infinitely often, so you make infinitely many buys just above K and sells just below K, and the total cost does not converge to zero as you monitor more finely - it converges to the option premium.",
+      "explanation": "The strategy - stop-loss/start-gain hedging - looks perfect: at expiry you hold the share exactly when the option is exercised, and each round trip seems to cost only the bid-offer around K. If that were true you would have replicated the call for nothing, which is an arbitrage against the Black-Scholes price. So it must be wrong. The flaw is the infinite variation of Brownian motion. Near the strike the path crosses K infinitely many times in any interval. Each crossing has you buying at K + epsilon and selling at K - epsilon, losing about 2*epsilon. Halving epsilon halves the loss per trade but MORE than doubles the number of crossings, so the total does not go to zero. In the limit it converges to precisely the option's fair value, delivered via what is technically the local time of the process at K. There is also a discrete-time problem on top: with real monitoring intervals you cannot trade exactly at K, and around expiry a stock hovering near the strike will churn you mercilessly. The correct hedge is delta hedging, where the position moves smoothly with N(d1) rather than jumping between 0 and 1.",
+      "technique": "Local time and why stop-loss hedging fails",
+      "difficultyRationale": "Hard: requires knowing that Brownian paths have infinite variation and why that defeats the naive argument."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What can you tell me about the integral of W(t) dW(t) from 0 to T, where W is a standard Brownian motion?",
+      "canonicalAnswer": "It equals (W(T)^2 - T)/2. Note the -T/2 term - it is not W(T)^2/2 as ordinary calculus would suggest.",
+      "explanation": "Apply Ito to f(W) = W^2. Ito's lemma gives d(W^2) = 2*W dW + dt, because the second-order term (1/2)*f''*dt contributes dt rather than vanishing. Integrating from 0 to T: W(T)^2 - 0 = 2*integral(W dW) + T. Rearranging, integral(W dW) = (W(T)^2 - T)/2. The whole point of the question is the -T/2. Ordinary calculus would give W(T)^2/2, and the discrepancy is exactly the quadratic variation of Brownian motion - the thing that makes stochastic calculus different. Two useful checks. Taking expectations gives E[integral] = (T - T)/2 = 0, which is right, because a stochastic integral against Brownian motion is a martingale starting at 0. And it shows W(T)^2 - T is a martingale, whereas W(T)^2 is not.",
+      "technique": "Ito's lemma and quadratic variation",
+      "difficultyRationale": "Hard: the correction term is the entire content, and it is what separates Ito from Riemann-Stieltjes."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "For which positive integers n is W^n(t) a martingale, where W is a standard Brownian motion?",
+      "options": [
+        "n = 1 only",
+        "All n",
+        "n = 1 and n = 2",
+        "All even n"
+      ],
+      "correctOption": 0,
+      "explanation": "Only n = 1. Apply Ito to W^n: d(W^n) = n*W^(n-1) dW + (1/2)*n*(n-1)*W^(n-2) dt. A process is a martingale exactly when its dt term vanishes. That coefficient (1/2)*n*(n-1) is zero only for n = 0 and n = 1. For n = 2 you get d(W^2) = 2W dW + dt, so W^2 has a positive drift - indeed E[W(t)^2] = t, which grows, so it plainly is not a martingale. The right statement for n = 2 is that W^2 - t is a martingale, and more generally each power has a compensator: W^3 - 3tW is a martingale, and so on up the Hermite polynomials.",
+      "technique": "Identifying martingales by killing the drift term",
+      "difficultyRationale": "Hard: needs Ito applied in general n, plus knowing the compensated versions to avoid the n = 2 trap."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "IBM trades at $75. What does it cost today to construct a security that pays exactly one dollar the first time IBM touches $100? Assume a zero interest rate, no dividends, infinitely divisible assets, no short-sale restrictions, and no frictions.",
+      "canonicalAnswer": "$0.75. Buy 1/100 of a share for $0.75 and liquidate the instant the stock touches $100, when it is worth exactly $1.",
+      "explanation": "The replication is the answer. Buy 1/100 of a share, which costs 75/100 = $0.75. Hold it. If and when IBM touches $100, your holding is worth 100/100 = $1 exactly - sell it and pay the dollar. That is a perfect hedge with no rebalancing at all, so the security must cost $0.75. The pricing argument confirms it. With r = 0 the stock is a martingale under the risk-neutral measure. By optional stopping applied at the first time the stock hits either $100 or $0, we get 75 = 100*p + 0*(1 - p), so the probability of reaching $100 before going bankrupt is p = 0.75. The security pays $1 with probability 0.75 and nothing otherwise, and with r = 0 there is no discounting, so it is worth $0.75. Note what the answer does NOT depend on: volatility. Higher vol gets you there sooner but not more often. It does depend on the stock being able to go to zero - and on r = 0, since with r > 0 the discounting for an uncertain, potentially very distant hitting time would reduce the price.",
+      "technique": "Optional stopping / gambler's ruin applied to a martingale",
+      "difficultyRationale": "Hard: the clean answer needs either the exact replication or optional stopping; guessing gets you nowhere."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why do you see a 'smile' or a 'skew' when you plot implied volatilities against strike?",
+      "canonicalAnswer": "Because real return distributions are not lognormal with constant vol. Fat tails and negative skew mean the market pays up for low strikes, and implied vol is just the number you must put into the wrong model to recover the right price.",
+      "explanation": "Start from what implied vol IS: not a forecast, but the single number that forces Black-Scholes to reproduce a traded price. If the model were true, one number would fit every strike and the plot would be flat. It is not flat, so the model is wrong in a specific, informative way. The causes: (1) Fat tails. Real returns have far more extreme moves than a lognormal, so far out-of-the-money options on both sides are worth more than Black-Scholes says - that is the symmetric 'smile', clearest in FX. (2) Negative skew. In equities the left tail is much fatter than the right: crashes are sudden, rallies are gradual. This is partly the leverage effect (a falling equity price raises leverage, raising vol) and partly jump risk. So the curve is a downward-sloping skew, not a symmetric smile - and this became pronounced after 1987. (3) Supply and demand. Institutions are structurally long equities and buy downside puts as insurance, while call overwriting supplies upside. That flow imbalance is persistently bid for low strikes. (4) Stochastic volatility with a negative spot/vol correlation produces exactly this shape mechanically. The practical consequence is that you cannot quote a book off one vol, which is why local-vol and stochastic-vol models exist.",
+      "technique": "Implied volatility as a model-inversion, not a forecast",
+      "difficultyRationale": "Medium: many partial answers exist; a strong one names both the distributional and the flow explanations."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is a local volatility model?",
+      "options": [
+        "A model in which volatility is a deterministic function of spot and time, sigma(S, t), calibrated to fit the entire implied volatility surface",
+        "A model in which volatility follows its own stochastic process, correlated with spot",
+        "A model that estimates volatility from a short trailing window of local historical data",
+        "A model with a different constant volatility for each strike"
+      ],
+      "correctOption": 0,
+      "explanation": "Local volatility (Dupire) makes sigma a deterministic function of spot and time. Its appeal is that it is the unique such function that reproduces today's entire vanilla surface exactly, and because it keeps a single risk factor, the market remains complete and the option is still perfectly hedgeable with the underlying. Dupire's formula recovers sigma(S, t) directly from the observed call prices. The second answer describes STOCHASTIC volatility (Heston, SABR), which is a genuinely different model class with a second driving factor. The distinction matters in practice: local vol fits today's surface perfectly but predicts unrealistic forward smile dynamics - the smile flattens over time in a way markets do not - which is exactly why exotics desks reach for stochastic-local hybrids.",
+      "technique": "Local volatility versus stochastic volatility",
+      "difficultyRationale": "Medium: the definition is recall, but distinguishing it from stochastic vol is the real test."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Is the price of a double-barrier knock-out option - one with both an up-and-out and a down-and-out barrier - simply the sum of the up-and-out price and the down-and-out price?",
+      "options": [
+        "Yes, the barriers are independent so the prices add",
+        "No - it is worth less than either one alone, since it must survive both barriers",
+        "No - it is worth more than the sum, because two barriers make it more exotic",
+        "Yes, provided the barriers are far apart"
+      ],
+      "correctOption": 1,
+      "explanation": "No, and it is not even bounded by the sum in a useful way - it is worth less than EITHER component. The double knock-out pays only on paths that avoid both barriers, which is a subset of the paths surviving the up barrier and also a subset of those surviving the down barrier. So DKO <= min(UO, DO) <= UO + DO. Adding the two prices double-counts every surviving path, which is precisely the inclusion-exclusion mistake. Formally, if A is the event of being knocked out above and B below, then UO + DO = E[payoff * 1(not A or not B)] + DKO, so the sum overstates the double barrier by the value on paths that breach exactly one barrier. Practically, double knock-outs are much cheaper than single-barrier options, which is why they are popular with buyers who have a firm range view - and unpleasant to hedge, because you get the near-barrier delta pathology twice.",
+      "technique": "Inclusion-exclusion on path-dependent payoffs",
+      "difficultyRationale": "Medium: the trap is that adding prices feels natural until you think in terms of surviving paths."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Suppose gold follows an arithmetic Brownian motion, so its future price is normally distributed rather than lognormal. Gold is at $400, the riskless rate is zero, and the volatility is $60 per annum in dollar terms. What is a cash-or-nothing digital paying $1 million in six months if gold is at or above $430 worth today?",
+      "canonicalAnswer": "About $240,000.",
+      "explanation": "With r = 0 and arithmetic Brownian motion, the terminal price is normal with mean equal to today's price and standard deviation sigma*sqrt(T). So S(0.5) ~ Normal(400, (60*sqrt(0.5))^2), and the standard deviation is 60 * 0.7071 = $42.43. The strike is $30 away, which is 30/42.43 = 0.707 standard deviations. So P(S >= 430) = 1 - N(0.707) = 1 - 0.760 = 0.240. With r = 0 there is no discounting, so the value is $1,000,000 * 0.240 = about $240,000. The reason the question specifies arithmetic Brownian motion is that it makes the calculation trivially normal - no d1, no d2, no lognormal correction, just a z-score. Worth flagging in an interview that this model permits negative gold prices, which is why nobody uses it for equities; for a short horizon on a high-priced asset the approximation is tolerable.",
+      "technique": "Digital pricing under a normal (Bachelier) terminal distribution",
+      "difficultyRationale": "Hard: easy arithmetic, but only after you recognise the model change removes the lognormal machinery."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Party A pays three-month LIBOR L to Party B, and Party B pays 24% - 2L to Party A. Express this deal in simpler terms.",
+      "canonicalAnswer": "Net, A receives 24% - 3L. That is three times a plain vanilla swap in which A receives 8% fixed and pays L - a 3x leveraged receiver position, i.e. a leveraged inverse floater.",
+      "explanation": "Just net the two legs. A receives (24% - 2L) and pays L, so A's net receipt is 24% - 3L. Now factor: 24% - 3L = 3*(8% - L). So the whole structure is exactly three units of a standard swap in which A receives 8% fixed and pays LIBOR floating. A is therefore a 3x leveraged receiver - long duration, long a fall in rates, and short a rise, all with triple the sensitivity the notional suggests. Equivalently, A holds a leveraged inverse floater. Two things to raise. First, the 8% is only fair if the current swap rate is 8%; otherwise one side has embedded value up front. Second, in practice the payment 24% - 2L would be floored at zero, since B will not pay negative amounts - which means B is also long an option struck where L = 12%, and the structure is a leveraged swap plus a cap. These deals were how leveraged rate bets got embedded in things that looked like ordinary swaps, which is the historical reason the question gets asked.",
+      "technique": "Netting and factoring a structured swap into vanilla components",
+      "difficultyRationale": "Medium: the netting is trivial; spotting the leverage factor and the embedded floor is the substance."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Roughly how many shares of stock do you hold to hedge one at-the-money option?",
+      "options": [
+        "About 0.5 shares",
+        "One share",
+        "It depends entirely on the volatility",
+        "Zero - at-the-money options have no delta"
+      ],
+      "correctOption": 0,
+      "explanation": "About half a share, since the delta of an at-the-money option is roughly 0.5. The precise value is N(d1), which for a spot-at-the-money call is slightly above 0.5 whenever r > 0, and higher again for longer maturities because d1 contains sigma*sqrt(T)/2. But 'about a half' is the right reflex, and the follow-up they usually want is that it is 0.5 for the call and about -0.5 for the put, consistent with parity: a call minus a put is a forward, with delta 1.",
+      "technique": "Delta of an at-the-money option",
+      "difficultyRationale": "Easy: a reflex fact, though the slight upward bias is worth mentioning."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Compare the price of a long-dated option on a stock whose price mean-reverts with one on a stock that does not, holding short-horizon volatility equal.",
+      "options": [
+        "Lower under mean reversion",
+        "Higher under mean reversion",
+        "The same - only short-horizon vol matters",
+        "Higher for calls, lower for puts"
+      ],
+      "correctOption": 0,
+      "explanation": "Lower. What an option cares about is the variance of the TERMINAL price, not the instantaneous volatility. Under a random walk, variance grows linearly with horizon, so the standard deviation grows with sqrt(T). Under mean reversion, moves are systematically pulled back, so variance grows sub-linearly and eventually flattens at the stationary variance. Longer-dated options are therefore worth strictly less. The effect grows with maturity: at very short horizons the two processes are indistinguishable, so short-dated options price nearly identically. This is why commodity and rates options - where mean reversion is real - show a term structure of implied vol that declines with maturity, sometimes called the Samuelson effect.",
+      "technique": "Terminal variance versus instantaneous volatility",
+      "difficultyRationale": "Medium: requires separating the variance of the terminal distribution from the local vol."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "When can hedging an options position actually increase your risk?",
+      "canonicalAnswer": "Whenever the hedge introduces a risk larger than the one it removes: basis risk from hedging with a different instrument, discrete rebalancing of a short-gamma book in a gapping market, or barrier options near the barrier where the required hedge explodes and flips sign.",
+      "explanation": "Several distinct cases, and naming the mechanism matters more than listing them. (1) Basis risk. You hedge a single-name option with an index because the name is illiquid. You have removed market risk and replaced it with the risk that your name diverges from the index - which is exactly what happens in the idiosyncratic events you were worried about. (2) Discrete rebalancing while short gamma. Delta hedging is only a hedge in the limit of continuous trading. If you are short gamma and the market gaps, your hedge is stale in the worst direction, and rebalancing after the move locks in the loss. Hedging more often costs more in transaction costs; hedging less often leaves more gap risk. There is no free choice. (3) Barrier options near the barrier. Delta can be enormous and can flip sign as spot crosses. Following the hedge means trading huge size into a moving market, and getting whipsawed across the barrier repeatedly can cost far more than being unhedged. (4) Hedging the small risk and ignoring the big one. A delta-hedged book is neutral to small spot moves and fully exposed to vega, gamma and jumps - and the delta hedge can create the illusion of being flat. (5) Liquidity. A hedge that requires trading size in stressed markets is not a hedge; it is a promise you cannot keep exactly when it is called.",
+      "technique": "When the hedge instrument's risk exceeds the hedged risk",
+      "difficultyRationale": "Medium: open-ended, so the grade depends on naming mechanisms rather than vague gestures."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you hedge a written put on a stock if you are permitted neither to short the stock nor to use any options on it?",
+      "canonicalAnswer": "Synthesise the short: sell a forward or futures on the stock. Failing that, short a correlated proxy such as a sector ETF or index and accept the basis risk, or short a convertible bond or other instrument with embedded exposure to the name.",
+      "explanation": "A written put has positive delta - you profit if the stock rises - so the hedge requires SHORT stock exposure. The constraint bans the two obvious routes, so you need a synthetic. Best answer: sell a single-stock future or enter a forward to sell the stock. That gives you a clean linear short with no borrow required and no options involved, and single-stock futures exist for exactly this kind of need. Alternatives, in descending order of quality: enter a total-return swap paying the stock's return; short a sector ETF or index future scaled by the stock's beta, accepting basis risk; short a convertible bond or a related listed instrument that embeds the equity. If nothing is available, you are left with dynamic hedging in whatever proxy you can trade, and you should say plainly that this leaves residual risk rather than pretending it is a hedge. The delta itself is not constant - a written put's delta rises toward 1 as the stock falls, so whatever instrument you choose, the hedge has to be rebalanced dynamically, and being short gamma means you rebalance in the losing direction.",
+      "technique": "Synthesising a short position",
+      "difficultyRationale": "Medium: the forward answer is clean; the value is in ranking the alternatives honestly."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You order a 12-inch pizza and it feeds six people. What diameter would you need to feed eight? And why is this a derivatives question?",
+      "canonicalAnswer": "About 13.9 inches - 12 * sqrt(8/6) = 12 * sqrt(4/3) = 13.86. It is a derivatives question because the quantity you care about is a convex (nonlinear) function of the variable you can observe.",
+      "explanation": "Pizza feeds people in proportion to AREA, and area goes with the square of the diameter. So d/12 = sqrt(8/6) = sqrt(1.3333) = 1.1547, giving d = 13.86 inches. Note how small the increase is: a 33% increase in food needs only a 15% increase in diameter. The derivatives point: the naive answer, 12 * 8/6 = 16 inches, assumes the relationship is linear when it is convex. That is the same error as scaling volatility linearly with time instead of with its square root, or estimating the P&L of an option position from delta alone and ignoring gamma. The interviewer is testing whether you instinctively check the functional form before scaling, which is the single most common source of magnitude errors on a trading floor.",
+      "technique": "Checking the functional form before scaling",
+      "difficultyRationale": "Easy: one square root, but the point is whether you catch the nonlinearity unprompted."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You own two pieces of land, both currently worth $1 million: an idle field in Arizona, and a small Florida beach so popular that you charge an entrance fee. Other things equal, which has the higher one-year forward price?",
+      "options": [
+        "The Arizona field",
+        "The Florida beach",
+        "They are equal, since the spot prices are equal",
+        "It depends on the volatility of land prices"
+      ],
+      "correctOption": 0,
+      "explanation": "The Arizona field. The forward price is F = S * e^((r - q)T), where q is the income or convenience yield the asset throws off. The Arizona field pays nothing, so its forward is simply S*e^(rT). The Florida beach pays a continuous stream of entrance fees, which the forward buyer does NOT receive, so its forward price is discounted by that yield and comes out lower. This is the same reason a dividend-paying stock's forward trades below a non-payer's, and why storage costs (a negative yield) push commodity forwards higher while convenience yields push them lower. Volatility is irrelevant - forward pricing is pure cost-of-carry arbitrage and contains no volatility term at all, which is itself the point worth making.",
+      "technique": "Cost of carry and the income yield in forward pricing",
+      "difficultyRationale": "Medium: the cash-flow framing hides a standard formula, and volatility is a deliberate distractor."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have 30 days of representative daily prices. How do you compute a historical volatility estimate to put into Black-Scholes?",
+      "canonicalAnswer": "Take log returns r_i = ln(S_i / S_(i-1)), compute their sample standard deviation, and annualise by multiplying by sqrt(252). Then say out loud that 29 observations is a very noisy estimate.",
+      "explanation": "The procedure: (1) form the 29 continuously compounded returns ln(S_i / S_(i-1)) - log returns, not simple returns, because Black-Scholes assumes log returns are normal and log returns aggregate additively; (2) take the sample standard deviation, dividing by n - 1; (3) annualise by multiplying by sqrt(252) for trading days. On step 2 there is a real choice: over daily horizons the mean return is tiny and estimating it adds more noise than it removes, so many practitioners use sqrt(sum of r_i^2 / n) with the mean set to zero, which is the better small-sample estimator here. The caveats are the answer, though. 29 observations gives a standard error on sigma of roughly sigma/sqrt(2n), about 13% of the estimate - so a 20% vol reading is really 20% plus or minus 2.6%. It is also backward-looking, and equity vol clusters, so a calm month understates the risk of the next one. Practical improvements: use a longer window, or an EWMA / GARCH estimator that weights recent data more, or use higher-frequency data via a range-based estimator like Parkinson which is far more efficient per day. And the honest final point: if liquid options trade on this name, use the implied volatility instead - it is forward-looking and reflects information the price history does not contain.",
+      "technique": "Estimating and annualising realised volatility",
+      "difficultyRationale": "Medium: the mechanics are routine; the estimator noise and the case for implied vol are what distinguish a good answer."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Suppose I know no mathematics at all. Explain why Black-Scholes discounts at the riskless rate rather than at the return investors require on the stock.",
+      "canonicalAnswer": "Because the option can be manufactured out of the stock and cash. A position that is long the option and short the right amount of stock has no market risk at all, so it can only earn the riskless rate - and that pins down the option's price without anyone needing to know what return the stock is expected to earn.",
+      "explanation": "The plain-English version. Suppose I sell you a call. I do not have to sit and hope; I can hold some shares against it and adjust how many I hold as the price moves. If I hold exactly the right number, then whichever way the stock goes over the next instant, my gain on one side cancels my loss on the other. My combined position has no risk. Anything with no risk must earn the riskless rate - if it earned more, everyone would borrow to own it; if less, everyone would sell it and lend. So the option's price is fixed by what it costs me to manufacture it out of stock and borrowing, and that manufacturing cost involves only the interest rate. The striking consequence, which is worth stating: two investors who violently disagree about whether the stock will go up must still agree on the option price. Their disagreement is about the stock, and it is already fully reflected in the stock's price today - which IS an input to the formula. So the expected return has not been ignored; it has been absorbed into S, and adding it again would double-count. The catch is that all of this rests on being able to rebalance continuously, cheaply, in a market that does not gap. Those assumptions are what actually break in practice, not the interest rate.",
+      "technique": "Replication and risk-neutral valuation, stated without formulas",
+      "difficultyRationale": "Medium: the challenge is the no-mathematics constraint - it tests whether you understand it or only recite it."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Are you better off using implied volatility or historical volatility to forecast future volatility?",
+      "options": [
+        "Implied - it is forward-looking and empirically subsumes most of the information in historical estimates",
+        "Historical - it is based on what actually happened rather than on market opinion",
+        "Neither is better; they are equivalent estimators",
+        "Historical, because implied volatility is contaminated by the risk premium and is therefore useless"
+      ],
+      "correctOption": 0,
+      "explanation": "Implied. It is forward-looking and aggregates the views of everyone with money at risk, including information no price history can contain - a pending earnings release, a scheduled central bank meeting, a takeover vote. The empirical work broadly finds that implied vol subsumes the information in historical vol: once you have implied, historical adds little. Two honest qualifications, and you should volunteer them. Implied vol is a biased forecast, running above subsequent realised vol on average, because it embeds a variance risk premium - people pay up for protection. So it is the better forecast of the DIRECTION and TIMING of vol changes while being systematically too high in level. And it requires a liquid options market; for an illiquid name you are back to historical estimates, ideally EWMA or GARCH rather than a plain trailing window. The final option in this list overstates the case: a known bias is correctable and does not make an estimator useless.",
+      "technique": "Information content of implied versus realised volatility",
+      "difficultyRationale": "Medium: the answer is clear, but a strong response names the variance risk premium."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "According to Black-Scholes, which is worth more: a European call struck 10% out of the money, or a European put struck 10% out of the money?",
+      "canonicalAnswer": "The call, for two reasons: in log terms the up-strike is closer than the down-strike, and with r > 0 the risk-neutral drift pushes the distribution toward the call.",
+      "explanation": "Two effects, both favouring the call. First, and this is the one people miss, Black-Scholes works in LOG space. A strike 10% above spot is ln(1.10) = 0.0953 away in logs; a strike 10% below is ln(0.90) = -0.1054 away. The call's strike is genuinely closer to the money on the scale the model uses, so it captures more probability mass. Second, under the risk-neutral measure the stock drifts up at rate r, so the whole distribution is shifted toward the call's strike - and the greater r and T are, the bigger this effect. So the call. The important caveat, which turns a right answer into a good one: this is a statement about the MODEL, not the market. In real equity markets the volatility skew means the 10% out-of-the-money put trades at a materially higher implied vol than the call, and that effect routinely more than reverses the ordering. The question asks 'according to Black-Scholes', and the reason the flat-vol answer differs from the traded one is precisely the skew.",
+      "technique": "Lognormality and asymmetry in log-moneyness",
+      "difficultyRationale": "Medium: the log-space argument is the non-obvious half, and the skew caveat is what makes it complete."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why do theta and gamma have opposite signs? Is that always true?",
+      "canonicalAnswer": "Because the Black-Scholes PDE ties them together: theta + r*S*delta + (1/2)*sigma^2*S^2*gamma = r*V. With r = 0 this reduces to theta = -(1/2)*sigma^2*S^2*gamma, an exact opposition. With r nonzero the interest terms can break it - a deep in-the-money European put has positive gamma AND positive theta.",
+      "explanation": "The formal link is the Black-Scholes PDE itself: theta + r*S*delta + (1/2)*sigma^2*S^2*gamma = r*V. Set r = 0 and it collapses to theta = -(1/2)*sigma^2*S^2*gamma. So in a zero-rate world the two Greeks are exactly proportional with opposite signs, and the constant of proportionality is (1/2)*sigma^2*S^2. The economics is cleaner than the algebra. Gamma is what you get PAID for the underlying actually moving; theta is the RENT you pay for having that exposure. In an arbitrage-free market they must offset, otherwise a delta-hedged position would drift in one direction for free. This is also why the daily P&L of a delta-hedged book is approximately (1/2)*gamma*S^2*((realised move)^2 - sigma^2*dt): you are long realised vol and short implied vol, and theta is the price of the ticket. Now the 'always'. No. Once r is nonzero the r*S*delta and r*V terms enter, and they can dominate. The standard counterexample is a deep in-the-money European put: it is worth close to K*e^(-rT), which RISES toward K as time passes, so theta is positive, while gamma is still positive as it is for any long vanilla. A deep in-the-money European call on a high-dividend stock can do the same. So the rule is a good default, and knowing where it fails is the actual answer.",
+      "technique": "The Black-Scholes PDE as a relation among the Greeks",
+      "difficultyRationale": "Medium: the standard direction is well known; producing a genuine counterexample is what is being tested."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "The riskless rate is zero. A stock is at $100 and in one year will be worth either $130 with probability 0.80 or $70 with probability 0.20. There are no dividends. What is a one-year European call struck at $110 worth?",
+      "canonicalAnswer": "$10.",
+      "explanation": "Build the risk-neutral probability, not the real one. With r = 0 the stock must be a martingale under the pricing measure: 100 = 130q + 70(1 - q). So 100 = 70 + 60q, giving q = 0.5. The call pays max(130 - 110, 0) = 20 in the up state and 0 in the down state, so its value is 0.5 * 20 = $10, with no discounting since r = 0. The 0.80 and 0.20 are a deliberate trap - using them would give 0.8 * 20 = $16, which is wrong. The real-world probabilities do not appear in the price, because the option is replicable: hedge ratio = (20 - 0)/(130 - 70) = 1/3 of a share. Long 1/3 share costs $33.33; borrow $23.33; the portfolio pays 43.33 - 23.33 = $20 up and 23.33 - 23.33 = $0 down, matching the call exactly, at a cost of 33.33 - 23.33 = $10. Same answer, and the replication is what proves the real probabilities cannot matter. Anyone who thinks the stock is worth more than $100 given those odds is making a statement about the stock's expected return, which is already in the $100 price.",
+      "technique": "Risk-neutral pricing in a one-period binomial model",
+      "difficultyRationale": "Medium: mechanically short, but the given real-world probabilities are an active trap."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Are Asian (average-price) options cheaper or more expensive than otherwise identical plain vanilla European options?",
+      "options": [
+        "Cheaper",
+        "More expensive",
+        "The same",
+        "Cheaper for calls, more expensive for puts"
+      ],
+      "correctOption": 0,
+      "explanation": "Cheaper. The payoff depends on an AVERAGE of the underlying rather than a single terminal value, and an average of correlated observations has lower variance than any single one - roughly sigma/sqrt(3) for a continuously averaged arithmetic Asian. Less effective volatility means a lower option price. That is also exactly why they exist: a corporate hedging a year of oil purchases has average exposure, not terminal exposure, so the Asian is both a better hedge and a cheaper one. The averaging additionally makes the payoff far harder to manipulate near expiry, which matters for thinly traded underlyings.",
+      "technique": "Variance reduction through averaging",
+      "difficultyRationale": "Easy: one variance argument, and the hedging rationale is a natural follow-up."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "How many terminal nodes does a recombining binomial tree with N steps have, compared with a non-recombining one?",
+      "options": [
+        "N + 1 versus 2^N",
+        "2^N versus N + 1",
+        "N versus 2N",
+        "N + 1 versus N^2"
+      ],
+      "correctOption": 0,
+      "explanation": "A recombining tree has N + 1 terminal nodes, because an up move followed by a down move lands in the same place as down-then-up - only the NUMBER of up moves matters, not their order. A non-recombining tree has 2^N, one per distinct path. That gap is why recombination is the whole game computationally: at 50 steps it is 51 nodes versus about 10^15. Counting all nodes rather than just terminal ones, a recombining tree has (N+1)(N+2)/2 and a non-recombining one has 2^(N+1) - 1. Recombination requires the up and down factors to be constant (u*d = 1 in the Cox-Ross-Rubinstein setup); state-dependent volatility or certain path dependencies break it, which is exactly when you are forced onto Monte Carlo instead.",
+      "technique": "Why recombination makes trees tractable",
+      "difficultyRationale": "Easy: a counting fact, though the practical significance is the reason it gets asked."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You have information that a foreign stock will certainly rise, and you can legally trade on it. You may trade the stock, a forward, futures, or options - but you can only go long. Interest rates are zero, there are no transaction costs, the exchange rate will not move, and there are no trading restrictions. What do you put on?",
+      "canonicalAnswer": "Go long the forward. With zero rates and no frictions a forward costs nothing to enter, so your position size is not limited by capital at all - the leverage is unbounded, which nothing requiring an up-front payment can match.",
+      "explanation": "Rank the instruments by how much exposure you get per dollar of capital, since your only constraint is capital and your only uncertainty is size, not direction. Buying the stock: $1 buys $1 of exposure. Buying calls: leverage, since a call costs a fraction of spot - but you still pay a premium per unit, and if the rise is smaller than the strike distance the out-of-the-money calls expire worthless. So more leverage than stock, but bounded, and it is a bet on the SIZE of the move as well as the direction. The forward or future: entering costs NOTHING up front when rates are zero and there are no frictions. Zero cost for unlimited notional means infinite leverage, and the payoff is linear in the move, so you do not need any view on magnitude. That dominates everything else. The forward is the cleanest since futures would in reality require margin, which reintroduces a capital constraint - and the question's frictionless assumptions are exactly what make the forward the intended answer. Worth saying out loud that in reality margin, position limits and counterparty credit bound this, and that certainty about direction still does not protect you from being carried out on the path.",
+      "technique": "Ranking instruments by exposure per unit of capital",
+      "difficultyRationale": "Hard: the tempting answer is deep out-of-the-money calls; the zero-cost entry of the forward is the insight."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A call is priced at c today. What is its expected price tomorrow? If your answer is 'higher than c', how do you reconcile that with negative theta?",
+      "canonicalAnswer": "Higher than c under the real-world measure, because a call is a leveraged long position in the stock and inherits a positive expected return. There is no contradiction: theta measures what happens when spot does NOT move, while the expectation includes the stock's drift, which more than offsets it.",
+      "explanation": "Under the real-world measure the stock has expected return mu > r. A call is equivalent to a levered position in the stock: its elasticity is delta * S / c, which is greater than 1, often much greater. So the call's expected return is r + (delta*S/c)*(mu - r), which exceeds mu and can be very large for out-of-the-money options. Hence E[c tomorrow] > c. (Note that under the RISK-NEUTRAL measure the discounted price is a martingale, so the expected price grows at exactly r - the question is about the real world, and the distinction is the point.) Now the reconciliation. Theta is a PARTIAL derivative: the change in value with respect to time HOLDING SPOT FIXED. It says that if the stock does not move at all, you lose money - which is true and is why long options bleed in quiet markets. The expected change over a day is the total derivative, which includes the drift term: dc = theta*dt + delta*E[dS] + (1/2)*gamma*E[dS^2]. The theta term is negative, but delta*mu*S*dt is positive and larger, and the gamma term is positive too. So the expectation is positive while the partial is negative. The everyday version: a long option position loses money on most days and makes a lot on a few, and the average is positive. Negative theta and positive expected return describe different slices of the same distribution.",
+      "technique": "Partial versus total derivative; real-world versus risk-neutral drift",
+      "difficultyRationale": "Hard: it sounds paradoxical, and the resolution requires being precise about what is held fixed."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You sell a one-week at-the-money straddle and delta-hedge it daily. What are you short?",
+      "options": [
+        "Gamma and vega - and long theta",
+        "Delta and gamma",
+        "Theta and vega",
+        "Nothing - the delta hedge makes you flat"
+      ],
+      "correctOption": 0,
+      "explanation": "Short gamma and short vega, long theta. Delta-hedging removes your first-order spot exposure, which is exactly what makes the remaining exposures the point of the trade rather than a side effect. Short gamma means the daily rebalancing forces you to buy after rises and sell after falls - you lose on realised movement. Short vega means a rise in implied vol marks you down immediately. Long theta is the compensation: you collect time decay every day the stock sits still. The position is a bet that realised volatility over the week comes in below the implied vol you sold, and being short-dated and at-the-money maximises both the gamma and the theta, so it is the most concentrated version of that bet available.",
+      "technique": "Greek exposures of a delta-hedged short straddle",
+      "difficultyRationale": "Medium: the sign of each Greek must be right, and 'flat' is a real temptation after delta hedging."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which option has the most vega?",
+      "options": [
+        "A long-dated at-the-money option",
+        "A short-dated at-the-money option",
+        "A long-dated deep in-the-money option",
+        "A short-dated deep out-of-the-money option"
+      ],
+      "correctOption": 0,
+      "explanation": "Long-dated and at-the-money. Vega is S*phi(d1)*sqrt(T), so it scales with sqrt(T) - the opposite of gamma, which blows up as T goes to zero. It is also maximised near the money, where phi(d1) peaks. The intuition is that volatility is a rate per unit of root-time, so it has more time to act on a long-dated option, while a deep in- or out-of-the-money option's fate is largely settled and extra vol barely changes it. This opposite maturity dependence is why desks separate the two risks: you trade short-dated options for gamma and long-dated ones for vega, and a book can easily be long gamma and short vega at the same time.",
+      "technique": "Vega's maturity and moneyness profile",
+      "difficultyRationale": "Medium: easy to confuse with gamma, which has the opposite maturity dependence."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are delta-hedged and long a one-month at-the-money option. Write down, approximately, your profit and loss over a single day, and say what determines whether it is positive.",
+      "canonicalAnswer": "P&L is approximately (1/2)*gamma*S^2*[(dS/S)^2 - sigma^2*dt]. It is positive when the day's realised move is bigger than the implied move you paid for.",
+      "explanation": "Take a Taylor expansion of the option value in time and spot. The delta term is hedged away, leaving dP&L = theta*dt + (1/2)*gamma*(dS)^2. Substituting the PDE relation theta = -(1/2)*sigma^2*S^2*gamma (exact when r = 0) gives dP&L = (1/2)*gamma*S^2*[(dS/S)^2 - sigma^2*dt]. Read it directly: gamma is the size of the bet, and what you are betting on is whether the squared realised return beats the squared implied return over the day. Being long an option and delta-hedged is a long realised-vol, short implied-vol position, day by day. Consequences worth stating. The break-even daily move is sigma*sqrt(dt) - for a 16% vol that is about 1% a day, which is the origin of the desk shorthand 'vol over sixteen is your daily move'. The P&L depends on the SQUARE of the move, so direction is irrelevant and a few large days dominate the total. And gamma is a weight, so the same vol view expressed in short-dated at-the-money options is far more levered than in long-dated ones.",
+      "technique": "Gamma P&L: realised versus implied volatility",
+      "difficultyRationale": "Medium: the formula is standard, but reading it as a vol bet is the substance."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A call and a put on the same non-dividend-paying stock, both struck at $100 with one year left, trade at $8 and $5. The stock is at $100 and the interest rate is zero. Is there an arbitrage, and what exactly do you trade?",
+      "canonicalAnswer": "Yes. Parity requires C - P = S - K*e^(-rT) = 0, so the call is $3 too rich relative to the put. Sell the call, buy the put, buy the stock, and borrow $100. You collect $3 today for a position that is worth exactly zero at expiry.",
+      "explanation": "Check parity: C - P should equal S - K*e^(-rT) = 100 - 100 = 0, so the call and put should trade at the same price. They differ by $3, so the call is rich (or the put is cheap - parity cannot tell you which, only that the combination is mispriced). Trade the combination that is overpriced. The synthetic short stock, being short a call and long a put, pays -max(S-100,0) + max(100-S,0) = 100 - S at expiry. So: sell the call (+$8), buy the put (-$5), buy the stock (-$100), borrow $100 (+$100). Net cash today: +$3. At expiry the stock is worth S, the option combination is worth 100 - S, and you repay the $100 loan - total exactly zero, whatever the stock does. You have collected $3 for a portfolio with no residual exposure. Before declaring victory in an interview, name the reasons this usually is not free money: the options may be American, in which case early assignment on the short call breaks the static hedge; borrow cost or hard-to-borrow status on the stock; an unexpected dividend, which would break the no-dividend assumption; and whether $3 survives the bid-offer on three legs. If none of those bite, it is a genuine arbitrage.",
+      "technique": "Trading the put-call parity violation",
+      "difficultyRationale": "Medium: spotting it is easy; getting all four legs and their signs right is where people slip."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You are delta-hedged and short gamma. What kind of market do you want?",
+      "options": [
+        "A quiet, range-bound one",
+        "A trending one",
+        "A volatile one",
+        "It makes no difference once you are delta-hedged"
+      ],
+      "correctOption": 0,
+      "explanation": "Quiet. Short gamma means your daily P&L is roughly -(1/2)*gamma*S^2*[(realised move)^2 - (implied move)^2], so you profit only when realised movement comes in below what you sold. Every large move costs you, in either direction, because the P&L depends on the square. A trending market is bad for a different reason worth naming: the delta hedge forces you to buy after every rise and sell after every fall, so a persistent trend grinds you down through the rebalancing itself. The one thing you own is theta, and theta only pays if nothing happens.",
+      "technique": "P&L profile of a short-gamma position",
+      "difficultyRationale": "Easy: direct application of the gamma P&L identity."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Your desk reports a one-day 99% VaR of $1 million. What does that mean?",
+      "options": [
+        "The worst you can lose in a day is $1 million",
+        "On about 1% of days you should expect to lose more than $1 million",
+        "You expect to lose $1 million on average across the worst 1% of days",
+        "You will lose $1 million once every hundred days, on average, and never more"
+      ],
+      "correctOption": 1,
+      "explanation": "VaR is a THRESHOLD on the loss distribution, not a bound and not an average. A one-day 99% VaR of $1m says that on roughly one day in a hundred, losses should exceed $1m - and it says nothing whatever about how much worse than $1m they might be. That silence about the tail is VaR's central weakness, and it is exactly what Expected Shortfall fixes: the third answer is the definition of ES, which will always be larger than the corresponding VaR. The first answer is the classic misreading that gets people into trouble, since a distribution with a fat tail can have a modest VaR and catastrophic losses beyond it.",
+      "technique": "Reading a VaR number correctly",
+      "difficultyRationale": "Easy: definitional, but the 'worst case' misreading is remarkably persistent."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which VaR methodology makes no assumption about the shape of the return distribution?",
+      "options": [
+        "Historical simulation",
+        "Parametric (variance-covariance)",
+        "Monte Carlo",
+        "All three are distribution-free"
+      ],
+      "correctOption": 0,
+      "explanation": "Historical simulation. It simply replays actual past return vectors through today's portfolio and reads the relevant percentile off the resulting empirical distribution, so fat tails and skew are captured to whatever extent they occurred in the sample window. Parametric VaR assumes normality (or another named distribution) and reduces to a z-score times the portfolio standard deviation - fast, analytic, and systematically too thin in the tails. Monte Carlo does not assume normal RETURNS but does assume a model you specify to generate them, so it trades one assumption for another - flexible, but only as good as the model. Historical simulation's own weakness is that it is entirely backward-looking: if the window contains no crash, the model does not believe in crashes, and its effective sample size in the far tail is tiny.",
+      "technique": "Comparing the three VaR methodologies",
+      "difficultyRationale": "Easy: a straight comparison, though the Monte Carlo distinction needs care."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A $100 million portfolio has a daily volatility of 1%. Assuming zero mean and normal returns, what is its one-day 99% parametric VaR?",
+      "options": [
+        "$1.00 million",
+        "$1.65 million",
+        "$2.33 million",
+        "$2.58 million"
+      ],
+      "correctOption": 2,
+      "explanation": "$2.33 million. Parametric VaR is z * sigma * V, and the 99% one-tailed normal critical value is 2.326. So 2.326 * 0.01 * 100m = $2.33m. The distractors are the numbers you must not confuse: 1.645 is the 95% one-tailed value, and 2.576 is the 99% TWO-tailed value - wrong here, because VaR only cares about the loss tail. The three you should have memorised are 1.645 for 95%, 2.326 for 99%, and 1.282 for 90%. Worth adding that this figure is almost certainly too low in practice: real daily equity returns are fat-tailed, so the true 1% quantile sits further out than the normal assumption implies.",
+      "technique": "Parametric VaR and one-tailed normal quantiles",
+      "difficultyRationale": "Medium: one multiplication, but only if you pick the right critical value."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "How do you scale a one-day VaR to a ten-day VaR, assuming returns are independent and identically distributed?",
+      "options": [
+        "Multiply by sqrt(10), about 3.16",
+        "Multiply by 10",
+        "Multiply by 10/sqrt(2)",
+        "You cannot - VaR does not scale"
+      ],
+      "correctOption": 0,
+      "explanation": "Multiply by sqrt(10) = 3.16. Under iid returns, variances add across days, so standard deviations - and hence any fixed quantile of a distribution that keeps its shape - scale with the square root of the horizon. This is the square-root-of-time rule that Basel permitted for scaling one-day VaR to the ten-day regulatory horizon. Its assumptions fail in exactly the situations you care about: volatility clusters (so a bad day predicts more bad days, and the true multiple exceeds sqrt(10)), returns are autocorrelated in stressed or illiquid markets, and portfolio composition changes within the window. The rule also requires the distributional shape to be stable across horizons, which aggregation slowly undermines.",
+      "technique": "Square-root-of-time scaling and where it breaks",
+      "difficultyRationale": "Medium: the rule is standard; knowing its failure modes is the differentiator."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is Expected Shortfall preferred to VaR under the FRTB rules? What property does VaR lack?",
+      "canonicalAnswer": "VaR is not subadditive, so it is not a coherent risk measure - it can report that a diversified portfolio is riskier than the sum of its parts. ES is subadditive, and it also describes the size of losses beyond the threshold rather than ignoring them.",
+      "explanation": "Two distinct reasons. First, coherence. A risk measure should satisfy subadditivity: risk(A + B) <= risk(A) + risk(B), so that combining positions never increases measured risk. VaR fails this in general, which has awkward consequences - it can penalise diversification, and it means desk-level VaRs cannot be safely aggregated or used for limit-setting without the whole thing being gameable. ES is subadditive and, together with the other axioms, coherent. Second, tail blindness. VaR is a quantile, so it is completely insensitive to the shape of the distribution beyond it. A book can shorten its tail or lengthen it enormously with no change in VaR at all. That makes VaR manipulable in a specific way: sell deep out-of-the-money options, collect the premium, and the losses land beyond the threshold where VaR cannot see them - your measured risk falls while your actual risk rises. ES averages the losses beyond the threshold, so it responds to exactly that trade. FRTB moved to a 97.5% ES, chosen so that for a normal distribution it corresponds roughly to a 99% VaR, keeping the calibration familiar while fixing the properties. The honest counterpoint, worth raising: ES is harder to backtest, because it is a conditional expectation over rare events rather than a simple exception count, and that was the main argument for keeping VaR.",
+      "technique": "Coherence and subadditivity of risk measures",
+      "difficultyRationale": "Medium: naming subadditivity is the core; the tail-blindness argument makes it complete."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Give a concrete example in which VaR is not subadditive.",
+      "canonicalAnswer": "Two independent bonds, each defaulting with probability 4% and losing $100. At 95% confidence each has VaR of 0, but the portfolio has a 7.84% chance of at least one default, so its 95% VaR is $100 - which exceeds the sum of the individual VaRs.",
+      "explanation": "Take two bonds, independent, each defaulting with probability 4% and losing $100 if it does, otherwise nothing. Individually: the loss exceeds 0 only 4% of the time, and 4% < 5%, so the 95% quantile of each loss distribution is 0. VaR(A) = VaR(B) = 0. Together, holding one of each: P(no default) = 0.96^2 = 0.9216, so P(at least one default) = 7.84% > 5%. The 95% quantile of the portfolio loss therefore sits at $100. So VaR(A + B) = 100 > 0 = VaR(A) + VaR(B). Subadditivity is violated by the maximum possible amount. What went wrong is not the independence - it is that VaR is a quantile of a discontinuous distribution, and combining positions can push probability mass across the threshold. Note that Expected Shortfall behaves correctly here: ES at 95% for each bond alone is 0.04/0.05 * 100 = $80, so the sum is $160, while the portfolio ES is lower. Two lessons for practice: VaR limits set desk by desk can be violated by the aggregate even when every desk complies, and VaR misbehaves worst for portfolios with lumpy, discontinuous payoffs - credit, and short-option books.",
+      "technique": "Constructing a subadditivity counterexample",
+      "difficultyRationale": "Medium: the construction needs default probabilities straddling the confidence level, which is a specific trick."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You backtest a 99% one-day VaR model over 250 trading days and observe 9 exceptions. Are you concerned, and what do you do next?",
+      "canonicalAnswer": "Yes, seriously. You expect 2.5 exceptions; 9 is far into the tail and a Kupiec test rejects the model. Under Basel's traffic-light system 10 or more is the red zone and 9 is deep in yellow, meaning a capital multiplier. Then check whether the exceptions were clustered.",
+      "explanation": "Start with the expected count: 250 * 0.01 = 2.5. Observing 9 is more than triple that. Under the null the count is Binomial(250, 0.01), whose standard deviation is sqrt(250*0.01*0.99) = 1.57, so 9 is over four standard deviations out - the Kupiec proportion-of-failures test rejects comfortably. Basel's traffic light puts 5-9 exceptions in the yellow zone, escalating the capital multiplier, with 10 or more triggering red. So 9 is the worst yellow reading there is. The next step is Christoffersen's independence test. Nine exceptions scattered evenly across the year and nine exceptions falling in a single fortnight are very different diagnoses. Scattered suggests the model is simply calibrated too tight - the volatility estimate is too low, or the tails are too thin because of a normality assumption. Clustered suggests the model fails to respond to changing volatility, which is what a static covariance window does when vol clusters: it is fine in calm regimes and hopelessly late in stressed ones. The fix follows the diagnosis: fat-tailed or historical-simulation quantiles for the first, an EWMA or GARCH volatility estimate for the second. And check the mundane possibilities before rewriting the model - a mismapped position, a stale price series, or a new product not captured by the risk factors will produce exactly this signature.",
+      "technique": "Backtesting VaR: unconditional coverage and independence",
+      "difficultyRationale": "Medium: the count test is straightforward; knowing to test clustering separately is what shows depth."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "The Kupiec test checks whether the number of VaR exceptions is consistent with the stated confidence level. What does the Christoffersen test add?",
+      "options": [
+        "It checks whether exceptions are independent over time rather than clustered",
+        "It checks whether the exceptions are large enough",
+        "It corrects for the finite sample size",
+        "It tests whether the portfolio's composition changed during the window"
+      ],
+      "correctOption": 0,
+      "explanation": "Christoffersen tests INDEPENDENCE - whether an exception today predicts an exception tomorrow. Kupiec only counts exceptions, so it is a test of unconditional coverage and cannot distinguish 5 exceptions spread across the year from 5 in one week. But those mean different things: clustering says the model is not tracking a changing volatility regime, which is the more dangerous failure, because it means the model is most wrong precisely when the losses arrive. Christoffersen's combined test of conditional coverage nests both, checking the rate and the independence together. Neither test looks at the SIZE of the exceptions, which is the structural reason ES is hard to backtest - you would need the magnitudes, not just the indicator.",
+      "technique": "Unconditional coverage versus conditional coverage",
+      "difficultyRationale": "Medium: the distinction between count and clustering is the whole content."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does parametric VaR tend to understate risk badly in a crisis?",
+      "canonicalAnswer": "Four reasons compounding: real returns are fat-tailed so the normal quantile is too close in; correlations move toward 1 in stress so measured diversification evaporates; a trailing covariance estimate is stale when volatility clusters; and the assumed liquidation horizon becomes unachievable.",
+      "explanation": "The failures compound rather than adding. (1) Fat tails. Parametric VaR multiplies a volatility estimate by a normal quantile. Real daily returns have far more extreme observations than a normal - moves that should occur once in a century show up every few years - so the 99% point is further out than 2.33 standard deviations. (2) Correlation breakdown. The covariance matrix is estimated in normal conditions, where diversification looks real. In a crisis correlations converge toward 1 as everything sells off together, so the diversification benefit embedded in the matrix disappears at exactly the moment it was supposed to protect you. Portfolio vol is therefore understated by the most when it matters most. (3) Stale volatility. Volatility clusters, so an equally-weighted trailing window understates risk entering a stressed period and overstates it leaving one. An EWMA or GARCH estimate reacts faster but still lags a genuine regime break. (4) Liquidity and horizon. VaR assumes you can exit within the stated horizon at marked prices. In stress, spreads widen, size disappears, and the one-day assumption becomes fiction - so the loss you actually take exceeds the loss the distribution described even if the distribution was right. On top of these, the whole framework is estimated on historical data, so it cannot price a risk it has never observed. This is why VaR is supplemented rather than trusted: stressed VaR calibrated to a crisis window, explicit scenario analysis, and stress tests that impose correlations rather than estimating them.",
+      "technique": "Failure modes of the variance-covariance approach",
+      "difficultyRationale": "Medium: several partial answers exist; naming correlation breakdown and liquidity is what makes it strong."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A trader systematically sells deep out-of-the-money options and the desk's reported VaR falls. What has happened?",
+      "options": [
+        "VaR is blind to what happens beyond its threshold, so premium income is visible while the tail loss is not",
+        "The options genuinely reduce portfolio risk through diversification",
+        "The VaR model is broken and should be recalibrated",
+        "Nothing unusual - selling options always reduces VaR"
+      ],
+      "correctOption": 0,
+      "explanation": "This is the textbook way to game a VaR limit. Selling deep out-of-the-money options brings in premium every day and produces losses only in scenarios rarer than the VaR confidence level - so those losses land beyond the quantile, where VaR literally cannot see them. Measured risk falls, P&L looks steady and impressive, and the actual exposure is a large short tail. The strategy is sometimes described as picking up nickels in front of a steamroller, and the pattern - smooth returns punctuated by a catastrophic quarter - recurs through the history of blowups. The model is not broken; it is doing exactly what a quantile does, which is why the fix is a different measure. Expected Shortfall averages losses beyond the threshold and therefore charges for precisely this trade, which is one of the main reasons FRTB switched to it. Stress testing and explicit tail-scenario limits do the same job from another direction.",
+      "technique": "How a quantile-based limit can be gamed",
+      "difficultyRationale": "Medium: requires connecting the payoff shape to the measure's blind spot."
     }
   ]
 }

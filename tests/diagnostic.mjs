@@ -193,18 +193,28 @@ const browser = await launch();
   await page.reload({ waitUntil: "networkidle" });
   await configureProvider(page);
 
-  // One bayes-theorem question, so the prereq closure is non-empty.
+  // One bayes-theorem question, so the prereq closure is non-empty — and it has
+  // to be the question Drill actually serves, since the closure is computed from
+  // that question's topics. Emptying the bank is not enough on its own: loadData
+  // backfills any seed question the stored data is missing, so the rest of the
+  // bank comes back on reload. Instead, mark everything else as already seen,
+  // which leaves diag-q as the only fresh question — and pickPractice always
+  // serves a fresh one when any exist.
   await seed(page, `
-    d.questions = [{
+    d.questions.forEach((q) => { q.answerSeen = true; });
+    d.questions.push({
       id: 'diag-q', prompt: 'P(A|B) given...?', topics: ['bayes-theorem'],
       difficulty: 'medium', answerMode: 'free-text', canonicalAnswer: '0.5',
       explanation: 'Apply Bayes.', createdAt: 1, custom: false, origin: 'seed',
-    }];
+    });
     d.attempts = []; d.srs = [];
   `);
 
   await nav(page, /Drill/);
   await page.waitForSelector("textarea");
+  check("the pinned question is the one served",
+    ((await page.locator(".question-prompt").first().textContent()) ?? "").includes("P(A|B)"),
+    (await page.locator(".question-prompt").first().textContent())?.slice(0, 60));
   await page.locator("textarea").first().fill("I multiplied the probabilities.");
   await page.getByRole("button", { name: /Submit/i }).first().click();
   await page.waitForTimeout(1200);
