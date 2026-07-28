@@ -8,7 +8,7 @@ import type { Settings } from "../types";
 const CUSTOM_MODEL = "__custom__";
 
 export function SettingsPage() {
-  const { data, updateSettings, exportData, importData, resetAllData } = useStore();
+  const { data, updateSettings, exportData, importData, resetAllData, backup } = useStore();
 
   const [provider, setProvider] = useState(data.settings.provider);
   const [apiKeys, setApiKeys] = useState<Record<string, string>>(data.settings.apiKeys);
@@ -330,6 +330,68 @@ export function SettingsPage() {
           <div className="banner banner-info" style={{ marginTop: 16, marginBottom: 0 }}>
             <p>{spendNote}</p>
           </div>
+        )}
+      </div>
+
+      <div className="card" style={{ maxWidth: 660 }}>
+        <div className="card-title">Continuous Backup</div>
+        {backup.state === "unsupported" ? (
+          <p className="muted" style={{ marginTop: 0 }}>
+            Auto-saving to a file needs the File System Access API, which this browser doesn't support (currently
+            Chrome, Edge, and other Chromium browsers). Use <strong>Export to JSON</strong> below instead — it
+            works everywhere.
+          </p>
+        ) : (
+          <>
+            <p className="muted" style={{ marginTop: 0 }}>
+              Pick a file once and QuantPrep writes your full progress to it every time anything changes — no
+              remembering to export. The file is a normal JSON backup you can drop straight back in via{" "}
+              <strong>Import from JSON</strong>. Put it in Dropbox or iCloud Drive and it syncs across machines.
+            </p>
+
+            <div className={`backup-status backup-${backup.state}`}>
+              {backup.state === "off" && <span>Not backing up — everything is in this browser only.</span>}
+              {backup.state === "connected" && (
+                <span>
+                  Auto-saving to <strong>{backup.fileName}</strong>
+                  {backup.lastSavedAt
+                    ? ` · last saved ${new Date(backup.lastSavedAt).toLocaleTimeString()}`
+                    : " · waiting for the first change"}
+                </span>
+              )}
+              {backup.state === "reconnect" && (
+                <span>
+                  <strong>{backup.fileName}</strong> is remembered, but the browser needs your permission again
+                  before it can write. Nothing has been backed up this session.
+                </span>
+              )}
+              {backup.state === "error" && (
+                <span>Backup failed: {backup.error ?? "unknown error"}. The file may have been moved or deleted.</span>
+              )}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+              {backup.state === "reconnect" ? (
+                <button className="btn btn-primary" onClick={() => void backup.reconnect()}>
+                  Reconnect {backup.fileName}
+                </button>
+              ) : (
+                <button className="btn btn-primary" onClick={() => void backup.choose()}>
+                  {backup.state === "off" ? "Choose backup file..." : "Change backup file..."}
+                </button>
+              )}
+              {backup.state === "connected" && (
+                <button className="btn btn-secondary" onClick={() => void backup.saveNow()}>
+                  Save now
+                </button>
+              )}
+              {backup.state !== "off" && (
+                <button className="btn btn-secondary" onClick={() => void backup.disconnect()}>
+                  Stop backing up
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
 

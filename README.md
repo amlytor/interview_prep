@@ -48,8 +48,11 @@ nothing leaves your machine at all.
   prerequisites, and rewrites them into the standard note format. You approve
   before anything is saved.
 - **Add Question** — grow your own bank as you work through Zhou, Crack, or your own notes.
+- **Continuous backup** — point QuantPrep at a file on disk once and it
+  auto-saves your whole state there on every change, so your progress isn't
+  trapped in browser storage. Manual JSON export/import is always available too.
 - **Settings** — AI provider and model, per-provider API keys, a personal
-  spend-awareness note, and JSON export/import of all your data.
+  spend-awareness note, backup, and JSON export/import of all your data.
 
 Seed content lives in `src/data/studyNotes.json` (19 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
@@ -147,12 +150,32 @@ you'd have to try, but if a write ever does fail the app logs a clear message to
 the console and keeps running on in-memory state rather than crashing mid-drill
 — export immediately if you see it.
 
-So: use **Settings → Export to JSON** periodically, and **Import from JSON** to
-restore (a new machine, a new browser, after clearing site data). Export/import
-round-trips everything, including your own topics and notes, and old exports
-from earlier schema versions import cleanly through the same migration path.
-Data from the original v1 schema is migrated automatically on first load, and
-the old `quantprep_data_v1` key is left untouched as a rollback backup.
+### Continuous backup (recommended)
+
+**Settings → Continuous Backup → Choose backup file...** picks a file once;
+after that QuantPrep writes your entire state to it every time anything
+changes, debounced so a burst of typing produces one write. No remembering to
+export. The file is an ordinary JSON backup — drop it back in via **Import from
+JSON** on any machine. Put it in Dropbox / iCloud Drive / a git repo and your
+progress follows you.
+
+The browser remembers the file across reloads, and will ask you to re-grant
+write permission after a restart (a one-click **Reconnect**; browsers
+deliberately don't hand out silent, permanent disk access). Until you do, the
+status line says so rather than failing quietly.
+
+This uses the File System Access API, so it needs Chrome, Edge, or another
+Chromium browser. Elsewhere the section explains that and points you at manual
+export, which works everywhere.
+
+### Manual export
+
+**Settings → Export to JSON**, and **Import from JSON** to restore (a new
+machine, a new browser, after clearing site data). Export/import round-trips
+everything, including your own topics and notes, and old exports from earlier
+schema versions import cleanly through the same migration path. Data from the
+original v1 schema is migrated automatically on first load, and the old
+`quantprep_data_v1` key is left untouched as a rollback backup.
 
 ## Project structure
 
@@ -173,6 +196,7 @@ src/
     stats.ts             Hit-rate, streak, weak-area, and time-series aggregation
     providers.ts         The AI provider registry (add a backend by adding a row)
     ai.ts                Grading, quiz generation, note drafting, note classification
+    backup.ts            Continuous auto-save to a file (File System Access API)
   components/            Shared UI: Sidebar, QuestionAttempt, Markdown+KaTeX renderer,
                          MasteryRing, TopicDetail, NewTopic, LearnSession, badges,
                          timer, banners
@@ -203,7 +227,8 @@ npm run test:e2e   # end-to-end suites (build first)
 `npm run test:e2e` drives a real browser against the production build. It starts
 the preview server and a mock OpenAI-compatible provider, then runs three
 suites: `smoke` (provider switching, custom-topic lifecycle), `migration`
-(upgrading old saved data, export/import round-trip), and `provider` (a full
+(upgrading old saved data, export/import round-trip), `provider` (a full
 grading round-trip through a non-Anthropic endpoint, asserting the exact wire
-format). Needs a browser once — `npx playwright install chromium` — or set
+format), and `backup` (auto-save to a real file handle, debouncing, reconnect
+after permission lapses, and the unsupported-browser fallback). Needs a browser once — `npx playwright install chromium` — or set
 `CHROMIUM_PATH` to one you already have.

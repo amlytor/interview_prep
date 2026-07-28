@@ -5,6 +5,8 @@ import type { TopicId } from "./topics";
 import { registerCustomTopics, slugifyTopic } from "./topics";
 import { exportToFile, importFromFile, loadData, saveData } from "./storage";
 import { applyTrickleCredit, scheduleAfterAttempt } from "./srs";
+import { useAutoBackup } from "./backup";
+import type { AutoBackup } from "./backup";
 
 interface RecordAttemptInput {
   questionId: string;
@@ -53,6 +55,9 @@ interface StoreValue {
   exportData: () => void;
   importData: (file: File) => Promise<void>;
   resetAllData: () => void;
+  // Continuous backup to a file on disk. Lives here rather than in the Settings
+  // page so auto-saving keeps running wherever you are in the app.
+  backup: AutoBackup;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -78,6 +83,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveData(data);
   }, [data]);
+
+  const backup = useAutoBackup(data);
 
   const addQuestion = useCallback((q: Omit<Question, "id" | "createdAt" | "custom" | "origin">) => {
     const question: Question = {
@@ -281,6 +288,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       exportData,
       importData,
       resetAllData,
+      backup,
     }),
     [
       data,
@@ -298,6 +306,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       exportData,
       importData,
       resetAllData,
+      backup,
     ],
   );
 

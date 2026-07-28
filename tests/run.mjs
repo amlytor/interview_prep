@@ -38,7 +38,7 @@ try {
   await waitFor("http://localhost:4173/", "preview server");
   await waitFor("http://localhost:4599/__received", "mock provider");
 
-  for (const suite of ["smoke.mjs", "migration.mjs", "provider.mjs"]) {
+  for (const suite of ["smoke.mjs", "migration.mjs", "provider.mjs", "backup.mjs"]) {
     exitCode ||= await run(suite);
   }
 } catch (err) {
