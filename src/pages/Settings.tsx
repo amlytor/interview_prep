@@ -17,6 +17,7 @@ export function SettingsPage() {
     [data.settings.provider]: data.settings.model,
   });
   const [spendNote, setSpendNote] = useState(data.settings.spendNote);
+  const [dailyGoal, setDailyGoal] = useState(data.settings.dailyGoal);
   const [showKey, setShowKey] = useState(false);
   const [testState, setTestState] = useState<"idle" | "testing" | "ok" | "error">("idle");
   const [testMessage, setTestMessage] = useState<string | null>(null);
@@ -80,8 +81,9 @@ export function SettingsPage() {
       apiKeys,
       baseUrls: { ...baseUrls, [provider]: baseUrl.trim() },
       spendNote,
+      dailyGoal,
     }),
-    [provider, model, apiKeys, baseUrls, baseUrl, spendNote],
+    [provider, model, apiKeys, baseUrls, baseUrl, spendNote, dailyGoal],
   );
 
   function setModel(next: string) {
@@ -297,6 +299,29 @@ export function SettingsPage() {
             <p>{testMessage}</p>
           </div>
         )}
+      </div>
+
+      <div className="card" style={{ maxWidth: 660 }}>
+        <div className="card-title">Practice</div>
+        <div className="field" style={{ marginBottom: 8 }}>
+          <label htmlFor="dailyGoal">Daily goal (questions)</label>
+          <input
+            id="dailyGoal"
+            type="number"
+            min={1}
+            max={100}
+            value={dailyGoal}
+            onChange={(e) => setDailyGoal(Math.max(1, Math.floor(Number(e.target.value) || 1)))}
+            style={{ maxWidth: 120 }}
+          />
+          <p className="field-hint">
+            How many questions a day counts as "practiced" for your streak. The streak counts consecutive
+            calendar days that hit this — miss a day and it resets.
+          </p>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={handleSave}>
+          Save Goal
+        </button>
       </div>
 
       <div className="card" style={{ maxWidth: 660 }}>

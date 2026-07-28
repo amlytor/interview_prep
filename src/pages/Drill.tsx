@@ -4,25 +4,21 @@ import { useStore } from "../lib/store";
 import { allTopics } from "../lib/topics";
 import type { TopicId } from "../lib/topics";
 import type { Difficulty, Question } from "../types";
+import { pickPractice } from "../lib/practice";
 import { QuestionAttempt } from "../components/QuestionAttempt";
 import { ApiKeyBanner } from "../components/ApiKeyBanner";
 import type { Page } from "../App";
 
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
 
-function pickRandom(pool: Question[], excludeId: string | null): Question | null {
-  if (pool.length === 0) return null;
-  const candidates = pool.length > 1 ? pool.filter((q) => q.id !== excludeId) : pool;
-  return candidates[Math.floor(Math.random() * candidates.length)];
-}
-
 interface DrillProps {
   onNavigate: (page: Page) => void;
   // Pre-selects a topic filter when arriving via "Drill this topic".
   initialTopicId?: TopicId | null;
+  onDrillTopic: (topicId: TopicId) => void;
 }
 
-export function Drill({ onNavigate, initialTopicId }: DrillProps) {
+export function Drill({ onNavigate, initialTopicId, onDrillTopic }: DrillProps) {
   const { data } = useStore();
   const [topicFilter, setTopicFilter] = useState<TopicId[]>(initialTopicId ? [initialTopicId] : []);
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty[]>([]);
@@ -36,7 +32,7 @@ export function Drill({ onNavigate, initialTopicId }: DrillProps) {
     });
   }, [data.questions, topicFilter, difficultyFilter]);
 
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(() => pickRandom(pool, null));
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(() => pickPractice(pool, data.attempts, null));
 
   function toggleTopic(topic: TopicId) {
     setTopicFilter((prev) => (prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]));
@@ -52,12 +48,12 @@ export function Drill({ onNavigate, initialTopicId }: DrillProps) {
       const diffOk = difficultyFilter.length === 0 || difficultyFilter.includes(q.difficulty);
       return topicOk && diffOk;
     });
-    setCurrentQuestion(pickRandom(filtered, currentQuestion?.id ?? null));
+    setCurrentQuestion(pickPractice(filtered, data.attempts, currentQuestion?.id ?? null));
   }
 
   function nextQuestion() {
     setAttemptCount((c) => c + 1);
-    setCurrentQuestion(pickRandom(pool, currentQuestion?.id ?? null));
+    setCurrentQuestion(pickPractice(pool, data.attempts, currentQuestion?.id ?? null));
   }
 
   return (
@@ -125,6 +121,7 @@ export function Drill({ onNavigate, initialTopicId }: DrillProps) {
           source="drill"
           onDone={nextQuestion}
           onNavigate={onNavigate}
+          onDrillTopic={onDrillTopic}
         />
       )}
     </div>

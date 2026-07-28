@@ -8,8 +8,18 @@
 // OpenRouter, and local runtimes all speak. Everything else in this file is
 // provider-agnostic.
 import Anthropic from "@anthropic-ai/sdk";
-import type { Choice, Difficulty, Question, Settings, StudyNote, Verdict, WhyMissedTag } from "../types";
-import { WHY_MISSED_TAGS } from "../types";
+import type {
+  Choice,
+  Difficulty,
+  Question,
+  QuestionValidation,
+  Settings,
+  StudyNote,
+  Verdict,
+  WhyMissedTag,
+} from "../types";
+import { MISSING_PREREQ_TAG, WHY_MISSED_TAGS } from "../types";
+import type { ChatTurn, MissDiagnosis } from "../types";
 import type { TopicId, TopicInfo } from "./topics";
 import { topicLabel } from "./topics";
 import { providerInfo } from "./providers";
@@ -128,7 +138,42 @@ function openAiErrorMessage(body: unknown): string | null {
   return typeof msg === "string" ? msg : null;
 }
 
-async function completeOpenAiCompatible(cfg: LlmConfig, req: CompletionRequest): Promise<string> {
+interface OpenAiMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+/** Single system + user turn — the shape every non-chat feature uses. */
+function completeOpenAiCompatible(cfg: LlmConfig, req: CompletionRequest): Promise<string> {
+  return postOpenAiChat(
+    cfg,
+    [
+      { role: "system", content: req.system },
+      { role: "user", content: req.user },
+    ],
+    req.maxTokens,
+  );
+}
+
+/** Full turn history, for the diagnostic chat. */
+function completeOpenAiChat(
+  cfg: LlmConfig,
+  system: string,
+  turns: ChatTurn[],
+  maxTokens: number,
+): Promise<string> {
+  return postOpenAiChat(
+    cfg,
+    [{ role: "system", content: system }, ...turns.map((t) => ({ role: t.role, content: t.content }))],
+    maxTokens,
+  );
+}
+
+async function postOpenAiChat(
+  cfg: LlmConfig,
+  messages: OpenAiMessage[],
+  maxTokens: number,
+): Promise<string> {
   if (!cfg.baseUrl) {
     throw new GradingError("No base URL set for this provider. Add one in Settings.");
   }
@@ -146,14 +191,7 @@ async function completeOpenAiCompatible(cfg: LlmConfig, req: CompletionRequest):
     response = await fetch(`${cfg.baseUrl}/chat/completions`, {
       method: "POST",
       headers,
-      body: JSON.stringify({
-        model: cfg.model,
-        max_tokens: req.maxTokens,
-        messages: [
-          { role: "system", content: req.system },
-          { role: "user", content: req.user },
-        ],
-      }),
+      body: JSON.stringify({ model: cfg.model, max_tokens: maxTokens, messages }),
     });
   } catch (err) {
     // fetch() rejects for network failures AND for CORS rejections, which look
@@ -315,6 +353,53 @@ export function aiConfigured(settings: Settings): boolean {
   return true;
 }
 
+// ---------------------------------------------------------------------------
+// Multi-turn chat
+// ---------------------------------------------------------------------------
+
+/**
+ * Continue a conversation. Same provider dispatch as completeText(), but takes
+ * a turn history instead of a single user message — needed for the diagnostic
+ * chat, where the model asks a follow-up before concluding.
+ */
+export async function completeChat(
+  settings: Settings,
+  system: string,
+  turns: ChatTurn[],
+  maxTokens = 2000,
+): Promise<string> {
+  const cfg = llmConfig(settings);
+  if (cfg.keyRequired && !cfg.apiKey) {
+    throw new GradingError(`No API key set for ${cfg.providerLabel}. Add one in Settings.`);
+  }
+  if (turns.length === 0) throw new GradingError("Nothing to send.");
+
+  if (cfg.kind === "anthropic") {
+    const client = new Anthropic({ apiKey: cfg.apiKey, dangerouslyAllowBrowser: true });
+    try {
+      const response = await client.messages.create({
+        model: cfg.model,
+        max_tokens: maxTokens,
+        system,
+        messages: turns.map((t) => ({ role: t.role, content: t.content })),
+      });
+      if (response.stop_reason === "refusal") {
+        throw new GradingError("Claude declined to continue this conversation.");
+      }
+      const textBlock = response.content.find((b) => b.type === "text");
+      if (!textBlock || textBlock.type !== "text") {
+        throw new GradingError("Claude's reply had no text content.");
+      }
+      return textBlock.text;
+    } catch (err) {
+      if (err instanceof GradingError) throw err;
+      throw new GradingError(describeAnthropicError(err, cfg.model), err);
+    }
+  }
+
+  return completeOpenAiChat(cfg, system, turns, maxTokens);
+}
+
 /** Minimal round-trip used by the Settings page "Test connection" button. */
 export async function testConnection(settings: Settings): Promise<string> {
   const cfg = llmConfig(settings);
@@ -420,20 +505,35 @@ export type QuizDraft = Omit<Question, "id" | "createdAt">;
 
 const CHOICE_IDS = ["a", "b", "c", "d", "e", "f"];
 
-const QUIZ_SYSTEM_PROMPT = `You are an expert quant interview coach writing practice questions from a student's study note.
+const QUIZ_SYSTEM_PROMPT = `You are writing practice questions for a candidate preparing for quantitative trading and quant-research interviews (Jane Street, SIG, Optiver, and the Zhou / Crack / Heard on the Street problem books). These are NOT undergraduate textbook exercises. Calibrate to the anchors below — they are real questions from this student's own bank, and your output must sit at the same level.
+
+EASY — one step, one named technique, no trap:
+  "You flip a fair coin repeatedly until you get heads. What is the expected number of flips?"
+
+MEDIUM — two steps, or one technique applied in a setup that hides it:
+  "A bag has 3 red and 2 blue balls. You draw without replacement until you get a blue ball. What is the expected draw number of the first blue?"
+
+HARD — multi-step reasoning, non-obvious choice of technique, or a classic trap:
+  "You flip a fair coin repeatedly. What is the expected number of flips to get two heads in a row?"  (state recursion)
+  "Shuffle a 52-card deck and flip through it. What is the expected number of times an Ace appears immediately before a King?"  (indicator variables + linearity)
+  "Five pirates ranked by seniority split 100 gold coins. The senior proposes a split; if at least half accept it passes, otherwise he is thrown overboard and the next proposes. All are perfectly rational and prefer more gold, then survival. What does the senior propose?"  (backward induction)
+
+WHAT "HARD" DOES NOT MEAN. Do not make a question harder by using bigger numbers, more balls, more dice, or uglier fractions. Arithmetic weight is not difficulty. A question is hard because the candidate must realise WHICH technique applies, chain two or more ideas together, or avoid a trap that makes the wrong answer look right. If your "hard" question is the easy anchor with 47 in place of 2, you have failed this instruction.
 
 Produce a mix of:
-(a) 2-3 simple recall/fact questions checking the note's key formulas, triggers, and pitfalls (difficulty "easy", a mix of multiple_choice and free_text), and
-(b) 2-3 understanding/application questions that apply the technique to a NOVEL setup not appearing in the note or in the "existing questions" list (difficulty "medium" or "hard", mostly free_text).
+(a) 2-3 recall questions checking the note's key formulas, triggers, and pitfalls (difficulty "easy", a mix of multiple_choice and free_text), and
+(b) 2-3 application questions that apply the technique to a NOVEL setup appearing neither in the note nor in the "existing questions" list (difficulty "medium" or "hard", mostly free_text).
 
 Rules:
 - Do NOT duplicate or trivially reword the existing questions you are shown.
 - Every question must be self-contained and precisely worded, with a single defensible answer.
 - canonicalAnswer is the short final answer; explanation is a complete worked solution teaching the technique.
-- For multiple_choice: 4 plausible options, exactly one correct, correctOption is the 0-based index into options.
+- For multiple_choice: 4 plausible options, exactly one correct, correctOption is the 0-based index into options. Wrong options should be the answers a candidate would actually reach by making a specific mistake — not random numbers.
+- "technique" names the method the question tests (e.g. "linearity of expectation via indicator variables", "condition on the first step").
+- "difficultyRationale" is ONE sentence on why it sits at the claimed difficulty. If you cannot name a reason beyond "the numbers are larger", the question is not hard — lower the label or write a better question.
 
 Respond with ONLY a JSON object — no markdown code fences, no prose — of exactly this shape:
-{"questions": [{"difficulty": "easy" | "medium" | "hard", "type": "free_text" | "multiple_choice", "prompt": "...", "canonicalAnswer": "...", "explanation": "...", "options": ["..."], "correctOption": 0}]}
+{"questions": [{"difficulty": "easy" | "medium" | "hard", "type": "free_text" | "multiple_choice", "prompt": "...", "canonicalAnswer": "...", "explanation": "...", "technique": "...", "difficultyRationale": "...", "options": ["..."], "correctOption": 0}]}
 (options/correctOption only on multiple_choice questions.)`;
 
 function validateQuizPayload(raw: string, note: StudyNote): QuizDraft[] {
@@ -490,6 +590,10 @@ function validateQuizPayload(raw: string, note: StudyNote): QuizDraft[] {
       explanation: q.explanation.trim(),
       custom: true,
       origin: "ai",
+      answerSeen: false,
+      technique: typeof q.technique === "string" ? q.technique.trim() : undefined,
+      difficultyRationale:
+        typeof q.difficultyRationale === "string" ? q.difficultyRationale.trim() : undefined,
     };
 
     if (type === "multiple_choice") {
@@ -524,6 +628,8 @@ export async function generateQuizFromNote(
   note: StudyNote,
   existingPrompts: string[],
   settings: Settings,
+  /** Difficulty steer from the student's own ratings; null when there's no signal. */
+  calibrationInstruction: string | null = null,
 ): Promise<QuizDraft[]> {
   const existing =
     existingPrompts.length > 0
@@ -533,7 +639,9 @@ export async function generateQuizFromNote(
       : "There are no existing questions for this topic yet.";
 
   const raw = await completeText(settings, {
-    system: QUIZ_SYSTEM_PROMPT,
+    system: calibrationInstruction
+      ? `${QUIZ_SYSTEM_PROMPT}\n\n${calibrationInstruction}`
+      : QUIZ_SYSTEM_PROMPT,
     user: `Topic: ${note.title}
 
 Study note (markdown):
@@ -548,6 +656,101 @@ ${existing}`,
 // ---------------------------------------------------------------------------
 // Note drafting
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Validation pass: check generated questions before they reach the staging queue
+// ---------------------------------------------------------------------------
+
+const VALIDATE_SYSTEM_PROMPT = `You are checking draft interview questions for defects BEFORE a student sees them. The student intends to approve clean questions WITHOUT reading the answer, so a broken question would silently poison their practice. Be strict.
+
+Flag a question as "suspect" if any of these hold:
+- The problem is ambiguous, or admits more than one defensible answer.
+- The stated answer is wrong, or does not follow from the problem.
+- The problem is missing information needed to solve it.
+- The explanation contradicts the stated answer.
+- It does not actually test the topic it is filed under.
+- For multiple choice: more than one option is defensible, or none is correct.
+- It is a near-duplicate of another question in the same batch.
+
+Do NOT flag a question merely for being easy, terse, or unoriginal — those are not defects. Judge correctness and well-formedness only.
+
+Respond with ONLY a JSON object — no markdown code fences, no prose — of exactly this shape:
+{"results": [{"index": 0, "status": "clean" | "suspect", "issues": ["..."]}]}
+Include one entry per question, in the order given, with "index" matching the number shown. "issues" is empty for clean questions and states the specific defect otherwise.`;
+
+/**
+ * Check a batch of drafts for well-formedness in ONE call (not one per
+ * question — cheaper, and it also lets the model spot duplicates within the
+ * batch). Never throws: a failed validation pass marks everything "suspect"
+ * so the user inspects rather than bulk-approving unchecked content.
+ */
+export async function validateQuizDrafts(
+  drafts: QuizDraft[],
+  settings: Settings,
+): Promise<QuestionValidation[]> {
+  const unchecked = (reason: string): QuestionValidation[] =>
+    drafts.map(() => ({ status: "suspect" as const, issues: [reason] }));
+
+  const listing = drafts
+    .map((d, i) => {
+      const choices = d.choices
+        ? `\nOptions: ${d.choices.map((c) => `${c.id}) ${c.text}`).join("  ")}\nCorrect option: ${d.correctChoiceId}`
+        : "";
+      return `[${i}] Topic: ${topicLabel(d.topics[0] ?? "")} · claimed difficulty: ${d.difficulty}
+Question: ${d.prompt}${choices}
+Stated answer: ${d.canonicalAnswer}
+Explanation: ${d.explanation}`;
+    })
+    .join("\n\n---\n\n");
+
+  let raw: string;
+  try {
+    raw = await completeText(settings, {
+      system: VALIDATE_SYSTEM_PROMPT,
+      user: `Check these ${drafts.length} draft questions:\n\n${listing}`,
+      maxTokens: 4000,
+    });
+  } catch (err) {
+    return unchecked(
+      `Couldn't run the automatic check (${err instanceof Error ? err.message : "unknown error"}) — review this one yourself.`,
+    );
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripFences(raw));
+  } catch {
+    return unchecked("The automatic check returned malformed output — review this one yourself.");
+  }
+
+  const results = (parsed as Record<string, unknown>)?.results;
+  if (!Array.isArray(results)) {
+    return unchecked("The automatic check returned an unexpected shape — review this one yourself.");
+  }
+
+  // Map by declared index rather than position: a model that drops or reorders
+  // an entry must not shift everyone else's verdict onto the wrong question.
+  const byIndex = new Map<number, QuestionValidation>();
+  for (const entry of results) {
+    if (!entry || typeof entry !== "object") continue;
+    const e = entry as Record<string, unknown>;
+    if (typeof e.index !== "number" || !Number.isInteger(e.index)) continue;
+    const issues = Array.isArray(e.issues)
+      ? e.issues.filter((i): i is string => typeof i === "string" && i.trim().length > 0)
+      : [];
+    // Anything not explicitly cleared is treated as suspect — fail closed.
+    const status: QuestionValidation["status"] =
+      e.status === "clean" && issues.length === 0 ? "clean" : "suspect";
+    byIndex.set(e.index, {
+      status,
+      issues: status === "suspect" && issues.length === 0 ? ["Flagged without a stated reason."] : issues,
+    });
+  }
+
+  return drafts.map(
+    (_, i) => byIndex.get(i) ?? { status: "suspect", issues: ["The automatic check skipped this one."] },
+  );
+}
 
 const NOTE_SECTIONS = `## Core idea
 ## When to use (trigger)
@@ -592,6 +795,144 @@ There is no note for this topic yet — write one from scratch.`;
     throw new GradingError("The model returned an implausibly short note draft. Retry.");
   }
   return body;
+}
+
+// ---------------------------------------------------------------------------
+// Miss diagnosis: work out WHY a question was missed, then classify it
+// ---------------------------------------------------------------------------
+
+/** Everything the diagnostic chat needs to know about the miss. */
+export interface DiagnosisContext {
+  prompt: string;
+  userAnswer: string;
+  canonicalAnswer: string;
+  explanation: string;
+  topicLabels: string[];
+  verdict: Verdict;
+  /** id — label for every topic upstream in the prereq graph, with mastery. */
+  prereqOptions: { id: TopicId; label: string; mastery: number }[];
+}
+
+function diagnosisSystemPrompt(ctx: DiagnosisContext): string {
+  const prereqs =
+    ctx.prereqOptions.length > 0
+      ? ctx.prereqOptions
+          .map((p) => `  ${p.id} — ${p.label} (their mastery: ${p.mastery}/100)`)
+          .join("\n")
+      : "  (this topic has no prerequisites in their graph)";
+
+  return `You are a quant interview coach helping a student work out WHY they just got a question wrong. You are diagnosing, not re-teaching.
+
+Your goal is the ROOT CAUSE, which is often not the obvious one. A student who says "I forgot the formula" may actually not have recognised which technique applied; one who made an arithmetic slip may have set the problem up in a needlessly messy way. Probe for that.
+
+How to run this conversation:
+- Open by naming what you can already see went wrong, in one or two sentences, and ask ONE specific question that would distinguish between the likely causes. Do not ask a vague "what do you think went wrong?".
+- Ask at most two or three questions in total. This is a quick diagnosis, not a tutorial.
+- When you have enough to name the root cause, say so plainly and stop asking questions.
+- Be direct and brief. No preamble, no praise, no restating their answer back to them.
+
+The question they missed:
+${ctx.prompt}
+
+Their answer:
+${ctx.userAnswer || "(left blank)"}
+
+The correct answer: ${ctx.canonicalAnswer}
+Worked solution: ${ctx.explanation}
+Topic(s): ${ctx.topicLabels.join(", ")}
+Grader's verdict: ${ctx.verdict}
+
+Prerequisite topics in their knowledge graph (the ONLY topics you may cite as a missing prerequisite):
+${prereqs}
+
+If the real cause is that a prerequisite isn't solid, say which one by name and why you think so — their mastery scores above are evidence, but their own words matter more.`;
+}
+
+/** Opening turn: the model speaks first, so seed it with an instruction. */
+export const DIAGNOSIS_OPENER = "Why do you think I got this wrong? Start the diagnosis.";
+
+export async function diagnosisReply(
+  ctx: DiagnosisContext,
+  turns: ChatTurn[],
+  settings: Settings,
+): Promise<string> {
+  return completeChat(settings, diagnosisSystemPrompt(ctx), turns, 1500);
+}
+
+function concludeSystemPrompt(ctx: DiagnosisContext): string {
+  const ids = ctx.prereqOptions.map((p) => p.id);
+  return `You are summarising a completed diagnostic conversation between a quant interview coach and a student about a question the student got wrong.
+
+Classify the root cause into EXACTLY ONE of these tags, verbatim:
+${WHY_MISSED_TAGS.map((t) => `- "${t}"`).join("\n")}
+
+Guidance on the tags:
+- "missing prerequisite knowledge" means the gap is in a topic UNDERNEATH this one — they could not have got this right without first shoring that up. Use it only when the conversation actually supports that, not as a catch-all.
+- "knew technique but couldn't execute" means they picked the right method and then broke down applying it.
+- "didn't recognize technique" means they never identified which method applied.
+
+If and only if you choose "missing prerequisite knowledge", list the responsible topics in "recommendedTopics", using ids from this exact list and no others:
+${ids.length > 0 ? ids.map((i) => `  ${i}`).join("\n") : "  (none available — in that case return an empty list)"}
+For every other tag, "recommendedTopics" must be an empty list.
+
+"summary" is ONE sentence, written to the student in the second person, naming the specific cause — not a generic platitude. Good: "You conditioned on the wrong event because you read 'at least one' as 'exactly one'." Bad: "You made a mistake on this problem."
+
+Respond with ONLY a JSON object — no markdown code fences, no prose — of exactly this shape:
+{"tag": "<one tag, verbatim>", "summary": "...", "recommendedTopics": ["<id>", ...]}`;
+}
+
+/**
+ * Turn a finished conversation into a stored diagnosis. Recommended topics are
+ * validated against the prerequisite closure, so the model cannot invent a
+ * topic or point at one that isn't genuinely upstream.
+ */
+export async function concludeDiagnosis(
+  ctx: DiagnosisContext,
+  turns: ChatTurn[],
+  settings: Settings,
+): Promise<Pick<MissDiagnosis, "tag" | "summary" | "recommendedTopics">> {
+  const transcript = turns
+    .map((t) => `${t.role === "user" ? "Student" : "Coach"}: ${t.content}`)
+    .join("\n\n");
+
+  const raw = await completeText(settings, {
+    system: concludeSystemPrompt(ctx),
+    user: `The question: ${ctx.prompt}\n\nTheir answer: ${ctx.userAnswer || "(left blank)"}\n\nThe conversation:\n\n${transcript}`,
+    maxTokens: 2000,
+  });
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripFences(raw));
+  } catch {
+    throw new GradingError("The diagnosis summary wasn't valid JSON. Retry.\n\nRaw response:\n" + raw);
+  }
+  if (typeof parsed !== "object" || parsed === null) {
+    throw new GradingError("Unexpected diagnosis shape. Retry.");
+  }
+  const obj = parsed as Record<string, unknown>;
+
+  const tag = WHY_MISSED_TAGS.find((t) => t === obj.tag);
+  if (!tag) {
+    throw new GradingError(
+      `The diagnosis came back with an unrecognised reason (${JSON.stringify(obj.tag)}). Retry.`,
+    );
+  }
+
+  const allowed = new Set(ctx.prereqOptions.map((p) => p.id));
+  const recommendedTopics =
+    tag === MISSING_PREREQ_TAG && Array.isArray(obj.recommendedTopics)
+      ? (obj.recommendedTopics.filter(
+          (t): t is TopicId => typeof t === "string" && allowed.has(t),
+        ) as TopicId[])
+      : [];
+
+  const summary =
+    typeof obj.summary === "string" && obj.summary.trim().length > 0
+      ? obj.summary.trim()
+      : "No summary was returned — edit this to describe what went wrong.";
+
+  return { tag, summary, recommendedTopics };
 }
 
 // ---------------------------------------------------------------------------

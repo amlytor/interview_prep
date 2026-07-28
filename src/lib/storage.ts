@@ -13,7 +13,13 @@ import { DEFAULT_PROVIDER_ID, DEFAULT_MODEL, LEGACY_PROVIDER_ID } from "./provid
 // deliberately does NOT change — bumping it would strand existing progress.
 const STORAGE_KEY_V2 = "quantprep_data_v2";
 const STORAGE_KEY_V1 = "quantprep_data_v1";
-const CURRENT_VERSION = 2;
+// v3 adds miss diagnoses, difficulty ratings, answer-seen tracking and the
+// daily goal. Every v3 field is optional, so the upgrade is pure backfill —
+// hence the storage KEY stays at _v2. The version field below is what tracks
+// the schema; renaming the key would strand existing progress.
+const CURRENT_VERSION = 3;
+
+export const DEFAULT_DAILY_GOAL = 1;
 
 function defaultSettings(): Settings {
   return {
@@ -22,6 +28,7 @@ function defaultSettings(): Settings {
     apiKeys: {},
     baseUrls: {},
     spendNote: "",
+    dailyGoal: DEFAULT_DAILY_GOAL,
   };
 }
 
@@ -50,6 +57,11 @@ function normalizeSettings(raw: unknown): Settings {
     apiKeys,
     baseUrls: { ...(s.baseUrls ?? {}) },
     spendNote: typeof s.spendNote === "string" ? s.spendNote : "",
+    // v3: a goal below 1 would make every day qualify, including empty ones.
+    dailyGoal:
+      typeof s.dailyGoal === "number" && Number.isFinite(s.dailyGoal) && s.dailyGoal >= 1
+        ? Math.floor(s.dailyGoal)
+        : defaults.dailyGoal,
   };
 }
 

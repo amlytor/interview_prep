@@ -5,6 +5,7 @@ import { isDue } from "../lib/srs";
 import type { AppData, Question } from "../types";
 import { QuestionAttempt } from "../components/QuestionAttempt";
 import { ApiKeyBanner } from "../components/ApiKeyBanner";
+import type { TopicId } from "../lib/topics";
 import type { Page } from "../App";
 
 function buildDueQueue(data: AppData): Question[] {
@@ -15,7 +16,12 @@ function buildDueQueue(data: AppData): Question[] {
     .filter((q): q is Question => q !== undefined);
 }
 
-export function Review({ onNavigate }: { onNavigate: (page: Page) => void }) {
+interface ReviewProps {
+  onNavigate: (page: Page) => void;
+  onDrillTopic: (topicId: TopicId) => void;
+}
+
+export function Review({ onNavigate, onDrillTopic }: ReviewProps) {
   const { data } = useStore();
   const [queue, setQueue] = useState<Question[]>(() => buildDueQueue(data));
   const [index, setIndex] = useState(0);
@@ -73,6 +79,7 @@ export function Review({ onNavigate }: { onNavigate: (page: Page) => void }) {
             source="review"
             onDone={() => setIndex((i) => i + 1)}
             onNavigate={onNavigate}
+            onDrillTopic={onDrillTopic}
           />
         </>
       )}

@@ -9,6 +9,12 @@ export interface Choice {
   text: string;
 }
 
+/** Automated well-formedness check run on generated questions before staging. */
+export interface QuestionValidation {
+  status: "clean" | "suspect";
+  issues: string[]; // empty when clean
+}
+
 export interface Question {
   id: string;
   prompt: string;
@@ -24,16 +30,28 @@ export interface Question {
   createdAt: number;
   custom: boolean; // true if user-authored or AI-generated, false if seeded
   origin?: "seed" | "user" | "ai"; // where the question came from (v2)
+  // --- v3 ---
+  // True once the answer has been shown — revealed while reviewing a staged
+  // question, or seen after answering it. Practice prefers unseen questions, so
+  // a generated question isn't burned before you ever attempt it.
+  answerSeen?: boolean;
+  technique?: string; // the named method the question tests (generator-declared)
+  difficultyRationale?: string; // why it sits at its claimed difficulty
+  validation?: QuestionValidation;
 }
 
 export type Verdict = "correct" | "partial" | "incorrect";
 
+// The miss-reason taxonomy. The first five keep their original v2 string values
+// so existing attempts need no migration; "missing prerequisite knowledge" is
+// the v3 addition, and is the only tag that carries recommended topics.
 export type WhyMissedTag =
   | "didn't recognize technique"
   | "misread problem"
   | "knew technique but couldn't execute"
   | "arithmetic slip"
-  | "ran out of time";
+  | "ran out of time"
+  | "missing prerequisite knowledge";
 
 export const WHY_MISSED_TAGS: WhyMissedTag[] = [
   "didn't recognize technique",
@@ -41,7 +59,53 @@ export const WHY_MISSED_TAGS: WhyMissedTag[] = [
   "knew technique but couldn't execute",
   "arithmetic slip",
   "ran out of time",
+  "missing prerequisite knowledge",
 ];
+
+export const MISSING_PREREQ_TAG: WhyMissedTag = "missing prerequisite knowledge";
+
+/** Short, actionable advice shown alongside a tag on the dashboard. */
+export const WHY_MISSED_ADVICE: Record<WhyMissedTag, string> = {
+  "didn't recognize technique":
+    "Pattern recognition, not ability. Re-read the 'when to use' section of the relevant notes and drill mixed topics so you practise choosing the method, not just applying it.",
+  "misread problem":
+    "Slow down on the setup. Restate the question in your own words before solving — in an interview, say it out loud.",
+  "knew technique but couldn't execute":
+    "The idea is there but the mechanics aren't automatic. Work the same technique several times in a row rather than moving on.",
+  "arithmetic slip":
+    "Technique is fine — this is care, not knowledge. Keep numbers symbolic as long as possible and sanity-check the magnitude at the end.",
+  "ran out of time":
+    "Get to a defensible approach faster. Say the framework first, then compute; a stated method beats a silent computation.",
+  "missing prerequisite knowledge":
+    "The gap is underneath this topic. Spend an hour on the prerequisite before grinding more questions here.",
+};
+
+/** One turn of the diagnostic chat. */
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+  at: number;
+}
+
+/**
+ * The conclusion of a diagnostic chat about a missed question — the considered
+ * root cause, as opposed to the grader's snap `whyMissed` guess.
+ */
+export interface MissDiagnosis {
+  tag: WhyMissedTag;
+  summary: string; // one line, AI-written, user-editable
+  // Only meaningful for "missing prerequisite knowledge". Always validated
+  // against the question's actual prerequisite closure before being stored.
+  recommendedTopics: TopicId[];
+  transcript: ChatTurn[];
+  concludedAt: number;
+  edited: boolean; // true once the user rewrites the summary
+}
+
+/** One-tap post-answer difficulty feedback. */
+export type DifficultyRating = "too-easy" | "about-right" | "too-hard";
+
+export const DIFFICULTY_RATINGS: DifficultyRating[] = ["too-easy", "about-right", "too-hard"];
 
 export type AttemptSource = "drill" | "review" | "mock" | "learn";
 
@@ -54,8 +118,18 @@ export interface Attempt {
   userAnswer: string;
   verdict: Verdict;
   feedback?: string; // AI Socratic feedback / explanation
+  // The grader's snap judgement at grading time. Kept separate from `diagnosis`
+  // so a later chat never rewrites what the grader originally thought.
   whyMissed?: WhyMissedTag;
   timeSpentSec?: number;
+  // --- v3 ---
+  diagnosis?: MissDiagnosis; // set by the "why did I get this wrong?" chat
+  difficultyRating?: DifficultyRating;
+}
+
+/** The authoritative miss reason: the chat's conclusion, else the grader's guess. */
+export function missReason(attempt: Attempt): WhyMissedTag | null {
+  return attempt.diagnosis?.tag ?? attempt.whyMissed ?? null;
 }
 
 // Spaced-repetition state, one entry per question that has ever been missed.
@@ -91,6 +165,8 @@ export interface Settings {
   // Per-provider base-URL overrides (regional endpoints, self-hosted gateways).
   baseUrls: Record<string, string>;
   spendNote: string; // free-text reminder the user sets for themselves
+  // Attempts needed on a calendar day for it to count toward the daily streak.
+  dailyGoal: number;
   /** @deprecated v2 field — migrated into apiKeys.anthropic on load. */
   apiKey?: string;
 }

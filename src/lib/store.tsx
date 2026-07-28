@@ -1,6 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { AppData, Attempt, AttemptSource, Question, Settings, StudyNote, Verdict } from "../types";
+import type {
+  AppData,
+  Attempt,
+  AttemptSource,
+  DifficultyRating,
+  MissDiagnosis,
+  Question,
+  Settings,
+  StudyNote,
+  Verdict,
+} from "../types";
 import type { TopicId } from "./topics";
 import { registerCustomTopics, slugifyTopic } from "./topics";
 import { exportToFile, importFromFile, loadData, saveData } from "./storage";
@@ -39,6 +49,12 @@ interface StoreValue {
   addQuestion: (q: Omit<Question, "id" | "createdAt" | "custom" | "origin">) => Question;
   recordAttempt: (input: RecordAttemptInput) => Attempt;
   updateSettings: (partial: Partial<Settings>) => void;
+  /** One-tap post-answer difficulty feedback; feeds per-topic calibration. */
+  rateAttemptDifficulty: (attemptId: string, rating: DifficultyRating) => void;
+  /** Store the conclusion of a "why did I get this wrong?" chat. */
+  saveDiagnosis: (attemptId: string, diagnosis: MissDiagnosis) => void;
+  /** Rewrite a diagnosis summary in your own words. */
+  updateDiagnosisSummary: (attemptId: string, summary: string) => void;
   // Custom topics: a user-created topic is a study note plus a taxonomy entry,
   // so it flows through mastery, the knowledge tree, and Learn mode unchanged.
   addCustomTopic: (input: NewTopicInput) => TopicId;
@@ -50,8 +66,13 @@ interface StoreValue {
   // AI question staging: generated questions sit in stagedQuestions until
   // explicitly approved into the live bank (or rejected).
   stageQuestions: (drafts: NewQuestion[]) => void;
-  approveStagedQuestion: (id: string) => void;
+  /** Approve one staged question. `revealed` records whether you read the answer. */
+  approveStagedQuestion: (id: string, revealed?: boolean) => void;
+  /** Bulk-approve every staged question that passed validation, unseen. */
+  approveCleanStaged: (topicId?: TopicId) => number;
   rejectStagedQuestion: (id: string) => void;
+  /** Mark a staged question's answer as read, so approving it can't claim otherwise. */
+  markStagedRevealed: (id: string) => void;
   exportData: () => void;
   importData: (file: File) => Promise<void>;
   resetAllData: () => void;
@@ -140,7 +161,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      return { ...prev, attempts: [...prev.attempts, attempt], srs };
+      // 3. Answering a question shows its explanation, so it is no longer
+      //    unseen — it stops being preferred as fresh practice from here on.
+      const questions = prev.questions.map((q) =>
+        q.id === input.questionId && !q.answerSeen ? { ...q, answerSeen: true } : q,
+      );
+
+      return { ...prev, questions, attempts: [...prev.attempts, attempt], srs };
     });
 
     return attempt;
@@ -148,6 +175,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateSettings = useCallback((partial: Partial<Settings>) => {
     setData((prev) => ({ ...prev, settings: { ...prev.settings, ...partial } }));
+  }, []);
+
+  const rateAttemptDifficulty = useCallback((attemptId: string, rating: DifficultyRating) => {
+    setData((prev) => ({
+      ...prev,
+      attempts: prev.attempts.map((a) => (a.id === attemptId ? { ...a, difficultyRating: rating } : a)),
+    }));
+  }, []);
+
+  const saveDiagnosis = useCallback((attemptId: string, diagnosis: MissDiagnosis) => {
+    setData((prev) => ({
+      ...prev,
+      attempts: prev.attempts.map((a) => (a.id === attemptId ? { ...a, diagnosis } : a)),
+    }));
+  }, []);
+
+  const updateDiagnosisSummary = useCallback((attemptId: string, summary: string) => {
+    setData((prev) => ({
+      ...prev,
+      attempts: prev.attempts.map((a) =>
+        a.id === attemptId && a.diagnosis
+          ? { ...a, diagnosis: { ...a.diagnosis, summary: summary.trim(), edited: true } }
+          : a,
+      ),
+    }));
   }, []);
 
   const addCustomTopic = useCallback(
@@ -237,16 +289,54 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setData((prev) => ({ ...prev, stagedQuestions: [...prev.stagedQuestions, ...staged] }));
   }, []);
 
-  const approveStagedQuestion = useCallback((id: string) => {
+  const approveStagedQuestion = useCallback((id: string, revealed = false) => {
     setData((prev) => {
       const staged = prev.stagedQuestions.find((q) => q.id === id);
       if (!staged) return prev;
       return {
         ...prev,
         stagedQuestions: prev.stagedQuestions.filter((q) => q.id !== id),
-        questions: [...prev.questions, { ...staged, id: makeId() }],
+        questions: [
+          ...prev.questions,
+          // answerSeen sticks if it was already revealed during review — you
+          // can't un-see an answer by clicking "bank it unseen" afterwards.
+          { ...staged, id: makeId(), answerSeen: staged.answerSeen || revealed },
+        ],
       };
     });
+  }, []);
+
+  /** Approve everything the validation pass cleared, without revealing answers. */
+  const approveCleanStaged = useCallback(
+    (topicId?: TopicId): number => {
+      const clean = data.stagedQuestions.filter(
+        (q) =>
+          q.validation?.status === "clean" &&
+          !q.answerSeen &&
+          (topicId === undefined || q.topics.includes(topicId)),
+      );
+      if (clean.length === 0) return 0;
+      const ids = new Set(clean.map((q) => q.id));
+      setData((prev) => ({
+        ...prev,
+        stagedQuestions: prev.stagedQuestions.filter((q) => !ids.has(q.id)),
+        questions: [
+          ...prev.questions,
+          ...prev.stagedQuestions
+            .filter((q) => ids.has(q.id))
+            .map((q) => ({ ...q, id: makeId(), answerSeen: false })),
+        ],
+      }));
+      return clean.length;
+    },
+    [data.stagedQuestions],
+  );
+
+  const markStagedRevealed = useCallback((id: string) => {
+    setData((prev) => ({
+      ...prev,
+      stagedQuestions: prev.stagedQuestions.map((q) => (q.id === id ? { ...q, answerSeen: true } : q)),
+    }));
   }, []);
 
   const rejectStagedQuestion = useCallback((id: string) => {
@@ -277,6 +367,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addQuestion,
       recordAttempt,
       updateSettings,
+      rateAttemptDifficulty,
+      saveDiagnosis,
+      updateDiagnosisSummary,
       addCustomTopic,
       deleteCustomTopic,
       setTopicPrereqs,
@@ -284,7 +377,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setNoteBody,
       stageQuestions,
       approveStagedQuestion,
+      approveCleanStaged,
       rejectStagedQuestion,
+      markStagedRevealed,
       exportData,
       importData,
       resetAllData,
@@ -295,6 +390,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addQuestion,
       recordAttempt,
       updateSettings,
+      rateAttemptDifficulty,
+      saveDiagnosis,
+      updateDiagnosisSummary,
       addCustomTopic,
       deleteCustomTopic,
       setTopicPrereqs,
@@ -302,7 +400,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setNoteBody,
       stageQuestions,
       approveStagedQuestion,
+      approveCleanStaged,
       rejectStagedQuestion,
+      markStagedRevealed,
       exportData,
       importData,
       resetAllData,

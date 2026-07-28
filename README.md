@@ -13,8 +13,17 @@ nothing leaves your machine at all.
 
 ## Features
 
-- **Dashboard** — overall hit rate, current streak, hit rate by topic, weak-area
-  callouts, due-for-review count, and a 30-day performance chart.
+- **Dashboard** — overall hit rate, daily streak, hit rate by topic, weak-area
+  callouts, due-for-review count, and a 30-day performance chart. Plus two
+  diagnostic panels: **"Why I'm getting things wrong"** (a pivot of your miss
+  reasons, filterable by topic) and **"Recommended focus"**, which fires when
+  your misses cluster on one cause, when a prerequisite keeps coming up in your
+  diagnoses, or when you're grinding a topic whose prerequisite isn't solid —
+  the point being to catch when the real gap is *underneath* what you're
+  drilling. Every recommendation links straight to that topic's Learn or Drill.
+- **Daily streak** — consecutive calendar days on which you hit your practice
+  goal (configurable, default 1 question). Shows current and longest, and tells
+  you whether today still needs doing.
 - **Topics (knowledge tree)** — every topic laid out in prerequisite tiers with a
   mastery ring per topic (0–100, recency-weighted). Proficiency (60+ over 3+
   attempts) unlocks dependent topics; 80+ over 5+ attempts counts as mastered.
@@ -27,11 +36,30 @@ nothing leaves your machine at all.
 - **Learn mode** — read the note, then immediately get a 3–5 question practice
   burst and see your mastery score move. Minimal reading, fast into recall.
 - **AI quiz generation** — generate recall + application questions from any
-  note. Output is schema-validated and lands in a staging queue; nothing enters
-  the live bank (or your mastery signal) until you approve it.
+  note. The prompt is anchored to real questions from the seed bank rather than
+  the words "easy/medium/hard", and explicitly rules out faking difficulty with
+  bigger numbers; each question declares the technique it tests and why it sits
+  at its claimed level. A second API pass checks the batch for ambiguity, wrong
+  answers, and duplicates before anything is staged.
+- **Staging without spoilers** — reading a generated question's answer burns it
+  as practice, so the staging screen shows only the prompt, topic, and claimed
+  difficulty. Clean questions can be bulk-approved **unseen**; revealing an
+  answer is a deliberate click and is recorded, so practice can prefer the
+  questions you haven't spoiled.
 - **Drill** — one question at a time, filterable by topic and difficulty. Free-text
-  answers are graded by Claude (correct / partial / incorrect, Socratic feedback,
+  answers are graded by AI (correct / partial / incorrect, Socratic feedback,
   and a "why missed" tag); multiple-choice is graded instantly and locally.
+  Questions whose answers you haven't seen are served first.
+- **"Why did I get this wrong?"** — after a miss, a short diagnostic chat works
+  out the *root cause*, which is often not the obvious one. It classifies into a
+  fixed taxonomy (didn't recognise the technique / misread / couldn't execute /
+  arithmetic slip / ran out of time / **missing prerequisite knowledge**) and,
+  for that last one, names *which* upstream topic is weak — constrained to the
+  actual prerequisite graph, so it can't invent a topic. The tag, a one-line
+  summary you can rewrite, and the full transcript are kept on the attempt.
+- **Difficulty feedback** — one tap after each answer (too easy / about right /
+  too hard). That builds a per-topic calibration which is fed back into
+  generation, so "too easy" three times means the next batch is pitched harder.
 - **Review** — serves only questions you've previously missed, on a spaced-repetition
   schedule (2 → 7 → 21 days, resets on a repeat miss). Correct answers on advanced
   topics trickle partial review credit down to their direct prerequisites, so you
@@ -132,7 +160,8 @@ self-imposed cap — check actual usage in your provider's console
 ## Your data
 
 All progress — question bank, attempt history, spaced-repetition schedule, study
-notes, your own topics, staged AI questions, and settings — lives in your
+notes, your own topics, staged AI questions, miss diagnoses, difficulty
+ratings, and settings — lives in your
 browser's `localStorage` under the key `quantprep_data_v2`. It is written on
 every change, synchronously, so there is no "unsaved work" to lose.
 
@@ -203,7 +232,11 @@ src/
     mastery.ts           Mastery scores, unlock rules, tiers, next-topic recommendation
     stats.ts             Hit-rate, streak, weak-area, and time-series aggregation
     providers.ts         The AI provider registry (add a backend by adding a row)
-    ai.ts                Grading, quiz generation, note drafting, note classification
+    ai.ts                Grading, quiz generation + validation, note drafting,
+                         note classification, miss diagnosis (chat + conclusion)
+    calibration.ts       Per-topic difficulty calibration from your own ratings
+    diagnostics.ts       Miss-reason pivot + "recommended focus" rules
+    practice.ts          Question selection (prefers answers you haven't seen)
     backup.ts            Continuous auto-save to a file (File System Access API)
   components/            Shared UI: Sidebar, QuestionAttempt, Markdown+KaTeX renderer,
                          MasteryRing, TopicDetail, NewTopic, LearnSession, badges,
@@ -237,6 +270,8 @@ the preview server and a mock OpenAI-compatible provider, then runs three
 suites: `smoke` (provider switching, custom-topic lifecycle), `migration`
 (upgrading old saved data, export/import round-trip), `provider` (a full
 grading round-trip through a non-Anthropic endpoint, asserting the exact wire
-format), and `backup` (auto-save to a real file handle, debouncing, reconnect
-after permission lapses, and the unsupported-browser fallback). Needs a browser once — `npx playwright install chromium` — or set
+format), `backup` (auto-save to a real file handle, debouncing, reconnect after
+permission lapses, and the unsupported-browser fallback), and `diagnostic` (the
+streak's day arithmetic, spoiler-free staging, calibration reaching the
+generation prompt, and the diagnosis chat end to end). Needs a browser once — `npx playwright install chromium` — or set
 `CHROMIUM_PATH` to one you already have.

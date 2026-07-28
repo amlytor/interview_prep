@@ -1,22 +1,46 @@
 import { useRef, useState } from "react";
-import type { Attempt, AttemptSource, Question, Verdict, WhyMissedTag } from "../types";
+import type {
+  Attempt,
+  AttemptSource,
+  DifficultyRating,
+  Question,
+  Verdict,
+  WhyMissedTag,
+} from "../types";
+import { DIFFICULTY_RATINGS } from "../types";
 import { DifficultyBadge, TopicBadges, VerdictBadge } from "./QuestionMeta";
 import { ErrorBanner } from "./ApiKeyBanner";
 import { gradeFreeTextAnswer, aiConfigured, GradingError } from "../lib/ai";
 import { useStore } from "../lib/store";
+import { DiagnosisChat } from "./DiagnosisChat";
+import type { TopicId } from "../lib/topics";
 import type { Page } from "../App";
 
 type Phase = "answering" | "grading" | "graded";
+
+const RATING_LABELS: Record<DifficultyRating, string> = {
+  "too-easy": "Too easy",
+  "about-right": "About right",
+  "too-hard": "Too hard",
+};
 
 interface QuestionAttemptProps {
   question: Question;
   source: AttemptSource;
   onDone: (attempt: Attempt) => void;
   onNavigate: (page: Page) => void;
+  // Lets a diagnosed prerequisite gap link straight into drilling that topic.
+  onDrillTopic?: (topicId: TopicId) => void;
 }
 
-export function QuestionAttempt({ question, source, onDone, onNavigate }: QuestionAttemptProps) {
-  const { data, recordAttempt } = useStore();
+export function QuestionAttempt({
+  question,
+  source,
+  onDone,
+  onNavigate,
+  onDrillTopic,
+}: QuestionAttemptProps) {
+  const { data, recordAttempt, rateAttemptDifficulty } = useStore();
   const [phase, setPhase] = useState<Phase>("answering");
   const [freeText, setFreeText] = useState("");
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
@@ -26,6 +50,8 @@ export function QuestionAttempt({ question, source, onDone, onNavigate }: Questi
     whyMissed: WhyMissedTag | null;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rating, setRating] = useState<DifficultyRating | null>(null);
+  const [showDiagnosis, setShowDiagnosis] = useState(false);
   const startRef = useRef(Date.now());
   const lastAttemptRef = useRef<Attempt | null>(null);
 
@@ -163,7 +189,52 @@ export function QuestionAttempt({ question, source, onDone, onNavigate }: Questi
             </p>
             <p style={{ marginBottom: 0 }}>{question.explanation}</p>
           </div>
-          <div style={{ marginTop: 18, display: "flex", gap: 10 }}>
+          {/* One tap, no form — anything heavier and it wouldn't get used,
+              and unused ratings are worse than none for calibration. */}
+          <div className="rating-row">
+            <span className="rating-label">How was that?</span>
+            {DIFFICULTY_RATINGS.map((r) => (
+              <button
+                key={r}
+                type="button"
+                className={`rating-option${rating === r ? " selected" : ""}`}
+                onClick={() => {
+                  if (!lastAttemptRef.current) return;
+                  setRating(r);
+                  rateAttemptDifficulty(lastAttemptRef.current.id, r);
+                }}
+              >
+                {RATING_LABELS[r]}
+              </button>
+            ))}
+            {rating && <span className="rating-ack">thanks — future questions will adjust</span>}
+          </div>
+
+          {/* Diagnosis is offered on anything short of a clean correct — a
+              "partial" is exactly the case where the root cause is unclear. */}
+          {result.verdict !== "correct" && lastAttemptRef.current && (
+            <>
+              {showDiagnosis ? (
+                <DiagnosisChat
+                  question={question}
+                  attempt={lastAttemptRef.current}
+                  onClose={() => setShowDiagnosis(false)}
+                  onNavigate={onNavigate}
+                  onDrillTopic={onDrillTopic}
+                />
+              ) : (
+                <button
+                  className="btn btn-secondary"
+                  style={{ marginTop: 14 }}
+                  onClick={() => setShowDiagnosis(true)}
+                >
+                  Discuss / figure out why →
+                </button>
+              )}
+            </>
+          )}
+
+          <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
               className="btn btn-primary"
               onClick={() => lastAttemptRef.current && onDone(lastAttemptRef.current)}

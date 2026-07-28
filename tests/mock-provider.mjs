@@ -48,10 +48,63 @@ const server = createServer((req, res) => {
       return;
     }
 
-    const isGrading = parsed.messages[0].content.includes("grading a candidate's free-text answer");
-    const content = isGrading
-      ? JSON.stringify({ verdict: "partial", feedback: "Right setup, arithmetic slipped.", whyMissed: "arithmetic slip" })
-      : "OK";
+    const system = parsed.messages[0].content;
+    let content = "OK";
+
+    if (system.includes("grading a candidate's free-text answer")) {
+      content = JSON.stringify({
+        verdict: "incorrect",
+        feedback: "You conditioned on the wrong event.",
+        whyMissed: "misread problem",
+      });
+    } else if (system.includes("checking draft interview questions")) {
+      // Clear the first draft, flag the rest, so both staging paths are covered.
+      const count = (system.match(/\[\d+\]/g) ?? []).length ||
+        (parsed.messages[1].content.match(/^\[\d+\]/gm) ?? []).length;
+      content = JSON.stringify({
+        results: Array.from({ length: count }, (_, i) =>
+          i === 0
+            ? { index: i, status: "clean", issues: [] }
+            : { index: i, status: "suspect", issues: ["Two options are defensible."] },
+        ),
+      });
+    } else if (system.includes("summarising a completed diagnostic conversation")) {
+      // Include one invalid id to prove the prereq-closure filter works.
+      content = JSON.stringify({
+        tag: "missing prerequisite knowledge",
+        summary: "You treated the events as independent when they aren't.",
+        recommendedTopics: ["conditional-probability", "not-a-real-topic"],
+      });
+    } else if (system.includes("helping a student work out WHY")) {
+      const turns = parsed.messages.filter((m) => m.role === "user").length;
+      content =
+        turns > 1
+          ? "That confirms it — the gap is conditional probability, not this technique."
+          : "You wrote P(A and B) = P(A)P(B). Were you assuming independence, or was that a slip?";
+    } else if (system.includes("writing practice questions")) {
+      content = JSON.stringify({
+        questions: [
+          {
+            difficulty: "hard",
+            type: "free_text",
+            prompt: "Expected number of flips to see HTH?",
+            canonicalAnswer: "10",
+            explanation: "Set up state recursion.",
+            technique: "condition on the first step",
+            difficultyRationale: "Requires building and solving a state machine.",
+          },
+          {
+            difficulty: "medium",
+            type: "free_text",
+            prompt: "A second generated question.",
+            canonicalAnswer: "2",
+            explanation: "Linearity.",
+            technique: "linearity of expectation",
+            difficultyRationale: "Two steps.",
+          },
+        ],
+      });
+    }
 
     res.writeHead(200, { ...cors, "content-type": "application/json" });
     res.end(JSON.stringify({ choices: [{ message: { role: "assistant", content } }] }));

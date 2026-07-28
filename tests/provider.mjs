@@ -58,15 +58,15 @@ check("submitted a free-text answer for grading", true);
 await page.waitForTimeout(1500);
 const bodyText = (await page.locator("body").textContent()) ?? "";
 check("verdict from the mock provider is rendered",
-  bodyText.includes("Right setup, arithmetic slipped."),
-  bodyText.includes("arithmetic slip") ? "feedback + whyMissed shown" : "not found");
+  bodyText.includes("You conditioned on the wrong event."),
+  bodyText.includes("misread problem") ? "feedback + whyMissed shown" : "not found");
 
 const attempt = await page.evaluate(() => {
   const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
   return d.attempts[d.attempts.length - 1];
 });
-check("attempt recorded with the parsed verdict", attempt?.verdict === "partial", `verdict=${attempt?.verdict}`);
-check("whyMissed tag parsed and stored", attempt?.whyMissed === "arithmetic slip", `whyMissed=${attempt?.whyMissed}`);
+check("attempt recorded with the parsed verdict", attempt?.verdict === "incorrect", `verdict=${attempt?.verdict}`);
+check("whyMissed tag parsed and stored", attempt?.whyMissed === "misread problem", `whyMissed=${attempt?.whyMissed}`);
 
 // --- Verify the wire format the app actually sent ---------------------------
 const sent = await (await fetch("http://localhost:4599/__received")).json();

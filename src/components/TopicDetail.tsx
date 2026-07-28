@@ -13,10 +13,23 @@ import {
   blockingPrereqs,
   topicsWithQuestionsSet,
 } from "../lib/mastery";
-import { generateNoteMarkdown, generateQuizFromNote, aiConfigured, GradingError } from "../lib/ai";
+import {
+  generateNoteMarkdown,
+  generateQuizFromNote,
+  validateQuizDrafts,
+  aiConfigured,
+  GradingError,
+} from "../lib/ai";
 import { Markdown } from "./Markdown";
 import { MasteryRing } from "./MasteryRing";
 import { LearnSession } from "./LearnSession";
+import { orderForPractice } from "../lib/practice";
+import {
+  computeAllCalibration,
+  calibrationFor,
+  calibrationInstruction,
+  describeCalibration,
+} from "../lib/calibration";
 import { DifficultyBadge } from "./QuestionMeta";
 import { ErrorBanner } from "./ApiKeyBanner";
 import type { Page } from "../App";
@@ -29,13 +42,7 @@ const LEARN_SESSION_SIZE = 5;
  */
 function pickLearnQuestions(questions: Question[], attempts: Attempt[], topicId: TopicId): Question[] {
   const topicQuestions = questions.filter((q) => q.topics.includes(topicId));
-  const lastAttempt = new Map<string, number>();
-  for (const a of attempts) {
-    lastAttempt.set(a.questionId, Math.max(lastAttempt.get(a.questionId) ?? 0, a.timestamp));
-  }
-  return [...topicQuestions]
-    .sort((a, b) => (lastAttempt.get(a.id) ?? 0) - (lastAttempt.get(b.id) ?? 0))
-    .slice(0, LEARN_SESSION_SIZE);
+  return orderForPractice(topicQuestions, attempts).slice(0, LEARN_SESSION_SIZE);
 }
 
 interface TopicDetailProps {
@@ -52,6 +59,8 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
     stageQuestions,
     approveStagedQuestion,
     rejectStagedQuestion,
+    approveCleanStaged,
+    markStagedRevealed,
     setTopicPrereqs,
     deleteCustomTopic,
     topicDeletionImpact,
@@ -62,16 +71,24 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
 
   const [mode, setMode] = useState<"view" | "edit" | "learn">("view");
   const [editingPrereqs, setEditingPrereqs] = useState(false);
+  // Reveals are per-session UI state as well as persisted, so the card updates
+  // instantly without waiting on a store round-trip.
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [editorText, setEditorText] = useState("");
   const [learnQuestions, setLearnQuestions] = useState<Question[]>([]);
   const [aiDraft, setAiDraft] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"quiz" | "note" | null>(null);
+  const [busy, setBusy] = useState<"quiz" | "validating" | "note" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<(() => void) | null>(null);
 
   const mastery = useMemo(() => computeAllMastery(data.questions, data.attempts), [data.questions, data.attempts]);
   const notesById = useMemo(() => new Map(data.studyNotes.map((n) => [n.topicId, n])), [data.studyNotes]);
   const withQuestions = useMemo(() => topicsWithQuestionsSet(data.questions), [data.questions]);
+  const allCalibration = useMemo(
+    () => computeAllCalibration(data.questions, data.attempts),
+    [data.questions, data.attempts],
+  );
 
   if (!note) return null; // one note per topic is guaranteed by seeding
 
@@ -80,6 +97,10 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
   const blockers = blockingPrereqs(topicId, notesById, mastery, withQuestions);
   const topicQuestions = data.questions.filter((q) => q.topics.includes(topicId));
   const staged = data.stagedQuestions.filter((q) => q.topics.includes(topicId));
+  const cleanStaged = staged.filter((q) => q.validation?.status === "clean" && !q.answerSeen);
+  const suspectStaged = staged.filter((q) => q.validation?.status === "suspect");
+  const calib = calibrationFor(topicId, allCalibration);
+  const calibration = calibrationInstruction(calib);
 
   function runAction(action: () => Promise<void>) {
     setError(null);
@@ -94,8 +115,14 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
     runAction(async () => {
       setBusy("quiz");
       const existingPrompts = [...topicQuestions, ...staged].map((q) => q.prompt);
-      const drafts = await generateQuizFromNote(note!, existingPrompts, data.settings);
-      stageQuestions(drafts);
+      const drafts = await generateQuizFromNote(note!, existingPrompts, data.settings, calibration);
+      // Check the batch before staging, so clean ones can be banked unseen.
+      // validateQuizDrafts never throws — a failed check marks everything
+      // suspect, which means "inspect it yourself", not "silently trust it".
+      setBusy("validating");
+      const verdicts = await validateQuizDrafts(drafts, data.settings);
+      stageQuestions(drafts.map((d, i) => ({ ...d, validation: verdicts[i] })));
+      setBulkMessage(null);
       setBusy(null);
     });
   }
@@ -203,6 +230,9 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
               {topicQuestions.length === 1 ? "" : "s"} in bank
               {note.prereqs.length > 0 && <> · builds on {note.prereqs.map(topicLabel).join(", ")}</>}
             </div>
+            <div className={`calibration-line calibration-${calib.verdict}`}>
+              Difficulty: {describeCalibration(calib)}
+            </div>
             <div className="tag-row" style={{ marginTop: 8 }}>
               {m.mastered && <span className="badge badge-verdict-correct">Mastered</span>}
               {!m.mastered && m.proficient && <span className="badge badge-topic">Proficient</span>}
@@ -250,43 +280,118 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
         </div>
       )}
 
-      {/* ---------- Staging queue: AI questions awaiting approval ---------- */}
+      {/* ---------- Staging queue: AI questions awaiting approval ----------
+          Answers stay hidden by default. Reading one burns the question as
+          practice, so "bank it unseen" is the primary action and revealing is
+          the deliberate exception. */}
       {staged.length > 0 && (
         <div className="card" style={{ marginBottom: 16 }}>
-          <div className="card-title">Staged AI questions — review before they enter the bank ({staged.length})</div>
-          {staged.map((q) => (
-            <div key={q.id} className="staged-item">
-              <div className="question-meta-row" style={{ marginBottom: 6 }}>
-                <DifficultyBadge difficulty={q.difficulty} />
-                <span className="badge badge-topic">{q.answerMode}</span>
-              </div>
-              <p style={{ fontWeight: 600, marginBottom: 6 }}>{q.prompt}</p>
-              {q.choices && (
-                <ul style={{ margin: "0 0 8px", paddingLeft: 20, fontSize: 13.5 }}>
-                  {q.choices.map((c) => (
-                    <li key={c.id} style={{ color: c.id === q.correctChoiceId ? "var(--green-600)" : undefined }}>
-                      {c.text}
-                      {c.id === q.correctChoiceId && " ✓"}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <p style={{ fontSize: 13.5, marginBottom: 4 }}>
-                <strong>Answer:</strong> {q.canonicalAnswer}
-              </p>
-              <p className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
-                {q.explanation}
-              </p>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button className="btn btn-primary btn-sm" onClick={() => approveStagedQuestion(q.id)}>
-                  Approve → add to bank
-                </button>
-                <button className="btn btn-danger btn-sm" onClick={() => rejectStagedQuestion(q.id)}>
-                  Reject
-                </button>
-              </div>
+          <div className="card-title">Staged questions — {staged.length} awaiting approval</div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+            {cleanStaged.length > 0 && (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => {
+                  const n = approveCleanStaged(topicId);
+                  setBulkMessage(`Banked ${n} checked question${n === 1 ? "" : "s"} unseen.`);
+                }}
+              >
+                Bank {cleanStaged.length} checked question{cleanStaged.length === 1 ? "" : "s"} unseen
+              </button>
+            )}
+            <span className="muted" style={{ fontSize: 13 }}>
+              {suspectStaged.length > 0
+                ? `${suspectStaged.length} flagged for a look.`
+                : cleanStaged.length > 0
+                  ? "All passed the automatic check."
+                  : "Not automatically checked — review before approving."}
+            </span>
+          </div>
+          {bulkMessage && (
+            <div className="banner banner-success" style={{ marginBottom: 14 }}>
+              <p>{bulkMessage}</p>
             </div>
-          ))}
+          )}
+
+          {staged.map((q) => {
+            const revealed = revealedIds.has(q.id) || q.answerSeen === true;
+            const flagged = q.validation?.status === "suspect";
+            return (
+              <div key={q.id} className={`staged-item${flagged ? " flagged" : ""}`}>
+                <div className="question-meta-row" style={{ marginBottom: 6 }}>
+                  <DifficultyBadge difficulty={q.difficulty} />
+                  <span className="badge badge-topic">{q.answerMode}</span>
+                  {q.validation?.status === "clean" && <span className="badge badge-verdict-correct">checked</span>}
+                  {flagged && <span className="badge badge-verdict-partial">needs a look</span>}
+                  {revealed && <span className="badge badge-topic">answer seen</span>}
+                </div>
+
+                <p style={{ fontWeight: 600, marginBottom: 6 }}>{q.prompt}</p>
+                {q.technique && (
+                  <p className="muted" style={{ fontSize: 13, marginBottom: 6 }}>
+                    Tests: {q.technique}
+                    {q.difficultyRationale && ` · ${q.difficultyRationale}`}
+                  </p>
+                )}
+
+                {flagged && q.validation!.issues.length > 0 && (
+                  <ul className="staged-issues">
+                    {q.validation!.issues.map((issue, i) => (
+                      <li key={i}>{issue}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Multiple-choice options are part of the question, but which
+                    one is correct is not — so options show, the tick doesn't. */}
+                {q.choices && (
+                  <ul style={{ margin: "0 0 8px", paddingLeft: 20, fontSize: 13.5 }}>
+                    {q.choices.map((c) => (
+                      <li key={c.id} style={{ color: revealed && c.id === q.correctChoiceId ? "var(--green-600)" : undefined }}>
+                        {c.text}
+                        {revealed && c.id === q.correctChoiceId && " ✓"}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {revealed ? (
+                  <div className="staged-answer">
+                    <p style={{ fontSize: 13.5, marginBottom: 4 }}>
+                      <strong>Answer:</strong> {q.canonicalAnswer}
+                    </p>
+                    <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
+                      {q.explanation}
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    style={{ marginBottom: 10 }}
+                    onClick={() => {
+                      setRevealedIds((prev) => new Set(prev).add(q.id));
+                      markStagedRevealed(q.id);
+                    }}
+                  >
+                    Reveal answer (burns it as practice)
+                  </button>
+                )}
+
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => approveStagedQuestion(q.id, revealed)}
+                  >
+                    {revealed ? "Add to bank" : "Bank it unseen"}
+                  </button>
+                  <button className="btn btn-danger btn-sm" onClick={() => rejectStagedQuestion(q.id)}>
+                    Reject
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -332,9 +437,9 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
                   onClick={handleGenerateQuiz}
                   disabled={busy !== null || !aiConfigured(data.settings)}
                 >
-                  {busy === "quiz" ? (
+                  {busy === "quiz" || busy === "validating" ? (
                     <>
-                      <span className="spinner" /> Generating...
+                      <span className="spinner" /> {busy === "quiz" ? "Generating..." : "Checking..."}
                     </>
                   ) : (
                     "Generate quiz from note"

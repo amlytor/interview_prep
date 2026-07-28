@@ -5,6 +5,7 @@ import { DifficultyBadge, TopicBadges, VerdictBadge } from "../components/Questi
 import { TimerBadge } from "../components/Timer";
 import { ApiKeyBanner, ErrorBanner } from "../components/ApiKeyBanner";
 import { gradeFreeTextAnswer, aiConfigured, GradingError } from "../lib/ai";
+import { orderForPractice } from "../lib/practice";
 import type { Page } from "../App";
 
 type MockPhase = "setup" | "in-progress" | "grading" | "debrief";
@@ -20,15 +21,6 @@ interface ResultState {
   whyMissed: WhyMissedTag | null;
   error: string | null;
   recorded: boolean;
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
 }
 
 function formatTime(totalSeconds: number): string {
@@ -63,7 +55,8 @@ export function Mock({ onNavigate }: { onNavigate: (page: Page) => void }) {
 
   function startMock() {
     const n = Math.max(1, Math.min(numQuestions, data.questions.length));
-    const picked = shuffle(data.questions).slice(0, n);
+    // Prefer questions whose answers haven't been spoiled.
+    const picked = orderForPractice(data.questions, data.attempts).slice(0, n);
     setQuestions(picked);
     setAnswers(picked.map(() => ({ userAnswer: "", selectedChoiceId: null })));
     setElapsedByIndex(picked.map(() => 0));

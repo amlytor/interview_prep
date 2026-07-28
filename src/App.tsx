@@ -35,10 +35,10 @@ function App() {
     <div className="app-shell">
       <Sidebar current={page} onNavigate={navigate} dueCount={dueCount} />
       <main className="main-content">
-        {page === "dashboard" && <Dashboard onNavigate={navigate} />}
+        {page === "dashboard" && <Dashboard onNavigate={navigate} onDrillTopic={drillTopic} />}
         {page === "topics" && <Topics onNavigate={navigate} onDrillTopic={drillTopic} />}
-        {page === "drill" && <Drill onNavigate={navigate} initialTopicId={drillTopicId} />}
-        {page === "review" && <Review onNavigate={navigate} />}
+        {page === "drill" && <Drill onNavigate={navigate} initialTopicId={drillTopicId} onDrillTopic={drillTopic} />}
+        {page === "review" && <Review onNavigate={navigate} onDrillTopic={drillTopic} />}
         {page === "mock" && <Mock onNavigate={navigate} />}
         {page === "add" && <AddQuestion onNavigate={navigate} />}
         {page === "settings" && <SettingsPage />}

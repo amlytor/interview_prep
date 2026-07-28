@@ -128,6 +128,33 @@ export function blockingPrereqs(
     .map((p) => topicLabel(p));
 }
 
+/**
+ * Every topic upstream of `topicIds` in the prerequisite DAG, transitively.
+ *
+ * This is what constrains the diagnostic chat: the model may only name a
+ * "missing prerequisite" from inside this set, so it can't invent a topic or
+ * point at something that isn't actually upstream. Every id in here is
+ * guaranteed to have a study note, and therefore a Learn mode to click into.
+ */
+export function prereqClosure(topicIds: TopicId[], notes: StudyNote[]): TopicId[] {
+  const notesById = new Map(notes.map((n) => [n.topicId, n]));
+  const seen = new Set<TopicId>();
+  const queue = [...topicIds];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const prereq of notesById.get(current)?.prereqs ?? []) {
+      // The seen-set doubles as the cycle guard.
+      if (seen.has(prereq)) continue;
+      seen.add(prereq);
+      queue.push(prereq);
+    }
+  }
+  // A topic is never its own prerequisite, even via a malformed cycle.
+  for (const t of topicIds) seen.delete(t);
+  return Array.from(seen);
+}
+
 /** Set of topic ids that have at least one question in the live bank. */
 export function topicsWithQuestionsSet(questions: Question[]): Set<TopicId> {
   const set = new Set<TopicId>();
