@@ -19,7 +19,19 @@ import { TopicDetail } from "../components/TopicDetail";
 import { NewTopic } from "../components/NewTopic";
 import type { Page } from "../App";
 
-const TIER_NAMES = ["Foundation", "Core techniques", "Composite techniques", "Advanced"];
+// One name per prerequisite depth. Deeper tiers appeared once the graph gained
+// the stochastic-calculus chain (derivatives → Ito → martingales → Markov
+// chains → recursive states → conditional probability → basic probability);
+// anything past the end falls back to "Tier N" rather than rendering blank.
+const TIER_NAMES = [
+  "Foundation",
+  "Core techniques",
+  "Composite techniques",
+  "Advanced",
+  "Specialised",
+  "Applied theory",
+  "Frontier",
+];
 
 interface TopicsProps {
   onNavigate: (page: Page) => void;

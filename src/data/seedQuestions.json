@@ -2111,6 +2111,626 @@
       "explanation": "Memorylessness: P(X > m + n | X > m) = P(X > n) for a geometric variable. The coin has no record of the five tails; each toss is independent with probability 1/2, so from any point at which you have not yet succeeded, the expected additional wait is 1/p = 2. The geometric is the ONLY discrete distribution with this property, and the exponential is the only continuous one - which is why the exponential shows up everywhere that a 'hazard rate' is assumed constant, from Poisson arrivals to default intensity models. Two consequences worth having ready. Total expected tosses conditional on having already used 5 is 5 + 2 = 7, not 2 - be clear which quantity is being asked for. And the gambler's fallacy is precisely the denial of this property: a run of tails does not make a head 'due', and any strategy premised on that is worthless. In a trading context the same error appears as 'this strategy has lost five days running, it must be about to turn', which is only true if you have an actual mean-reversion model, not merely a losing streak.",
       "technique": "Memorylessness of the geometric distribution",
       "difficultyRationale": "Medium: the answer is immediate if you know the property, and counter-intuitive if you don't."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Which is larger, e^pi or pi^e? Do it without a calculator.",
+      "canonicalAnswer": "e^pi is larger. Take logs: compare pi*ln(e) = pi against e*ln(pi). Equivalently compare ln(x)/x at x = e and x = pi; that function is maximised at x = e, so ln(e)/e > ln(pi)/pi, which rearranges to e^pi > pi^e.",
+      "explanation": "Take logarithms to turn the comparison into something differentiable: e^pi > pi^e is equivalent to pi > e*ln(pi), and dividing both sides by e*pi gives 1/e > ln(pi)/pi. So compare the function f(x) = ln(x)/x at x = e and x = pi. Differentiate: f'(x) = (1 - ln x)/x^2, which is zero at x = e, positive below and negative above. So f has its GLOBAL MAXIMUM at x = e. Since pi > e, we get f(pi) < f(e), i.e. ln(pi)/pi < 1/e, which is exactly the inequality we wanted. Therefore e^pi > pi^e. Numerically e^pi = 23.14 and pi^e = 22.46, so the margin is small - which is why an eyeball estimate will not settle it and the calculus is genuinely needed. The general result worth extracting: for any x > 0 other than e, we have e^x > x^e. Put another way, e is the unique base that maximises ln(x)/x, which is the same fact behind why e appears in optimal-stopping thresholds and in continuous compounding.",
+      "technique": "Turn a comparison into a function and maximise it",
+      "difficultyRationale": "Medium: the log trick is the key step, and the numbers are close enough that guessing fails."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "X is a non-negative random variable. Show that E[X] equals the integral of P(X > x) from 0 to infinity, and use it to find the expected value of the maximum of two independent uniform [0,1] draws.",
+      "canonicalAnswer": "E[X] = integral of P(X > x) dx. For the max of two uniforms, P(max > x) = 1 - x^2, so E = integral of (1 - x^2) from 0 to 1 = 1 - 1/3 = 2/3.",
+      "explanation": "The identity: write X = integral from 0 to X of 1 dx = integral from 0 to infinity of the indicator that x < X. Take expectations and swap the order of integration (valid by Tonelli, since everything is non-negative): E[X] = integral from 0 to infinity of P(X > x) dx. Geometrically you are integrating the area above the CDF rather than under x*f(x), and the two regions are the same. Application: let M be the max of two independent uniforms on [0,1]. P(M <= x) = x^2, since both draws must be below x, so P(M > x) = 1 - x^2. Then E[M] = integral from 0 to 1 of (1 - x^2) dx = [x - x^3/3] from 0 to 1 = 2/3. Compare the alternative: differentiate the CDF to get the density 2x, then integrate x*2x to get 2/3. Same answer, but the tail formula needed no differentiation at all. That saving compounds for the max of n draws, where P(M > x) = 1 - x^n gives E = n/(n+1) immediately. The tail formula is the single most useful expectation trick for interviews, and its discrete version E[N] = sum over k >= 0 of P(N > k) is just as handy for waiting-time problems.",
+      "technique": "The tail (survival function) formula for expectations",
+      "difficultyRationale": "Medium: the identity needs a swap of integration order, and the application shows why it's worth knowing."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Using a Taylor series, what is ln(1.02) to three decimal places?",
+      "options": [
+        "0.020",
+        "0.0198",
+        "0.0202",
+        "0.200"
+      ],
+      "correctOption": 1,
+      "explanation": "ln(1+x) = x - x^2/2 + x^3/3 - ... With x = 0.02: 0.02 - 0.0002 + 0.0000027 = 0.0198. The first-order answer 0.020 is what most people give and is fine to about half a percent, but the question asks for the correction. This matters in finance because it is exactly the gap between a simple return and a log return: a 2% simple gain is a 1.98% log return, and the second-order term -x^2/2 is the same quantity that produces the -sigma^2/2 in the geometric-versus-arithmetic mean and in the Black-Scholes drift. For small x, log returns are slightly SMALLER than simple returns, and the gap grows quadratically - at 20% it is 18.2%, a full 1.8 points.",
+      "technique": "Second-order Taylor expansion of ln(1+x)",
+      "difficultyRationale": "Easy: one series, but the point is remembering the second term exists."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Maximise x*y*z subject to x + y + z = c, with x, y, z all positive. What is the maximum, and what does the Lagrange multiplier tell you?",
+      "canonicalAnswer": "The maximum is (c/3)^3, attained at x = y = z = c/3. The multiplier is lambda = (c/3)^2, which is the rate at which the maximum increases if you relax the constraint by one unit — d(max)/dc = (c/3)^2.",
+      "explanation": "Lagrange: set L = xyz - lambda(x + y + z - c). The first-order conditions are yz = lambda, xz = lambda, xy = lambda. Dividing the first two gives y = x, and the second and third give z = y, so x = y = z = c/3 and the maximum is (c/3)^3. Symmetry gets you there faster: the objective and the constraint are both symmetric in the three variables, so if a unique interior optimum exists it must lie on the diagonal - worth saying, since it saves the algebra. The multiplier: lambda = (c/3)^2, and the envelope theorem says d(max)/dc = lambda. Check it directly: max = c^3/27, so the derivative is 3c^2/27 = c^2/9 = (c/3)^2. Correct. That interpretation - lambda as the SHADOW PRICE of the constraint - is what interviewers actually want, because it is what makes Lagrange multipliers useful rather than merely mechanical: in portfolio optimisation lambda is the marginal return per unit of risk budget, and in a capital allocation problem it is the value of one more unit of capital. Finally, note the result IS the AM-GM inequality: the product is maximised when the terms are equal, given a fixed sum.",
+      "technique": "Lagrange multipliers and the shadow-price interpretation",
+      "difficultyRationale": "Medium: the optimisation is symmetric and quick; the shadow-price reading is the discriminating part."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is the limit of (1 + 1/n)^n as n goes to infinity, and what is the limit of (1 + 2/n)^n?",
+      "options": [
+        "e and e^2",
+        "e and 2e",
+        "1 and 2",
+        "e and e"
+      ],
+      "correctOption": 0,
+      "explanation": "e and e^2. Take logs: n*ln(1 + a/n). Using ln(1+x) = x - x^2/2 + ..., this is n*(a/n - a^2/(2n^2) + ...) = a - a^2/(2n) + ..., which tends to a. So the limit is e^a - giving e for a = 1 and e^2 for a = 2. This is the continuous-compounding limit: compounding a rate a over n periods per year converges to e^a as n grows. The finance reading is worth stating: it is why a 100% annual rate compounded continuously grows money by a factor of e = 2.718 rather than 2, and the second-order term -a^2/(2n) tells you how fast the discrete approximation converges. Answering 2e or 2 comes from scaling the limit linearly instead of noticing that a enters the exponent.",
+      "technique": "Log-and-expand for indeterminate powers",
+      "difficultyRationale": "Medium: the first limit is memorised; the second tests whether you know why."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Use Newton's method to derive a fast hand method for square roots, and use it to compute sqrt(10) to four decimal places starting from 3.",
+      "canonicalAnswer": "Newton on f(x) = x^2 - a gives x_(n+1) = (x_n + a/x_n)/2. From x_0 = 3: x_1 = 3.1667, x_2 = 3.16228, which is already sqrt(10) = 3.162278 to six figures.",
+      "explanation": "Newton's iteration is x_(n+1) = x_n - f(x_n)/f'(x_n). With f(x) = x^2 - a and f'(x) = 2x: x_(n+1) = x_n - (x_n^2 - a)/(2x_n) = (x_n + a/x_n)/2. So each step averages your guess with a divided by your guess - the Babylonian method, and worth remembering because it is genuinely usable by hand. For a = 10 from x_0 = 3: x_1 = (3 + 10/3)/2 = (3 + 3.33333)/2 = 3.166667. x_2 = (3.166667 + 10/3.166667)/2 = (3.166667 + 3.157895)/2 = 3.162281. True value 3.1622777, so after TWO steps we are correct to six significant figures. That is quadratic convergence: the error goes from 0.16 to 0.004 to 0.000003, roughly squaring each time, so the number of correct digits doubles per iteration. The caveats worth naming: Newton converges quadratically only near a SIMPLE root, and it can diverge or cycle if f' is near zero or the starting point is poor - for f(x) = x^(1/3) at any nonzero start it diverges. That is why production solvers bracket with bisection and fall back to it when a Newton step leaves the bracket.",
+      "technique": "Newton's method and quadratic convergence",
+      "difficultyRationale": "Hard: deriving the iteration is easy; doing two steps accurately by hand and explaining the convergence rate is not."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is the limit of (sin x - x) / x^3 as x approaches 0?",
+      "options": [
+        "-1/6",
+        "0",
+        "-1/2",
+        "It does not exist"
+      ],
+      "correctOption": 0,
+      "explanation": "-1/6. Use the series sin x = x - x^3/6 + x^5/120 - ..., so sin x - x = -x^3/6 + O(x^5) and dividing by x^3 gives -1/6 + O(x^2), which tends to -1/6. L'Hopital works too but needs THREE applications, each requiring you to differentiate correctly under time pressure: (cos x - 1)/(3x^2), then (-sin x)/(6x), then (-cos x)/6 = -1/6. The series route is faster and far less error-prone, which is the transferable point: when a limit is 0/0 and the functions have known expansions, expand rather than differentiate repeatedly. Answering 0 comes from truncating the sine series at first order, which throws away exactly the term the question is about.",
+      "technique": "Series expansion instead of repeated L'Hopital",
+      "difficultyRationale": "Medium: L'Hopital three times is error-prone; the series makes it a one-liner."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A rope hangs over a pulley with a weight on one end and a monkey of equal weight on the other, balanced. The monkey climbs the rope. What happens? (Then: what is the calculus lesson?)",
+      "canonicalAnswer": "The weight rises at exactly the same rate as the monkey, so they stay level. The tension in the rope is the same on both sides, so the net force on each is identical and they accelerate identically.",
+      "explanation": "Because the pulley is frictionless and the rope inextensible, the tension T is identical throughout. The monkey and the weight have equal mass m. Whatever force the monkey exerts to climb, it increases the tension by the same amount on BOTH sides, so the net upward force on the monkey (T - mg) and on the weight (T - mg) are identical at every instant. Equal masses and equal net forces mean equal accelerations, so they rise together and remain level no matter how fast or how erratically the monkey climbs. The calculus lesson, and the reason this belongs here: the question is really about a CONSERVED SYMMETRY. Rather than integrating the monkey's acceleration profile, you notice the system is symmetric under swapping the two sides and that the symmetry is preserved by the dynamics. That collapses a differential-equation problem into an argument with no equations at all. The same instinct handles the two-jugs mixing problem and put-call parity: look for the quantity the dynamics cannot change before you set up any integral. Physics questions like this are common in quant interviews precisely because they reward that instinct.",
+      "technique": "Find the conserved symmetry instead of integrating",
+      "difficultyRationale": "Medium: the physics is elementary, but the answer feels wrong until you see the tension argument."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a positive semidefinite matrix, and why must every covariance matrix be one?",
+      "canonicalAnswer": "A is PSD if x'Ax >= 0 for every vector x, equivalently if all its eigenvalues are non-negative. A covariance matrix must be PSD because w'(Sigma)w IS the variance of the portfolio with weights w, and a variance cannot be negative.",
+      "explanation": "Definition: a symmetric matrix A is positive semidefinite if x'Ax >= 0 for all x. Equivalent characterisations worth having: all eigenvalues >= 0; all leading principal minors >= 0; A = B'B for some B. Positive DEFINITE replaces every >= with >. Why covariance matrices are PSD: take any portfolio weights w. Then w'(Sigma)w is exactly Var(w'X), the variance of that portfolio's return. Variances cannot be negative, so the quadratic form is non-negative for every w, which is the definition. A zero eigenvalue means there is a portfolio with zero variance - a redundant asset, an exact linear combination of the others - so PSD-but-not-PD signals redundancy rather than an error. The practical importance is that estimated matrices often FAIL this. Correlations computed pairwise from series of unequal length, or a matrix where someone has overridden a few entries by hand, can easily have negative eigenvalues, and then the 'covariance matrix' implies some portfolio has negative variance. Symptoms: Cholesky fails, an optimiser returns absurd leveraged weights, or a VaR number comes out negative. The standard repair is to take the eigendecomposition, clip negative eigenvalues to zero (or a small positive floor), and rebuild - or to shrink the matrix toward a well-conditioned target, which is what Ledoit-Wolf shrinkage does and why it is standard in production risk systems.",
+      "technique": "PSD as the non-negativity of portfolio variance",
+      "difficultyRationale": "Medium: the definition is recall; connecting it to w'Sigma w and to estimation failures is the substance."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Can three random variables all have pairwise correlation -0.6 with each other?",
+      "options": [
+        "No — the correlation matrix would not be positive semidefinite",
+        "Yes — any value in [-1,1] is achievable pairwise",
+        "Only if they are jointly normal",
+        "Only if their variances are equal"
+      ],
+      "correctOption": 0,
+      "explanation": "No. For a 3x3 correlation matrix with all off-diagonals equal to rho, the eigenvalues are 1 + 2*rho (once) and 1 - rho (twice). PSD requires both to be non-negative, so 1 + 2*rho >= 0, i.e. rho >= -1/2. At rho = -0.6 the first eigenvalue is -0.2 and the matrix is invalid. The intuition is worth giving alongside the algebra: if A is strongly negatively correlated with B, and B is strongly negatively correlated with C, then A and C are being pushed toward being POSITIVELY correlated - they both move against B. You cannot have all three mutually opposed. Concretely, the equally-weighted portfolio would have variance proportional to 1 + 2*rho, which at rho = -0.6 is negative. In general, n variables can all share correlation rho only if rho >= -1/(n-1), so the constraint tightens as n grows and vanishes in the limit. This is the standard reason a hand-edited correlation matrix breaks a risk model.",
+      "technique": "Eigenvalue bound on an equicorrelation matrix",
+      "difficultyRationale": "Medium: the eigenvalues of the equicorrelation matrix are the key fact."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is an eigenvector, intuitively? What do the eigenvectors of a covariance matrix represent?",
+      "canonicalAnswer": "An eigenvector is a direction the matrix only stretches, never rotates: Av = lambda*v. For a covariance matrix the eigenvectors are the principal components — orthogonal directions of variation — and each eigenvalue is the variance along that direction.",
+      "explanation": "Intuition first: a matrix is a linear map, and in general it both rotates and stretches vectors. Eigenvectors are the special directions where the rotation part vanishes and the map acts as pure scaling by lambda. That is why they diagonalise the matrix - in the eigenbasis it becomes a list of independent scalings. For a COVARIANCE matrix Sigma, this has a direct statistical meaning. Sigma is symmetric and PSD, so by the spectral theorem its eigenvalues are real and non-negative and its eigenvectors are orthogonal. Each eigenvector is a portfolio (a set of weights); the corresponding eigenvalue is that portfolio's variance; and the eigenvectors are mutually UNCORRELATED. Order them by eigenvalue and you have PCA: the first component is the direction of maximum variance, the second is the most variable direction orthogonal to it, and so on. In equity markets PC1 is almost always 'the market' and typically explains 30-50% of variance; in a yield curve, the first three components are famously level, slope and curvature, which is why rate risk is reported as key-rate exposures rather than 50 correlated tenors. Two identities as sanity checks: the trace (sum of individual variances) equals the sum of eigenvalues, and the determinant equals their product - so a near-zero determinant means one principal direction has almost no variance, i.e. the assets are nearly redundant. The caveat worth adding: maximum-variance directions are not necessarily the informative ones. PCA is unsupervised, so the largest component may just be the market factor you wanted to strip out.",
+      "technique": "Spectral decomposition of a covariance matrix as PCA",
+      "difficultyRationale": "Medium: the definition is easy; the statistical reading and the yield-curve example make it strong."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What does it mean geometrically if a square matrix has determinant zero?",
+      "options": [
+        "It collapses space onto a lower-dimensional subspace, so it is not invertible",
+        "It rotates space without scaling it",
+        "It scales all vectors by zero",
+        "It is symmetric"
+      ],
+      "correctOption": 0,
+      "explanation": "The determinant is the factor by which the map scales volume (signed, so its sign records orientation). Determinant zero means volume is crushed to nothing: the image lies in a lower-dimensional subspace, information is irrecoverably lost, and no inverse can exist. Equivalently, the columns are linearly dependent, at least one eigenvalue is zero, and the null space is non-trivial. In practice the binary test is less useful than the continuous one: a determinant near zero relative to the matrix's scale means the matrix is ILL-CONDITIONED, so solving with it amplifies numerical error enormously. That is exactly the multicollinearity problem in regression - X'X is technically invertible but nearly singular, so coefficients swing wildly on tiny data changes while the fit looks fine. The right diagnostic is the condition number (ratio of largest to smallest singular value), not the determinant, since the determinant also scales with the matrix's units.",
+      "technique": "Determinant as a volume scaling factor",
+      "difficultyRationale": "Easy: definitional, and the conditioning follow-up is a natural extension."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the Cholesky decomposition, and what is it used for in quantitative finance?",
+      "canonicalAnswer": "Sigma = L*L' with L lower triangular, defined for a symmetric positive DEFINITE matrix. Its main use is generating correlated normal draws for Monte Carlo: sample independent standard normals Z and return L*Z, which has covariance Sigma.",
+      "explanation": "For a symmetric positive definite Sigma there is a unique lower-triangular L with positive diagonal such that Sigma = L*L'. Think of it as a matrix square root, computed in about half the operations of an LU decomposition because it exploits symmetry. The workhorse application is correlated simulation. If Z is a vector of independent standard normals, then X = L*Z has covariance E[XX'] = L*E[ZZ']*L' = L*I*L' = Sigma - exactly the target. Every multi-asset Monte Carlo does this: one Cholesky up front, then one cheap matrix-vector product per path. The 2x2 case is the familiar X1 = Z1, X2 = rho*Z1 + sqrt(1-rho^2)*Z2, where L is exactly [[1,0],[rho, sqrt(1-rho^2)]]. Other uses: solving linear systems with a PSD matrix (two triangular solves), and computing log-determinants for Gaussian likelihoods, where sum of log of the diagonal of L is far more stable than taking a determinant directly. The critical practical point: Cholesky requires positive DEFINITE, not merely semidefinite, so it FAILS on a matrix with a zero or negative eigenvalue. That failure is a feature - it is usually the first thing that tells you your estimated correlation matrix is invalid. When it fails, either repair the matrix by clipping negative eigenvalues, or fall back to the eigendecomposition square root, which tolerates zeros.",
+      "technique": "Cholesky as a matrix square root for correlated simulation",
+      "difficultyRationale": "Medium: the identity is short, and the positive-definite requirement is the practical detail."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In OLS, beta-hat = (X'X)^(-1) X'y. What goes wrong when two regressors are almost perfectly correlated?",
+      "options": [
+        "X'X becomes ill-conditioned, so coefficients are huge and unstable even though the fit looks fine",
+        "The residuals become correlated with the regressors",
+        "The estimator becomes biased",
+        "The R-squared falls toward zero"
+      ],
+      "correctOption": 0,
+      "explanation": "Near-collinearity makes X'X nearly singular - its smallest eigenvalue approaches zero, so inverting it amplifies noise enormously. The symptoms are distinctive: individual coefficients are large, have huge standard errors, may have implausible signs, and swing violently if you add or drop a few observations - yet the overall R-squared and the model's predictions remain fine. The reason is that the data determine the SUM of the collinear coefficients well but their individual split badly. Note that OLS remains UNBIASED under collinearity; what explodes is the variance, so the estimator is still correct on average and useless in any single sample. Fixes: drop one regressor, combine them into a single factor, orthogonalise (which is why factor models build orthogonal factors), or shrink with ridge regression, which adds a small multiple of the identity to X'X and directly fixes the conditioning. Numerically, solving via QR rather than forming X'X is also important, since forming X'X squares the condition number.",
+      "technique": "Multicollinearity as an ill-conditioning problem",
+      "difficultyRationale": "Medium: the trap is answering 'biased', which is the wrong failure mode."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You are given a correlation matrix estimated from real data and Cholesky fails. What has happened, and what would you do about it?",
+      "canonicalAnswer": "The matrix is not positive definite — it has a zero or negative eigenvalue, so it is not a valid correlation matrix. Diagnose with an eigendecomposition, then repair by clipping negative eigenvalues to a small positive floor and renormalising the diagonal, or by shrinking toward a well-conditioned target.",
+      "explanation": "What it means: Cholesky exists exactly for positive definite matrices, so a failure says some eigenvalue is <= 0. Since w'Cw is the variance of the portfolio w, a negative eigenvalue means there is a portfolio your matrix claims has NEGATIVE variance. That is not a numerical nuisance, it is an incoherent risk model - an optimiser handed this matrix will find that portfolio and lever it without limit. How it happens in practice, and you should name the causes: (1) pairwise estimation, where each correlation is computed from whatever overlapping history the two series happen to share, so the entries are mutually inconsistent; (2) more assets than observations (n > T), which guarantees singularity; (3) manual overrides or stressed correlations imposed by hand for a scenario; (4) missing data filled in inconsistently. What to do: FIRST, eigendecompose and look at the spectrum. If the negative eigenvalues are tiny (order 1e-12) it is just floating-point noise and a small ridge on the diagonal fixes it. If they are materially negative, the matrix is genuinely inconsistent and you should find out why rather than patch it. THEN repair. Standard options: clip negative eigenvalues to a small positive floor, rebuild, and renormalise the diagonal back to 1 (this is the nearest-correlation-matrix idea; Higham's algorithm does it properly, minimising the Frobenius distance). Or shrink toward a structured target - the identity, or a constant-correlation matrix - which is Ledoit-Wolf shrinkage and improves out-of-sample behaviour even when the raw matrix is technically valid. Or estimate a factor model instead, which produces a PSD matrix by construction because it is built as B*F*B' + D. The last is usually the right answer for a production risk system, since it fixes the cause rather than the symptom.",
+      "technique": "Diagnosing and repairing a non-PSD correlation matrix",
+      "difficultyRationale": "Hard: requires connecting a numerical failure to its statistical cause and knowing the repair options."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "For a symmetric real matrix, which of these is guaranteed?",
+      "options": [
+        "Real eigenvalues and an orthogonal set of eigenvectors",
+        "Positive eigenvalues",
+        "Determinant greater than zero",
+        "All entries non-negative"
+      ],
+      "correctOption": 0,
+      "explanation": "The spectral theorem: a real symmetric matrix always has real eigenvalues and can be diagonalised by an ORTHOGONAL matrix, so its eigenvectors can be chosen mutually perpendicular. Note what is not guaranteed - symmetry says nothing about the SIGN of the eigenvalues, so a symmetric matrix can be indefinite with a negative determinant. Positivity is the extra condition that makes it PSD. This theorem is what makes covariance matrices so pleasant to work with: it guarantees PCA produces uncorrelated components, guarantees the eigendecomposition is numerically well-behaved, and guarantees that clipping negative eigenvalues yields a real symmetric matrix again. For a non-symmetric matrix none of this holds - eigenvalues can be complex and eigenvectors need not be orthogonal or even form a basis.",
+      "technique": "The spectral theorem for symmetric matrices",
+      "difficultyRationale": "Medium: the distractors are all properties that sound related but require stronger conditions."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have a portfolio of n assets and only T daily observations, with T smaller than n. What is wrong with using the sample covariance matrix, and what would you do?",
+      "canonicalAnswer": "The sample covariance matrix is singular — its rank is at most T-1, so it has at least n-T+1 zero eigenvalues and cannot be inverted. Any optimiser will find those zero-variance directions and lever them without limit. Use shrinkage or a factor model instead.",
+      "explanation": "The mechanics: the sample covariance is (1/(T-1)) times the sum of T outer products of demeaned returns, so its rank is at most T-1. With T < n it is singular by construction. That is fatal for mean-variance optimisation, which needs the inverse, and it is worse than a mere numerical problem - the zero eigenvalues correspond to portfolios the sample says have EXACTLY zero risk, and an optimiser will happily allocate infinite leverage to them. The apparent risk-free arbitrage is entirely an artefact of insufficient data. Even when T is somewhat larger than n the problem persists in softer form: the sample eigenvalues are systematically dispersed relative to the truth, with the largest overstated and the smallest understated, so the smallest-variance directions - exactly the ones the optimiser loves - are the most badly estimated. Marchenko-Pastur describes this dispersion precisely as a function of n/T. Remedies, in rough order of preference: (1) FACTOR MODEL. Model returns as B*f + e, giving Sigma = B*F*B' + D with D diagonal. This is PSD by construction, invertible whenever D is positive, and reduces the number of parameters from n(n+1)/2 to something linear in n. (2) SHRINKAGE. Ledoit-Wolf pulls the sample matrix toward a structured target (identity or constant correlation) with an optimally chosen intensity; it is a one-line change and reliably improves out-of-sample results. (3) EIGENVALUE CLEANING using random matrix theory - keep the eigenvalues that exceed the Marchenko-Pastur bound and flatten the rest as noise. (4) Simply constrain the optimiser (long-only, position limits), which is crude but empirically very effective precisely because it stops the optimiser exploiting estimation error.",
+      "technique": "Rank deficiency and estimation error in high-dimensional covariance",
+      "difficultyRationale": "Hard: needs the rank argument, the reason it is dangerous, and a ranked set of practical fixes."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What exactly does the Markov property say?",
+      "options": [
+        "Given the present state, the future is independent of the past",
+        "The process has no drift",
+        "Every state is visited infinitely often",
+        "The transition probabilities are all equal"
+      ],
+      "correctOption": 0,
+      "explanation": "Formally, P(X_(n+1) = j | X_n = i, X_(n-1), ..., X_0) = P(X_(n+1) = j | X_n = i). The present state is a sufficient statistic for the whole history. The practical consequence, and the reason it matters in interviews, is that the ENTIRE difficulty of a Markov problem is choosing the state. Any process can be made Markov by enlarging the state enough - if you need the last three coin tosses, make the state the last three coin tosses. Choose too small a state and your recursion is silently wrong; choose too large and the system is unwieldy. Note that Markov does not mean memoryless in the everyday sense: a chain can have long-lasting effects, they just have to be encoded in the current state.",
+      "technique": "The Markov property and the role of state choice",
+      "difficultyRationale": "Easy: definitional, but framing it as 'the state must carry what matters' is the useful part."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You pick the triplet HHH. I then pick THH. Playing until one triplet appears in a stream of fair coin tosses, what is my probability of winning, and what is the general lesson?",
+      "canonicalAnswer": "I win with probability 7/8. The lesson is that 'beats' is NON-TRANSITIVE for coin triplets — for any triplet you name, I can pick one that beats it, so choosing second is a large advantage.",
+      "explanation": "For HHH to appear before THH, the very first three tosses must be HHH - because if a T ever appears before the run of three heads completes, then the next time two heads occur they are preceded by that T, and THH lands first. So P(you win) = P(first three tosses are HHH) = 1/8, and I win with probability 7/8. The general result is Penney's game, and the structure is what matters: the 'beats' relation on triplets is NON-TRANSITIVE, containing cycles. There is no best triplet. The winning recipe for the second player is mechanical: given the opponent's triplet ABC, choose (the opposite of B) followed by AB. Against HHH that gives THH; against HTH it gives HHT; against THH it gives TTH. The edge ranges from 2:1 to 7:1. The reason is the same OVERLAP structure that makes HTH take longer to appear than HHT: patterns that can be reached from partial matches of the opponent's pattern get there first. Two things worth adding. The instinct that 'A beats B and B beats C implies A beats C' is extremely strong and completely wrong here - the same non-transitivity appears in Efron's dice and in voting paradoxes. And the practical read for an interview: if someone offers to let you choose first in a game like this, that is information.",
+      "technique": "Non-transitivity and overlap structure in pattern races",
+      "difficultyRationale": "Hard: the 7/8 needs a clean argument, and the non-transitivity is genuinely surprising."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You roll a fair die repeatedly. What is the expected number of rolls until you have seen all six faces? Set it up as a Markov chain.",
+      "canonicalAnswer": "14.7 rolls — specifically 6*(1 + 1/2 + 1/3 + 1/4 + 1/5 + 1/6) = 14.7.",
+      "explanation": "State the chain by how many DISTINCT faces you have seen: states 0 through 6, with 6 absorbing. This is a legitimate Markov state because the probability of seeing something new depends only on how many you already have, not on which ones. From state k, the chance the next roll is new is (6-k)/6, so the number of rolls to advance is geometric with mean 6/(6-k). Total expected time is the sum over k = 0..5 of 6/(6-k) = 6/6 + 6/5 + 6/4 + 6/3 + 6/2 + 6/1 = 1 + 1.2 + 1.5 + 2 + 3 + 6 = 14.7. The shape of that sum is the lesson: the first five faces take 8.7 rolls between them and the LAST one takes 6 by itself. Over 40% of the effort goes into the final face. In general the answer is n*H_n, approximately n*ln(n) + 0.577n, so the growth is n log n rather than n - collecting 100 coupons takes about 519 draws. This is the coupon-collector problem, and framing it as a Markov chain on 'number collected' is the general technique: when a process only cares about a COUNT rather than an identity, collapse the state space to that count and the chain becomes small enough to solve by hand.",
+      "technique": "Collapsing a state space to a sufficient count",
+      "difficultyRationale": "Medium: the decomposition is standard; the state-collapsing insight is the reusable part."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "An irreducible aperiodic Markov chain has stationary distribution pi. What is the expected number of steps to return to state i, starting from state i?",
+      "options": [
+        "1 / pi_i",
+        "pi_i",
+        "1 - pi_i",
+        "It depends on the whole transition matrix, with no simple formula"
+      ],
+      "correctOption": 0,
+      "explanation": "The expected return time is exactly 1/pi_i. The intuition is a long-run accounting argument: over N steps you spend roughly N*pi_i visits in state i, so consecutive visits are separated by about N/(N*pi_i) = 1/pi_i steps on average. This is one of the most useful shortcuts in Markov chain problems, because computing a stationary distribution is often much easier than solving a hitting-time system - you solve pi = pi*P, read off pi_i, and invert. Worth naming the conditions: it needs irreducibility (so state i is reachable from everywhere) and positive recurrence. For a null-recurrent chain such as the symmetric random walk on the integers, the chain returns with probability 1 but pi_i = 0 and the expected return time is infinite - the formula still 'works' in the limiting sense, and the distinction between certain and soon is the point.",
+      "technique": "Expected return time as the reciprocal of the stationary probability",
+      "difficultyRationale": "Medium: a one-line result that saves a lot of work, provided you know the conditions."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "An urn holds 1 white and 1 black ball. You draw one at random, then return it along with an extra ball of the SAME colour. Repeat. After n draws, what is the distribution of the fraction of white balls?",
+      "canonicalAnswer": "Uniform on the possible values. After n draws the number of white balls is equally likely to be any of 1, 2, ..., n+1 — the fraction of white balls converges to a Uniform[0,1] random variable.",
+      "explanation": "This is Polya's urn, and the answer is startling: despite the reinforcing dynamics, the number of white balls after n draws is UNIFORM over its range. Check n = 1: you draw white or black with probability 1/2 each, so you end with 2 white 1 black or 1 white 2 black, each with probability 1/2 - uniform over {1,2} whites. For n = 2 the composition is 1, 2 or 3 whites, each with probability 1/3, which you can verify by enumerating the four paths with their (unequal) probabilities. Induction extends it. The deep reason is EXCHANGEABILITY: the probability of any particular sequence of draws depends only on how many whites and blacks it contains, not on their order. By de Finetti's theorem an exchangeable sequence is a mixture of iid sequences - here, the limiting fraction p is drawn from Uniform[0,1] and then the draws behave as iid Bernoulli(p). So the urn does not converge to 1/2; it converges to a RANDOM limit that is equally likely to be anywhere in [0,1]. The lesson worth stating for a finance audience: a reinforcing process (success breeds success) does not average out with more data. The limit is path-dependent and the early draws matter permanently - which is exactly why network effects, liquidity concentration and index inclusion produce winner-take-all outcomes rather than convergence to a fair share.",
+      "technique": "Exchangeability and reinforcement in Polya's urn",
+      "difficultyRationale": "Hard: the uniform answer is counter-intuitive and the exchangeability argument is the only clean route."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A frog sits on lily pad 1 of 3 arranged in a circle. Each second it hops to one of the two adjacent pads with equal probability. What is the expected number of hops to return to pad 1, and what fraction of time does it spend there?",
+      "canonicalAnswer": "It spends 1/3 of its time on each pad, and the expected return time to pad 1 is 3 hops.",
+      "explanation": "By symmetry the stationary distribution is uniform: pi = (1/3, 1/3, 1/3). You can verify it satisfies pi = pi*P, since each pad receives probability 1/2 from each of its two neighbours: (1/3)(1/2) + (1/3)(1/2) = 1/3. Then the expected return time to pad 1 is 1/pi_1 = 3 hops. Direct check: from pad 1 the frog is certainly on pad 2 or 3 after one hop. From either, it returns to pad 1 with probability 1/2 or moves to the other non-1 pad with probability 1/2 - and by symmetry that other pad is equivalent. So if E is the expected additional hops from a non-1 pad, E = 1 + (1/2)(0) + (1/2)E, giving E = 2, and the total return time is 1 + 2 = 3. Both routes agree. Note that with an ODD cycle the chain is aperiodic and genuinely converges; on an EVEN cycle - four pads, say - the frog can only be at an even distance after an even number of hops, so the chain is periodic with period 2 and never settles into pi, even though the long-run time fractions are still 1/4 each. Checking periodicity before claiming convergence is the standard trap in these questions.",
+      "technique": "Stationary distribution by symmetry, plus the periodicity caveat",
+      "difficultyRationale": "Medium: symmetry makes it quick, and the even-cycle periodicity point is the extension."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define a martingale, and explain what the optional stopping theorem says and why it needs conditions.",
+      "canonicalAnswer": "X is a martingale if E[X_(n+1) | information up to n] = X_n. Optional stopping says E[X_tau] = X_0 for a stopping time tau — provided tau is bounded, or X is bounded up to tau, or E[tau] is finite with bounded increments. Without a condition it fails, as the doubling strategy shows.",
+      "explanation": "Definition: a process X adapted to a filtration is a martingale if it is integrable and E[X_(n+1) | F_n] = X_n. In words, your best forecast of tomorrow's value given everything you know today is today's value - a fair game. Sub- and supermartingales replace = with >= and <=. Optional stopping: for a stopping time tau (a rule for stopping that may not look into the future), E[X_tau] = X_0. This is the workhorse - it converts path questions into one equation. Why conditions are needed: consider the doubling strategy on fair coin flips. Bet 1; if you lose, bet 2; then 4, and so on, stopping at the first win. You always finish exactly +1, so E[X_tau] = 1 while X_0 = 0. Optional stopping appears to fail. It does not - the hypotheses fail. tau is unbounded, the process is unbounded below before stopping (you can be down 2^k - 1), and although E[tau] = 2 is finite, the INCREMENTS are unbounded. Any one of the three standard sufficient conditions would have ruled it out. Being able to say WHICH condition fails is what an interviewer is checking, because the doubling strategy is the canonical counterexample and 'it needs conditions' without naming one is not an answer. The practical reading is worth adding: the strategy requires unbounded capital and unbounded time, which is precisely why it is not a way to beat a casino, and why real risk limits are drawdown limits rather than expectation limits.",
+      "technique": "Optional stopping and the role of its hypotheses",
+      "difficultyRationale": "Medium: the definition is recall; naming the failing hypothesis in the doubling strategy is the test."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A symmetric random walk starts at a and stops when it hits 0 or N. Find both the probability of hitting N first and the expected time to stop.",
+      "canonicalAnswer": "P(hit N first) = a/N, from the martingale S_n. Expected time = a(N - a), from the compensated martingale S_n^2 - n.",
+      "explanation": "PART 1. S_n is a martingale, since each step has mean zero. Apply optional stopping at tau, the first hitting time of 0 or N: E[S_tau] = S_0 = a. But S_tau is either 0 or N, so a = N*P(hit N) + 0*P(hit 0), giving P(hit N) = a/N. Clean, and it needs no recursion. PART 2. S_n itself tells you nothing about timing, so COMPENSATE: M_n = S_n^2 - n is a martingale, because E[S_(n+1)^2 | F_n] = S_n^2 + 1 (the cross term vanishes and the step has variance 1), so subtracting n exactly cancels the drift. Optional stopping gives E[S_tau^2] - E[tau] = S_0^2 = a^2. Now E[S_tau^2] = N^2*(a/N) + 0 = aN, using the hitting probability from part 1. So E[tau] = aN - a^2 = a(N - a). Sanity checks: it is symmetric in a and N-a, as it must be; it is maximised in the middle, where E[tau] = N^2/4; and starting at a barrier gives zero. The technique - find a compensator that turns your process into a martingale - is the single most transferable idea in this topic. S_n^2 - n is the discrete twin of W_t^2 - t, and the same construction with an exponential handles biased walks. Note that both conditions for optional stopping are satisfiable here because the walk is confined to [0, N], so the process is bounded up to tau.",
+      "technique": "Compensating a process into a martingale",
+      "difficultyRationale": "Medium: part 1 is standard; knowing to use S^2 - n for the timing is the real content."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which of the following is a martingale, where S_n is a symmetric simple random walk starting at 0?",
+      "options": [
+        "S_n^2 - n",
+        "S_n^2",
+        "|S_n|",
+        "exp(S_n)"
+      ],
+      "correctOption": 0,
+      "explanation": "S_n^2 - n. Check the drift: E[S_(n+1)^2 | F_n] = E[(S_n + X)^2] = S_n^2 + 2*S_n*E[X] + E[X^2] = S_n^2 + 0 + 1, so S_n^2 grows by exactly 1 per step and is a SUBmartingale, not a martingale. Subtracting n compensates it exactly. |S_n| is also a submartingale - it is a convex function of a martingale, so Jensen pushes it upward. exp(S_n) is a submartingale for the same reason, and the martingale version is exp(theta*S_n)/E[exp(theta*X)]^n, which is the exponential martingale used for biased walks and for changes of measure. The general rule worth stating: a convex function of a martingale is a submartingale (Jensen), so it always needs a compensator, and finding that compensator is usually the key step in the problem.",
+      "technique": "Identifying martingales by checking the drift",
+      "difficultyRationale": "Medium: three of the four are submartingales, and Jensen explains why."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "In an election, candidate A finishes with a votes and candidate B with b votes, where a > b. If the ballots are counted in a uniformly random order, what is the probability that A is strictly ahead throughout the entire count?",
+      "canonicalAnswer": "(a - b)/(a + b).",
+      "explanation": "This is the ballot problem, and the elegant proof is the reflection argument. Consider the counting path as a walk that steps +1 for each A vote and -1 for each B vote, starting at 0 and ending at a - b after a + b steps. We want the probability the path stays strictly positive after the first step. First, the first ballot must be for A - otherwise A is behind immediately - which happens with probability a/(a+b). Now count the BAD paths: those whose first vote is for A but which later touch zero. Reflect the portion of such a path up to its first return to zero: this maps bijectively onto paths starting with a B vote that also touch zero, and every path starting with B necessarily touches zero. So the number of bad A-first paths equals the number of B-first paths, which is b/(a+b) of the total. Therefore P(always ahead) = a/(a+b) - b/(a+b) = (a-b)/(a+b). Sanity checks: with b = 0 it gives 1, correct. With a = b it gives 0, also correct, since the count must tie at the end. With a = b + 1 it gives 1/(2b+1), which is small - even a one-vote winner is usually behind at some point, which is the counter-intuitive part worth stating. The martingale connection is that the reflection principle is the discrete ancestor of the reflection principle for Brownian motion, which gives the first-passage distribution and prices barrier options. Same idea, different setting.",
+      "technique": "The reflection principle for path counting",
+      "difficultyRationale": "Hard: the reflection bijection is a genuine insight and hard to reconstruct from scratch."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A symmetric random walk on the integers starts at 0. Which is true?",
+      "options": [
+        "It returns to 0 with probability 1, but the expected return time is infinite",
+        "It returns to 0 with probability 1, and the expected return time is 2",
+        "It returns to 0 with probability less than 1",
+        "It drifts to infinity"
+      ],
+      "correctOption": 0,
+      "explanation": "Null recurrence. The one-dimensional symmetric walk returns to the origin with probability 1 - certain - yet E[return time] = infinity. The return-time distribution has tail P(T > n) proportional to 1/sqrt(n), which sums to infinity, so the mean diverges even though the total probability is 1. The gap between 'certain' and 'soon' is the point of the question. Two extensions worth having: the same walk in TWO dimensions is also recurrent (Polya's theorem), but in THREE or more it is TRANSIENT - it returns with probability about 0.34 in 3D and escapes forever otherwise. Kakutani's line, 'a drunk man will find his way home but a drunk bird may get lost forever', is the standard way to quote it. For a biased walk, however small the bias, the walk is transient and there is a positive probability of never returning - which is exactly the gambler's ruin result and the reason a small persistent edge dominates in the long run.",
+      "technique": "Recurrence versus positive recurrence",
+      "difficultyRationale": "Medium: 'probability 1 but infinite expectation' is the distinction being tested."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State Wald's identity and explain the condition that makes it fail if you ignore it.",
+      "canonicalAnswer": "For iid X_i with finite mean and a stopping time tau with E[tau] finite, E[sum of X_1..X_tau] = E[tau]*E[X]. It fails if tau is not a genuine stopping time — that is, if the decision to stop is allowed to use future information.",
+      "explanation": "Statement: let X_1, X_2, ... be iid with finite mean, and let tau be a stopping time with E[tau] < infinity. Then E[X_1 + ... + X_tau] = E[tau]*E[X]. It is a surprisingly strong result - the number of terms is random and correlated with the terms themselves, and yet the naive product still works. The proof is a martingale one: S_n - n*E[X] is a martingale, and optional stopping gives the identity directly. The condition that matters most in practice is that tau must be a genuine STOPPING TIME: whether you stop at step n may depend only on X_1 through X_n, never on the future. Break that and the identity collapses. Concrete failure: toss a fair coin repeatedly with payoff +1 or -1 and let tau be 'the last time before the walk goes negative'. That is not a stopping time - you cannot know it is the last such time without looking ahead - and the identity gives the wrong answer. Similarly, 'stop when I am ahead' IS a valid stopping time and Wald applies, which is why the doubling strategy does not violate it: there E[tau] is finite and E[X] = 0, so the identity correctly predicts E[sum] = 0 for the SUM OF BETS, while the strategy's +1 profit comes from the varying bet SIZES, which are not iid. That distinction is worth having ready, because the doubling strategy is the usual follow-up. The finance version of the same trap is a backtest whose entry or exit rule quietly uses information not available at the time - lookahead bias is exactly the violation of the stopping-time condition.",
+      "technique": "Wald's identity and the stopping-time requirement",
+      "difficultyRationale": "Medium: the statement is recall; the lookahead-bias connection is what makes it useful."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "For a standard Brownian motion W, what is E[W_s * W_t]?",
+      "options": [
+        "min(s, t)",
+        "s * t",
+        "max(s, t)",
+        "0"
+      ],
+      "correctOption": 0,
+      "explanation": "min(s,t). Suppose s < t and split W_t = W_s + (W_t - W_s). Then E[W_s*W_t] = E[W_s^2] + E[W_s*(W_t - W_s)]. The second term is zero because increments over disjoint intervals are independent and each has mean zero. The first is Var(W_s) = s. So the answer is s = min(s,t). Two consequences worth stating: the correlation between W_s and W_t is sqrt(min/max), so distant times are weakly correlated but never independent; and this covariance function IS the defining property of Brownian motion among Gaussian processes - a continuous zero-mean Gaussian process with covariance min(s,t) is Brownian motion. The derivation, splitting into a known piece plus an independent increment, is the standard first move for any Brownian expectation.",
+      "technique": "Decomposing into independent increments",
+      "difficultyRationale": "Medium: quick with the right split, and the answer is easy to guess wrong as s*t."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Apply Ito's lemma to derive the SDE for ln(S) when S follows geometric Brownian motion, dS = mu*S*dt + sigma*S*dW. Why does the answer matter?",
+      "canonicalAnswer": "d(ln S) = (mu - sigma^2/2)dt + sigma*dW. The -sigma^2/2 is why the median of a lognormal sits below its mean, and why the Black-Scholes drift inside the log is r - sigma^2/2 rather than r.",
+      "explanation": "Let f(S) = ln S, so f' = 1/S and f'' = -1/S^2. Ito's lemma gives df = f'*dS + (1/2)*f''*(dS)^2. Now (dS)^2 = sigma^2*S^2*dt, since (dW)^2 = dt and all other products vanish. Substituting: d(ln S) = (1/S)(mu*S*dt + sigma*S*dW) + (1/2)(-1/S^2)(sigma^2*S^2*dt) = (mu - sigma^2/2)dt + sigma*dW. So ln S is Brownian motion with drift (mu - sigma^2/2), and integrating gives S_T = S_0*exp((mu - sigma^2/2)T + sigma*W_T). Why it matters, and this is the part to say out loud. The stock's EXPECTED value grows at mu: E[S_T] = S_0*e^(mu*T). But the TYPICAL path grows at mu - sigma^2/2, since that is the drift of the log. The gap sigma^2/2 is the volatility drag, and it is why the median of a lognormal is below its mean and why a volatile asset's compound (geometric) return is below its average (arithmetic) return. Concretely, an asset with 10% expected return and 30% volatility has a median growth rate of only 10% - 4.5% = 5.5%. Same fact in three costumes: the -sigma^2/2 in Black-Scholes, the geometric-versus-arithmetic mean gap, and Jensen's inequality applied to the exponential. If you can connect those three you have understood the term rather than memorised it.",
+      "technique": "Ito's lemma and the volatility drag",
+      "difficultyRationale": "Medium: the mechanics are routine; explaining what -sigma^2/2 means is the discriminating half."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which of these is a martingale?",
+      "options": [
+        "exp(sigma*W_t - sigma^2*t/2)",
+        "exp(sigma*W_t)",
+        "W_t^2",
+        "W_t^3"
+      ],
+      "correctOption": 0,
+      "explanation": "The stochastic exponential exp(sigma*W_t - sigma^2*t/2). Check by Ito: with f = exp(sigma*W - sigma^2*t/2), the dt terms are -sigma^2/2 from the explicit time dependence and +sigma^2/2 from the second-order Ito term, and they cancel exactly - leaving pure dW, which is the definition of a (local) martingale. exp(sigma*W_t) alone is NOT a martingale: E[exp(sigma*W_t)] = exp(sigma^2*t/2), which grows, and the -sigma^2*t/2 in the correct answer is precisely the compensator that removes it. W_t^2 is not a martingale either (W_t^2 - t is). W_t^3 is not (W_t^3 - 3t*W_t is). The pattern is that every power needs its own compensator, and they are the Hermite polynomials. This particular martingale is the most important one in finance: it is the Radon-Nikodym density in Girsanov's theorem, which is how you change from the real-world to the risk-neutral measure, and it is the same exp(-sigma^2/2) correction as the lognormal mean.",
+      "technique": "The stochastic exponential and its compensator",
+      "difficultyRationale": "Medium: the distractors are all near-misses that need a compensator."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Let T_a be the first time a standard Brownian motion hits level a > 0. Show that T_a is finite with probability 1, but that E[T_a] is infinite.",
+      "canonicalAnswer": "By the reflection principle, P(max up to time t >= a) = 2*P(W_t >= a), which tends to 1 as t grows — so the level is hit eventually with probability 1. But the density of T_a decays like t^(-3/2), so the integral of t times the density diverges and E[T_a] = infinity.",
+      "explanation": "FINITE WITH PROBABILITY 1. The reflection principle says P(max over [0,t] of W >= a) = 2*P(W_t >= a). Reason: every path that reaches a and finishes below a can be reflected about the level a after its first hit, giving a path that finishes above a, and the map is a bijection - so paths that touch a are exactly twice those that end above it. Now P(W_t >= a) = 1 - Phi(a/sqrt(t)), which tends to 1/2 as t goes to infinity, so P(T_a <= t) tends to 2*(1/2) = 1. The level is hit with certainty. INFINITE EXPECTATION. Differentiating the CDF gives the density of T_a as a/(sqrt(2*pi)*t^(3/2)) * exp(-a^2/(2t)). For large t the exponential tends to 1, so the density behaves like a constant times t^(-3/2). Then E[T_a] = integral of t * density, whose integrand behaves like t^(-1/2), and the integral of t^(-1/2) to infinity diverges. So E[T_a] = infinity. This is a Levy distribution, a stable law with index 1/2 and no mean. The interpretation is the memorable part: you will certainly hit the level, but the expected wait is infinite, because the occasional path that wanders far in the wrong direction takes so long that it dominates the average. 'Certain' and 'soon' are completely different statements. The finance consequences are direct: a barrier will be breached eventually under a driftless model, so a perpetual barrier option's value is not discounted away by the barrier never being hit - it is discounted by the barrier being hit at an unpredictably distant time. It is also the continuous version of the null-recurrent random walk, where return is certain and the expected return time is infinite.",
+      "technique": "Reflection principle and heavy-tailed hitting times",
+      "difficultyRationale": "Hard: needs the reflection principle and then a careful tail argument on the density."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the quadratic variation of Brownian motion over [0, T], and why does it make stochastic calculus different from ordinary calculus?",
+      "canonicalAnswer": "It is exactly T — deterministic, not random. Because the sum of squared increments does not vanish as the partition is refined, second-order terms survive in Taylor expansions, which is precisely the extra term in Ito's lemma.",
+      "explanation": "For a partition of [0,T] into n pieces, the sum of (W_(t_(k+1)) - W_(t_k))^2 converges in probability to T as the mesh goes to zero - and remarkably the limit is the DETERMINISTIC number T, not a random variable. Check the mean: each squared increment has expectation dt, and they sum to T. The variance of the sum is of order T^2/n, which vanishes. Why it changes everything: for a smooth function f, ordinary calculus expands df = f'dx + (1/2)f''(dx)^2 + ..., and for a differentiable path (dx)^2 is negligible relative to dx, so only the first term survives. For Brownian motion (dW)^2 = dt is the SAME ORDER as dt, so the second-order term survives into the limit. That is Ito's lemma: df = (f_t + mu*f_x + (1/2)sigma^2*f_xx)dt + sigma*f_x*dW, where the (1/2)sigma^2*f_xx term is the ghost of the quadratic variation. Related facts worth having: Brownian paths have INFINITE total variation, which is why you cannot define the stochastic integral pathwise as a Riemann-Stieltjes integral and have to build it as an L2 limit instead; and the paths are nowhere differentiable, which is the same statement. The practical reading for a trader is direct: quadratic variation IS realised variance. Delta-hedging P&L is (1/2)*Gamma*(realised quadratic variation minus implied), so 'the quadratic variation of the path is T' is the mathematical way of saying that in a Black-Scholes world, realised vol equals implied vol and a hedged option makes exactly zero.",
+      "technique": "Quadratic variation as the source of the Ito term",
+      "difficultyRationale": "Medium: the fact is recall, and connecting it to both Ito and hedging P&L is what makes it complete."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "Over [0, T], what can you say about the integral of W(t) dt (as opposed to dW)?",
+      "options": [
+        "It is normal with mean 0 and variance T^3/3",
+        "It equals (W_T^2 - T)/2",
+        "It is normal with mean 0 and variance T",
+        "It is not well defined"
+      ],
+      "correctOption": 0,
+      "explanation": "It is Normal(0, T^3/3). Unlike the stochastic integral against dW, this is an ordinary Riemann integral of a continuous path, taken pathwise - no Ito machinery needed. It is normal because it is a limit of linear combinations of jointly normal variables. The mean is zero by symmetry. For the variance, use E[W_s*W_t] = min(s,t): Var = double integral over [0,T]^2 of min(s,t) ds dt = 2 * integral from 0 to T of integral from 0 to t of s ds dt = 2 * integral of t^2/2 dt = T^3/3. The T^3 scaling is worth noticing - the integral of the path is much more variable than the path itself, which has variance T. The distractor (W_T^2 - T)/2 is the answer to the DIFFERENT question about the integral of W dW, and confusing the two is the standard error: dW integrals need Ito, dt integrals do not. This quantity is the 'area under the path', and it appears in pricing Asian options, where the payoff depends on the average of the underlying rather than its terminal value.",
+      "technique": "Distinguishing dt integrals from dW integrals",
+      "difficultyRationale": "Hard: the variance calculation needs the covariance function, and the dW confusion is a real trap."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You draw n independent uniform [0,1] numbers. What is the expected value of the maximum? Of the minimum? Of the kth smallest?",
+      "canonicalAnswer": "E[max] = n/(n+1), E[min] = 1/(n+1), and E[kth smallest] = k/(n+1).",
+      "explanation": "Fastest route for the max: P(max <= x) = x^n, since every draw must be below x. So the density is n*x^(n-1) and E[max] = integral of x*n*x^(n-1) dx from 0 to 1 = n/(n+1). Or with the tail formula, E[max] = integral of (1 - x^n) dx = 1 - 1/(n+1) = n/(n+1), with no differentiation at all. By the symmetry x -> 1-x, E[min] = 1/(n+1). The general result E[X_(k)] = k/(n+1) has a beautiful explanation that is worth giving instead of the Beta-integral: the n points cut [0,1] into n+1 gaps, and by symmetry every gap has the same expected length, namely 1/(n+1). The kth smallest point sits after k gaps, so its expected position is k/(n+1). That single picture gives every order statistic at once, and it is the same 'equal expected gaps' symmetry behind the without-replacement shortcut - one idea, two topics. Consequences: E[range] = E[max] - E[min] = (n-1)/(n+1), which approaches 1 as n grows; and the kth order statistic is distributed Beta(k, n+1-k), whose mean is indeed k/(n+1). Note E[max] for n = 2 is 2/3, not 1/2 - answering 1/2 is the standard slip, from averaging the two draws rather than taking the larger.",
+      "technique": "Equal expected gaps between order statistics",
+      "difficultyRationale": "Medium: the CDF route is quick; the gap-symmetry picture is what generalises."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two independent uniform [0,1] draws. What is the correlation between the minimum and the maximum?",
+      "canonicalAnswer": "1/2.",
+      "explanation": "Let M = max, m = min. We need Cov(m, M) and the two variances. The joint density of (m, M) is 2 on the region 0 < m < M < 1 (the factor 2 because either draw could be the larger). E[mM]: note that mM is just the PRODUCT of the two original draws, XY, regardless of order! So E[mM] = E[X]E[Y] = 1/4 by independence - a shortcut worth spotting. E[m] = 1/3 and E[M] = 2/3, so Cov = 1/4 - (1/3)(2/3) = 1/4 - 2/9 = (9 - 8)/36 = 1/36. Variances: M has density 2x, so E[M^2] = integral of x^2*2x = 1/2, and Var(M) = 1/2 - 4/9 = 1/18. By symmetry Var(m) = 1/18. So Corr = (1/36)/(1/18) = 1/2. The trick that makes this fast is recognising that any SYMMETRIC function of (m, M) is the same function of (X, Y) - so the product, the sum, and the sum of squares can all be computed on the original independent variables. m + M = X + Y is the cleanest example. The intuition for a positive correlation: if both draws happen to be large, then both the min and the max are large, so they move together. The correlation is strongest for small n and decays as n grows, since with many draws the max is pinned near 1 and the min near 0 regardless of the middle of the sample.",
+      "technique": "Symmetric functions of order statistics equal those of the originals",
+      "difficultyRationale": "Medium: the product shortcut collapses the hardest integral, but you have to notice it."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Twenty ants are placed at random points on a metre stick, each facing a random direction, and all walk at the same speed. When two meet they instantly reverse direction. When an ant reaches an end it falls off. What is the expected time until the last ant falls off, if they walk at 1 metre per minute?",
+      "canonicalAnswer": "The maximum over the ants of the distance each would travel if they simply PASSED THROUGH each other. Because the ants are indistinguishable, a collision is equivalent to the two ants swapping identities — so the set of positions evolves exactly as if they never interact.",
+      "explanation": "The key insight is that collisions are a red herring. Since all ants are identical and move at the same speed, two ants bouncing off each other is indistinguishable from two ants passing through each other and swapping labels. The SET of ant positions is identical under either interpretation. So analyse the pass-through system, where each ant walks in a straight line until it falls off, and the answer transfers directly. Now the last departure time is the maximum over all ants of its own travel distance, and each ant's distance is its distance to whichever end it faces. If the positions are uniform on [0,1] and directions are fair coin flips, an ant at position x facing left travels x and facing right travels 1-x. Concretely, the WORST CASE is 1 minute - an ant at one end walking to the other - and the last ant always falls off within 1 minute regardless of how many ants there are or how they are arranged. For the expected value with n ants: each ant's travel distance D is distributed as a uniform [0,1] variable (mixing x and 1-x over a random direction just gives uniform again), and the ants' distances are independent, so E[max of n uniforms] = n/(n+1). With n = 20 that is 20/21 = 0.952 minutes. The transferable lesson is that when objects are INDISTINGUISHABLE, an interaction that merely exchanges them can be relabelled away. The same trick handles queueing problems where servers are identical, and the reflection arguments in path counting.",
+      "technique": "Relabelling indistinguishable objects to remove interactions",
+      "difficultyRationale": "Hard: the pass-through insight is a genuine leap, and without it the problem is intractable."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You have independent exponential random variables with rates lambda_1, ..., lambda_n. What is the distribution of the minimum?",
+      "options": [
+        "Exponential with rate equal to the sum of the lambdas",
+        "Exponential with rate equal to the smallest lambda",
+        "Exponential with rate equal to the average of the lambdas",
+        "Not exponential"
+      ],
+      "correctOption": 0,
+      "explanation": "Exponential with rate lambda_1 + ... + lambda_n. Derivation: P(min > t) = product of P(X_i > t) = product of exp(-lambda_i*t) = exp(-(sum of lambdas)*t), which is the survival function of an exponential with the summed rate. The companion result, which usually comes next, is that P(X_i is the minimum) = lambda_i / (sum of lambdas) - and remarkably, WHICH one is smallest is independent of HOW small it is. This pair is the foundation of competing-risks models and of simulating Poisson processes: to find the next event among several independent sources, draw the waiting time from the pooled rate and then pick which source fired in proportion to its rate. In credit modelling it is the standard first-to-default construction, where the time to first default has the summed hazard rate. Note that rates ADD for the minimum - which is the mirror image of the fact that the maximum of exponentials is NOT exponential at all.",
+      "technique": "The minimum of independent exponentials",
+      "difficultyRationale": "Medium: the derivation is one line, and the 'which one' companion result is the extension."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You draw n independent uniform [0,1] values. What is the probability that the maximum exceeds 0.9? How large must n be for that probability to reach 99%?",
+      "canonicalAnswer": "P(max > 0.9) = 1 - 0.9^n. For 99%, solve 0.9^n < 0.01, giving n > ln(0.01)/ln(0.9) = 43.7, so n = 44.",
+      "explanation": "P(max <= 0.9) = 0.9^n, since every draw must be at or below 0.9, so P(max > 0.9) = 1 - 0.9^n. For n = 1 that is 10%, for n = 10 it is 65%, for n = 20 it is 88%. To reach 99% we need 0.9^n <= 0.01. Take logs: n >= ln(0.01)/ln(0.9) = (-4.605)/(-0.1054) = 43.7, so n = 44. A useful mental shortcut: 0.9^n halves roughly every 6.6 draws (since ln 2 / 0.1054 = 6.6), so getting from 0.1 down to 0.01 takes about 3.3 halvings, or 22 more draws beyond the 22 needed to reach 0.1 - which lands you at 44. The finance reading is worth adding: this is exactly the arithmetic of extreme-value risk. The probability that the WORST of n days breaches a threshold grows quickly with n even when each individual day is safe, which is why a 1-in-100-day VaR breach is nearly certain to occur at some point in a year, and why judging a risk model by whether it was breached last week is meaningless. The same formula is behind multiple-testing corrections: run 44 independent tests at the 10% level and you are 99% likely to see at least one 'significant' result from pure noise.",
+      "technique": "CDF of the maximum, and its extreme-value reading",
+      "difficultyRationale": "Medium: the algebra is quick; connecting it to VaR breaches and multiple testing is the substance."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Given an array of integers that may be negative, find the contiguous subarray with the largest sum. What is the best complexity you can achieve?",
+      "canonicalAnswer": "O(n) time and O(1) space, using Kadane's algorithm: sweep once, keeping the best sum ending at the current position and the best seen anywhere, resetting the running sum to zero whenever it turns negative.",
+      "explanation": "The brute force is O(n^3) if you recompute every subarray sum, or O(n^2) with prefix sums. Mention that and then improve. Kadane's algorithm: maintain 'best ending here' and 'best overall'. For each element x, set bestEndingHere = max(x, bestEndingHere + x) and bestOverall = max(bestOverall, bestEndingHere). One pass, constant extra memory. The reasoning behind it is worth stating, because it is what makes it obvious rather than magic: the maximum subarray ending at position i either extends the maximum subarray ending at i-1 or starts fresh at i. If the running sum has gone negative, carrying it forward can only hurt whatever comes next, so you discard it. That is the whole algorithm - a one-line recurrence, which is why it is really dynamic programming with an O(1) state. Details interviewers probe: with all-negative input, the version above correctly returns the largest single element, whereas resetting to 0 instead of x would wrongly return 0 - so ask whether the empty subarray is allowed. To return the indices as well as the sum, track the start position and reset it whenever you start fresh. And there is a divide-and-conquer solution at O(n log n), worth mentioning to show you can see the alternative, but Kadane's dominates it.",
+      "technique": "Kadane's algorithm as a one-state dynamic program",
+      "difficultyRationale": "Medium: the O(n) solution is short, and the all-negative edge case is where people slip."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "An array contains every element twice except one, which appears once. Find it in O(n) time and O(1) extra space.",
+      "options": [
+        "XOR every element together",
+        "Sort the array and scan for the singleton",
+        "Use a hash set of seen values",
+        "Sum the array and compare with twice the sum of the distinct values"
+      ],
+      "correctOption": 0,
+      "explanation": "XOR everything. XOR is associative and commutative, x XOR x = 0, and x XOR 0 = x - so every duplicated value cancels itself out regardless of position, leaving exactly the singleton. O(n) time, O(1) space, one pass, no allocation. The alternatives all fail one constraint: sorting is O(n log n); a hash set is O(n) time but O(n) space; the summing approach needs the distinct values, which is the problem you are trying to solve. The technique generalises usefully: if every element appears twice except TWO singletons, XOR everything to get a XOR b, take any set bit of that result, and partition the array by that bit - each singleton lands in a different partition, so XOR each half separately. Recognising XOR as a self-inverse group operation is the reusable idea.",
+      "technique": "XOR as a self-cancelling operation",
+      "difficultyRationale": "Easy: one insight, and the constraints rule out every alternative."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you shuffle an array into a uniformly random permutation? What is wrong with the naive version that swaps each element with a uniformly random index?",
+      "canonicalAnswer": "Fisher-Yates: for i from n-1 down to 1, swap a[i] with a[j] where j is uniform on [0, i]. The naive version — swapping a[i] with a uniform index in [0, n-1] — is biased, because it generates n^n equally likely execution paths and n^n is never divisible by n! for n > 2.",
+      "explanation": "Fisher-Yates (Knuth shuffle): iterate i from n-1 down to 1 and swap a[i] with a[j] for j uniform on [0, i] INCLUSIVE. Each step fixes the element in position i, choosing uniformly among the candidates that have not yet been placed, so by induction every permutation has probability 1/n!. O(n) time, in place. The naive variant chooses j uniformly from the FULL range [0, n-1] at every step. The counting argument is the cleanest proof it is wrong: the algorithm makes n independent uniform choices out of n options, so there are n^n equally likely execution paths, and these must map onto n! permutations. For any n > 2, n! does not divide n^n, so the permutation probabilities cannot possibly all be equal. For n = 3 the bias is easy to see directly: 27 paths onto 6 permutations means some permutations arise 4 times and others 5. The bias is not academic - it shows up as a measurable skew in simulations, and it favours elements staying near their original positions. Two practical notes worth adding: the same counting argument shows why sorting by a random key is fine ONLY if the keys are distinct and the comparator is consistent - shuffling by 'sort with a random comparator' is a well-known bug because it violates the comparator contract and produces a biased, implementation-dependent order. And when shuffling a large array with a pseudo-random generator, the generator's state space must be at least n! or most permutations are simply unreachable, which for n = 2080 already exceeds a 64-bit seed.",
+      "technique": "Fisher-Yates, and a counting proof that the naive shuffle is biased",
+      "difficultyRationale": "Medium: the algorithm is easy to state; proving the naive version is biased is the discriminating part."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You have 1,000 bottles of wine, exactly one of which is poisoned. A test takes 24 hours to show a result and you have 24 hours. What is the minimum number of test subjects needed?",
+      "options": [
+        "10",
+        "1,000",
+        "500",
+        "32"
+      ],
+      "correctOption": 0,
+      "explanation": "10. Each subject yields one bit of information - sick or not - so k subjects distinguish at most 2^k cases. You need 2^k >= 1000, and 2^10 = 1024 >= 1000 while 2^9 = 512 is not enough. The construction: number the bottles 0 to 999 in binary, and have subject i drink from every bottle whose ith bit is 1. The resulting pattern of illness reads off directly as the binary index of the poisoned bottle. Note the tests must all run in PARALLEL, which is exactly why the 24-hour constraint is in the question - sequential testing would allow a different trade-off. The general technique is what to take away: whenever a puzzle asks for the minimum number of tests, weighings or questions, count the information. Each outcome with m possible results gives log2(m) bits, and you need at least log2(number of cases) bits in total. That single argument gives the 10 here, gives log3 for balance-scale weighing problems where each weighing has three outcomes, and gives the n log n lower bound for comparison sorting.",
+      "technique": "Information-theoretic lower bound via bit counting",
+      "difficultyRationale": "Medium: the bound is easy once framed as bits, and the binary-labelling construction confirms it."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "How do you test whether a positive integer n is a power of two in constant time?",
+      "options": [
+        "Check that n & (n - 1) equals 0",
+        "Check that n % 2 equals 0",
+        "Repeatedly divide by 2 and check for a remainder",
+        "Check that log2(n) is an integer"
+      ],
+      "correctOption": 0,
+      "explanation": "n & (n-1) == 0. A power of two has exactly one set bit; subtracting 1 flips that bit to 0 and sets all the lower bits to 1, so the AND is zero. For anything else, the highest set bit survives the AND and the result is non-zero. One operation, constant time. Checking n % 2 == 0 only tests evenness, so 6 would pass. Repeated division works but is O(log n) rather than constant. The floating-point log test is the dangerous one: it looks fine and fails on large values because log2 of a big integer is not exactly representable, so log2(2^49) can come out as 48.99999999999999. That is a real bug class, and saying so is worth as much as the correct answer. The related idiom n & (n-1) also clears the lowest set bit, which gives Brian Kernighan's population-count loop.",
+      "technique": "Bit manipulation for powers of two",
+      "difficultyRationale": "Easy: a single idiom, though the floating-point distractor is a genuine trap."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Monte Carlo error falls as 1/sqrt(N). Given that, why is Monte Carlo the standard tool for high-dimensional option pricing, and how would you speed it up without simply running more paths?",
+      "canonicalAnswer": "Because the 1/sqrt(N) rate is INDEPENDENT of dimension, while grid methods degrade exponentially with it. To speed it up, reduce variance rather than increase N: antithetic variates, control variates, importance sampling for rare events, and quasi-random (low-discrepancy) sequences.",
+      "explanation": "Why it wins in high dimensions: a grid or lattice method with m points per dimension needs m^d points in d dimensions, so accuracy collapses exponentially as d grows - the curse of dimensionality. Monte Carlo's error is c/sqrt(N) where the constant c depends on the payoff's variance but NOT on d. So there is a crossover dimension, typically around 3 or 4, beyond which Monte Carlo simply wins. A basket option on 30 names is a 30-dimensional integral, and nothing else is practical. How to speed it up. Note first that halving the error by brute force requires FOUR times the paths, so variance reduction is where the leverage is. (1) ANTITHETIC VARIATES: for every path driven by Z, also run the path driven by -Z and average. Costs nothing extra in random numbers and reduces variance whenever the payoff is monotonic in Z, because the two estimates are negatively correlated. (2) CONTROL VARIATES: simulate alongside a related quantity whose exact value you know - price an Asian option using the geometric-average Asian, which has a closed form, and correct by the known error. This is usually the biggest win available, often an order of magnitude. (3) IMPORTANCE SAMPLING: for rare events such as deep out-of-the-money options or credit tail losses, sample from a shifted distribution that visits the important region often, then reweight. Without it, most paths contribute zero and the estimator is nearly useless. (4) QUASI-MONTE CARLO: replace pseudo-random numbers with a low-discrepancy sequence (Sobol, Halton), which fills space more evenly and can achieve close to 1/N in moderate dimensions - though the advantage degrades in very high dimensions and error estimates become harder. (5) Mundane but real: use common random numbers when comparing scenarios so the differences are not swamped by simulation noise.",
+      "technique": "Why the dimension-free rate matters, and variance reduction",
+      "difficultyRationale": "Medium: the dimension argument is the key insight; naming concrete variance-reduction methods is the depth."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In a finite-difference PDE solver for option pricing, what is the main trade-off between the explicit and implicit schemes?",
+      "options": [
+        "Explicit is simple but only conditionally stable, needing a time step of order (space step) squared; implicit is unconditionally stable but must solve a linear system each step",
+        "Explicit is more accurate but slower",
+        "Implicit only works for European options",
+        "Explicit requires a uniform grid while implicit does not"
+      ],
+      "correctOption": 0,
+      "explanation": "The explicit scheme computes each new value directly from known neighbours - trivial to code, no linear algebra - but it is only CONDITIONALLY stable, requiring roughly dt <= (dx)^2/(sigma^2 S^2). Halving the space step forces you to quarter the time step, so refining the grid becomes brutally expensive. The implicit scheme expresses each new value in terms of unknown neighbours, so every step requires solving a tridiagonal system, but it is unconditionally stable and you can take whatever time step accuracy demands. Crank-Nicolson averages the two: second-order accurate in time as well as space, still unconditionally stable, and the usual default. Its known weakness is worth mentioning - it can produce spurious oscillations near a discontinuous payoff such as a digital option, and the standard fix is Rannacher smoothing, taking a few fully implicit steps first. Also worth noting that the explicit scheme is essentially the trinomial tree, and its stability condition is exactly the condition that the implied 'probabilities' stay non-negative.",
+      "technique": "Stability versus cost in finite-difference schemes",
+      "difficultyRationale": "Medium: the stability condition is the substance, and the Crank-Nicolson oscillation caveat is the extension."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You receive a stream of numbers and must report the running mean at every step, without storing the history. How do you do it, and how would you also track the running variance?",
+      "canonicalAnswer": "Keep a count and update the mean incrementally: mean_n = mean_(n-1) + (x_n - mean_(n-1))/n. For variance use Welford's algorithm: maintain M2 with M2 += (x_n - mean_old)*(x_n - mean_new), and the variance is M2/(n-1).",
+      "explanation": "MEAN. The naive approach stores a running sum and divides, which works but loses precision badly for long streams and large values, because the sum grows without bound while the increments do not. The incremental form mean_n = mean_(n-1) + (x_n - mean_(n-1))/n keeps the accumulator at the scale of the data and is numerically far better behaved. VARIANCE. The textbook formula Var = E[X^2] - (E[X])^2 is a well-known numerical disaster: when the mean is large relative to the standard deviation, you subtract two nearly equal large numbers and lose most of your significant digits - it can even return a negative variance. Welford's algorithm avoids the cancellation entirely. Maintain n, mean, and M2 (the running sum of squared deviations). For each new x: n += 1; delta = x - mean; mean += delta/n; delta2 = x - mean; M2 += delta*delta2. Then the sample variance is M2/(n-1). One pass, constant memory, numerically stable. Two extensions interviewers often add. For an EXPONENTIALLY WEIGHTED mean, use mean = lambda*mean + (1-lambda)*x, which needs no count at all and is what EWMA volatility estimation does. For a SLIDING WINDOW of fixed size k you do need to store the k values, since you must subtract the departing observation - and that is exactly the rolling-window ghost-feature problem in volatility estimation, where an old large return leaving the window causes a phantom jump.",
+      "technique": "Numerically stable streaming statistics",
+      "difficultyRationale": "Medium: the mean is easy; knowing why the naive variance formula fails is the real content."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the lower bound on the number of comparisons needed to sort n items, and why?",
+      "options": [
+        "Order n log n, because n! outcomes require at least log2(n!) binary comparisons",
+        "Order n, because each item must be examined at least once",
+        "Order n^2, because every pair must be compared",
+        "There is no lower bound; it depends on the algorithm"
+      ],
+      "correctOption": 0,
+      "explanation": "Omega(n log n) for COMPARISON-based sorting. The argument is information-theoretic: there are n! possible orderings, each comparison has two outcomes and so yields at most one bit, and distinguishing n! cases requires at least log2(n!) bits. By Stirling, log2(n!) is approximately n*log2(n) - 1.44n, so the bound is Omega(n log n). Merge sort and heap sort achieve it, so it is tight. The crucial qualifier is COMPARISON-based. Algorithms that use the structure of the keys rather than comparing them can beat it: counting sort and radix sort are O(n) or O(nk) for bounded integer keys, because they extract more than one bit per operation by indexing directly. Being able to name that exception is what distinguishes understanding the bound from reciting it - and it is the same bit-counting argument as the poisoned-wine problem, applied to a different outcome space.",
+      "technique": "Information-theoretic sorting lower bound",
+      "difficultyRationale": "Easy: the argument is short, and the comparison-based qualifier is the point."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have a fair coin and need to simulate an event with probability exactly 1/3. How do you do it, and what is the expected number of tosses? Now the reverse: you have a BIASED coin with unknown p and need a fair 50/50 decision.",
+      "canonicalAnswer": "For 1/3: toss twice, map HH to success, HT and TH to failure, and reject TT and repeat. Expected tosses 8/3. For a fair decision from a biased coin: von Neumann's trick — toss twice, call HT one outcome and TH the other, discard HH and TT.",
+      "explanation": "SIMULATING 1/3 WITH A FAIR COIN. A fair coin generates powers of 2, and 3 is not one, so no fixed-length scheme can work exactly. Use rejection sampling: toss twice for four equally likely outcomes, assign HH to the 1/3 event, HT and TH to the 2/3 event, and REJECT TT, starting over. Conditional on accepting, the probabilities are exactly 1/3 and 2/3. Expected tosses: each round of 2 tosses is accepted with probability 3/4, so the number of rounds is geometric with mean 4/3 and the expected tosses are 8/3 = 2.67. It terminates with probability 1 despite having no fixed length. A FAIR DECISION FROM A BIASED COIN (von Neumann). Toss twice. HT and TH each have probability p(1-p) - identical, whatever p is - so call HT 'heads' and TH 'tails' and discard HH and TT. The result is exactly fair regardless of the bias, and crucially you never need to know p. Expected tosses: each pair is decisive with probability 2p(1-p), so the expected number of tosses is 1/(p(1-p)), which is 4 for a fair coin and blows up for a very biased one - at p = 0.01 you need about 101 tosses on average. Both answers share one idea worth naming: when you cannot produce the distribution you want directly, produce something you CAN and then condition on an event that restores the symmetry you need. That is rejection sampling, and it is the same principle behind acceptance-rejection methods for sampling arbitrary continuous densities.",
+      "technique": "Rejection sampling to change a distribution's granularity",
+      "difficultyRationale": "Medium: each half is a known trick, and seeing that both are rejection sampling is the unifying point."
     }
   ]
 }

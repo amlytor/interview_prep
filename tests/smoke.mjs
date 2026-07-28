@@ -98,12 +98,24 @@ await page.getByRole("button", { name: "← All topics" }).click();
 await page.waitForSelector(".topic-card");
 const afterCount = await page.locator(".topic-card").count();
 check("new topic appears in the tree", afterCount === seededCount + 1, `${afterCount} topics`);
-// Prereqs are depth-2 and depth-3, so it should be placed in the deepest tier.
+// Its prereqs (Combinatorics, Recursive states) sit at depth 1 and 2, so the
+// new topic must land strictly below both. Asserted relatively rather than as
+// "the last tier": the seeded graph has deeper branches of its own.
 const tierHeadings = await page.locator(".tier-heading").allTextContents();
-const lastTier = page.locator(".topic-grid").last();
-check("placed in a deeper tier by its prereqs",
-  (await lastTier.locator(".topic-card-title", { hasText: "Reflection principle" }).count()) === 1,
-  `tiers: ${tierHeadings.join(" | ")}`);
+const tierIndexOf = async (title) => {
+  const grids = await page.locator(".topic-grid").all();
+  for (let i = 0; i < grids.length; i++) {
+    if ((await grids[i].locator(".topic-card-title", { hasText: title }).count()) > 0) return i;
+  }
+  return -1;
+};
+const newTier = await tierIndexOf("Reflection principle");
+const prereqTier = Math.max(await tierIndexOf("Combinatorics"), await tierIndexOf("Recursive states"));
+check("placed in a deeper tier than its prereqs",
+  newTier > prereqTier && prereqTier >= 0,
+  `new=${newTier} deepest prereq=${prereqTier} tiers: ${tierHeadings.join(" | ")}`);
+check("every tier has a name, not a bare index",
+  tierHeadings.every((t) => !/^Tier \d+$/.test(t.trim())), tierHeadings.join(" | "));
 
 await nav(page, /Add Question/);
 await page.waitForTimeout(200);
