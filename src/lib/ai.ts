@@ -19,7 +19,7 @@ import type {
   WhyMissedTag,
 } from "../types";
 import { MISSING_PREREQ_TAG, WHY_MISSED_TAGS } from "../types";
-import type { ChatTurn, MissDiagnosis } from "../types";
+import type { AiTask, ChatTurn, MissDiagnosis } from "../types";
 import type { TopicId, TopicInfo } from "./topics";
 import { topicLabel } from "./topics";
 import { providerInfo } from "./providers";
@@ -55,14 +55,26 @@ interface LlmConfig {
   keyRequired: boolean;
 }
 
-/** Resolve the active provider/model/key/base-URL out of Settings. */
-export function llmConfig(settings: Settings): LlmConfig {
+/**
+ * The model that will actually be used for a given task: the per-task override
+ * if one is set for the active provider, else the default model.
+ */
+export function modelForTask(settings: Settings, task?: AiTask): string {
+  const override = task ? settings.taskModels?.[settings.provider]?.[task] : undefined;
+  return override?.trim() || settings.model;
+}
+
+/**
+ * Resolve the active provider/model/key/base-URL out of Settings.
+ * `task` selects a per-task model override when one is configured.
+ */
+export function llmConfig(settings: Settings, task?: AiTask): LlmConfig {
   const info = providerInfo(settings.provider);
   return {
     providerId: info.id,
     kind: info.kind,
     providerLabel: info.label,
-    model: settings.model,
+    model: modelForTask(settings, task),
     apiKey: settings.apiKeys?.[info.id] ?? "",
     baseUrl: (settings.baseUrls?.[info.id] || info.baseUrl).replace(/\/+$/, ""),
     // A local runtime is normally unauthenticated; everything else needs a key.
@@ -283,8 +295,12 @@ async function postOpenAiChat(
 }
 
 /** One system + one user message in, text out — whichever provider is active. */
-async function completeText(settings: Settings, req: CompletionRequest): Promise<string> {
-  const cfg = llmConfig(settings);
+async function completeText(
+  settings: Settings,
+  req: CompletionRequest,
+  task?: AiTask,
+): Promise<string> {
+  const cfg = llmConfig(settings, task);
   if (cfg.keyRequired && !cfg.apiKey) {
     throw new GradingError(`No API key set for ${cfg.providerLabel}. Add one in Settings.`);
   }
@@ -367,8 +383,9 @@ export async function completeChat(
   system: string,
   turns: ChatTurn[],
   maxTokens = 2000,
+  task: AiTask = "chat",
 ): Promise<string> {
-  const cfg = llmConfig(settings);
+  const cfg = llmConfig(settings, task);
   if (cfg.keyRequired && !cfg.apiKey) {
     throw new GradingError(`No API key set for ${cfg.providerLabel}. Add one in Settings.`);
   }
@@ -492,7 +509,7 @@ export async function gradeFreeTextAnswer(
     system: SYSTEM_PROMPT,
     user: buildUserPrompt(question, userAnswer),
     maxTokens: 4000,
-  });
+  }, "grading");
   return parseGradingResponse(raw);
 }
 
@@ -649,7 +666,7 @@ ${note.body}
 
 ${existing}`,
     maxTokens: 8000,
-  });
+  }, "generation");
   return validateQuizPayload(raw, note);
 }
 
@@ -709,7 +726,7 @@ Explanation: ${d.explanation}`;
       system: VALIDATE_SYSTEM_PROMPT,
       user: `Check these ${drafts.length} draft questions:\n\n${listing}`,
       maxTokens: 4000,
-    });
+    }, "validation");
   } catch (err) {
     return unchecked(
       `Couldn't run the automatic check (${err instanceof Error ? err.message : "unknown error"}) — review this one yourself.`,
@@ -789,7 +806,7 @@ There is no note for this topic yet — write one from scratch.`;
     system: NOTE_SYSTEM_PROMPT,
     user: userPrompt,
     maxTokens: 6000,
-  });
+  }, "generation");
   const body = stripFences(raw);
   if (body.length < 40) {
     throw new GradingError("The model returned an implausibly short note draft. Retry.");
@@ -899,7 +916,7 @@ export async function concludeDiagnosis(
     system: concludeSystemPrompt(ctx),
     user: `The question: ${ctx.prompt}\n\nTheir answer: ${ctx.userAnswer || "(left blank)"}\n\nThe conversation:\n\n${transcript}`,
     maxTokens: 2000,
-  });
+  }, "chat");
 
   let parsed: unknown;
   try {
@@ -989,7 +1006,7 @@ ${topics.map((t) => `${t.id} — ${t.label}`).join("\n")}
 Raw notes from the student:
 ${rawNotes}`,
     maxTokens: 8000,
-  });
+  }, "generation");
 
   let parsed: unknown;
   try {

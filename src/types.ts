@@ -157,6 +157,34 @@ export interface StudyNote {
   modified: boolean; // true once the user has edited the seeded body
 }
 
+/**
+ * The kinds of work sent to a model. They have genuinely different needs:
+ * grading and chat run constantly and only have to compare an answer against a
+ * rubric that's already in the prompt, so they want cheap and fast; generation
+ * and validation run rarely but must actually solve the problem correctly, and
+ * a wrong answer there persists in the question bank.
+ */
+export type AiTask = "grading" | "generation" | "validation" | "chat";
+
+export const AI_TASKS: AiTask[] = ["grading", "generation", "validation", "chat"];
+
+export const AI_TASK_LABELS: Record<AiTask, string> = {
+  grading: "Grading answers",
+  generation: "Generating questions & notes",
+  validation: "Checking generated questions",
+  chat: "Diagnostic chat",
+};
+
+export const AI_TASK_HINTS: Record<AiTask, string> = {
+  grading:
+    "Runs on every free-text answer, and you wait on it. The canonical answer is already in the prompt, so this is a comparison job — a fast, cheap chat model is the right fit, not a reasoning one.",
+  generation:
+    "Runs rarely, and has to invent a question and solve it correctly. A wrong answer here sits in your bank permanently, so this is where a stronger (or reasoning) model actually pays.",
+  validation:
+    "The pass that lets you bank questions unseen. Worth pointing at a DIFFERENT model from generation — a second opinion catches far more than a model reviewing its own work.",
+  chat: "Several calls per diagnosis. Same reasoning as grading: fast and cheap beats deep.",
+};
+
 export interface Settings {
   provider: string; // id from lib/providers.ts
   model: string;
@@ -164,6 +192,10 @@ export interface Settings {
   apiKeys: Record<string, string>;
   // Per-provider base-URL overrides (regional endpoints, self-hosted gateways).
   baseUrls: Record<string, string>;
+  // Optional per-task model overrides, keyed by provider then task. Kept
+  // per-provider for the same reason keys are: a model id is meaningless on a
+  // different provider, and silently sending one would just fail.
+  taskModels: Record<string, Partial<Record<AiTask, string>>>;
   spendNote: string; // free-text reminder the user sets for themselves
   // Attempts needed on a calendar day for it to count toward the daily streak.
   dailyGoal: number;

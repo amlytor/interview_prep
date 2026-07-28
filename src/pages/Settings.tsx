@@ -3,7 +3,8 @@ import { useStore } from "../lib/store";
 import { testConnection, fetchProviderModels, GradingError } from "../lib/ai";
 import { PROVIDERS, providerInfo, DEFAULT_PROVIDER_ID, DEFAULT_MODEL } from "../lib/providers";
 import type { ProviderModel } from "../lib/providers";
-import type { Settings } from "../types";
+import type { AiTask, Settings } from "../types";
+import { AI_TASKS, AI_TASK_HINTS, AI_TASK_LABELS } from "../types";
 
 const CUSTOM_MODEL = "__custom__";
 
@@ -18,6 +19,9 @@ export function SettingsPage() {
   });
   const [spendNote, setSpendNote] = useState(data.settings.spendNote);
   const [dailyGoal, setDailyGoal] = useState(data.settings.dailyGoal);
+  const [taskModels, setTaskModels] = useState<Record<string, Partial<Record<AiTask, string>>>>(
+    data.settings.taskModels,
+  );
   const [showKey, setShowKey] = useState(false);
   const [testState, setTestState] = useState<"idle" | "testing" | "ok" | "error">("idle");
   const [testMessage, setTestMessage] = useState<string | null>(null);
@@ -70,6 +74,10 @@ export function SettingsPage() {
   const useDatalist = liveModels !== null && liveModels.length > 20;
   const selectedInfo = catalogue.find((m) => m.id === model);
 
+  const overrideCount = Object.values(taskModels[provider] ?? {}).filter(
+    (v) => (v ?? "").trim().length > 0,
+  ).length;
+
   const apiKey = apiKeys[provider] ?? "";
   const baseUrl = baseUrls[provider] ?? info.baseUrl;
 
@@ -80,10 +88,18 @@ export function SettingsPage() {
       model: model.trim(),
       apiKeys,
       baseUrls: { ...baseUrls, [provider]: baseUrl.trim() },
+      // Blank overrides are dropped rather than stored as empty strings, so
+      // "is anything overridden?" stays a simple key count.
+      taskModels: {
+        ...taskModels,
+        [provider]: Object.fromEntries(
+          Object.entries(taskModels[provider] ?? {}).filter(([, v]) => (v ?? "").trim().length > 0),
+        ),
+      },
       spendNote,
       dailyGoal,
     }),
-    [provider, model, apiKeys, baseUrls, baseUrl, spendNote, dailyGoal],
+    [provider, model, apiKeys, baseUrls, baseUrl, taskModels, spendNote, dailyGoal],
   );
 
   function setModel(next: string) {
@@ -274,6 +290,42 @@ export function SettingsPage() {
             {modelsState === "idle" && " The suggestions are a starting point — any ID the provider accepts works."}
           </p>
         </div>
+
+        {/* ---------- Per-task model overrides ----------
+            Grading runs on every answer and only compares against a rubric
+            that's already in the prompt; generation has to invent and solve a
+            problem, and a wrong answer there persists in the bank. Those want
+            different models, so each task can override the default. */}
+        <details className="task-models">
+          <summary>
+            Use different models per task{" "}
+            {overrideCount > 0 && <span className="badge badge-topic">{overrideCount} set</span>}
+          </summary>
+          <p className="field-hint" style={{ marginTop: 10 }}>
+            Leave blank to use the model above. Overrides are kept per provider, since a model ID from one
+            provider means nothing on another.
+          </p>
+          {AI_TASKS.map((task) => (
+            <div className="field" key={task}>
+              <label htmlFor={`task-${task}`}>{AI_TASK_LABELS[task]}</label>
+              <input
+                id={`task-${task}`}
+                type="text"
+                list={useDatalist ? "model-catalogue" : undefined}
+                value={taskModels[provider]?.[task] ?? ""}
+                onChange={(e) =>
+                  setTaskModels((prev) => ({
+                    ...prev,
+                    [provider]: { ...(prev[provider] ?? {}), [task]: e.target.value },
+                  }))
+                }
+                placeholder={`default: ${model || "(none)"}`}
+                autoComplete="off"
+              />
+              <p className="field-hint">{AI_TASK_HINTS[task]}</p>
+            </div>
+          ))}
+        </details>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button className="btn btn-primary" onClick={handleSave}>

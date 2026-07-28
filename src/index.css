@@ -1233,3 +1233,25 @@ select:focus {
   margin: 0 0 10px;
   line-height: 1.5;
 }
+
+/* ---------- Per-task model overrides ---------- */
+
+.task-models {
+  margin: 4px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  background: var(--gray-50, #f7f7f5);
+}
+
+.task-models > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-600);
+  user-select: none;
+}
+
+.task-models[open] > summary { margin-bottom: 4px; }
+.task-models .field { margin-bottom: 14px; }
+.task-models .field:last-child { margin-bottom: 0; }

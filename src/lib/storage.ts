@@ -27,6 +27,7 @@ function defaultSettings(): Settings {
     model: DEFAULT_MODEL,
     apiKeys: {},
     baseUrls: {},
+    taskModels: {},
     spendNote: "",
     dailyGoal: DEFAULT_DAILY_GOAL,
   };
@@ -56,6 +57,7 @@ function normalizeSettings(raw: unknown): Settings {
     model: typeof s.model === "string" && s.model ? s.model : defaults.model,
     apiKeys,
     baseUrls: { ...(s.baseUrls ?? {}) },
+    taskModels: { ...(s.taskModels ?? {}) },
     spendNote: typeof s.spendNote === "string" ? s.spendNote : "",
     // v3: a goal below 1 would make every day qualify, including empty ones.
     dailyGoal:

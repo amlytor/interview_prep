@@ -119,6 +119,24 @@ Every provider except Anthropic speaks the OpenAI-compatible
 `POST /chat/completions` shape, so any model ID the endpoint accepts works —
 the dropdowns are starting points, and "Custom model ID..." takes anything.
 
+### Different models for different jobs
+
+One model doesn't fit every call the app makes, and the requirements pull in
+opposite directions:
+
+| Task | How often | What it needs |
+| --- | --- | --- |
+| **Grading**, **diagnostic chat** | Every free-text answer | Fast and cheap. The canonical answer and worked solution are *already in the prompt* — this is a comparison job, not a solving one, so a reasoning model burns tokens and latency for nothing. |
+| **Generation**, **validation** | Once per batch | Strong. It has to invent a question *and* solve it correctly, and a wrong answer sits in your bank permanently — more so now that questions can be banked unseen. This is where a reasoning model earns its cost. |
+
+**Settings → Use different models per task** lets each one override the default
+(blank = use the default). Overrides are kept per provider, since a model ID
+from one provider is meaningless on another.
+
+Worth pointing **validation** at a different model from **generation**: a second
+opinion catches far more than a model reviewing its own work, and that pass is
+what stands between a subtly wrong generated answer and your question bank.
+
 A fresh install starts on OpenRouter with `anthropic/claude-sonnet-5`; add a key
 and you're going, or switch the model to `deepseek/...` or `qwen/...` from the
 live list. **Upgrading an existing install never moves you** — data saved before

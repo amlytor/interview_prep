@@ -117,6 +117,52 @@ const inlineErr = (await page.locator(".banner-error").first().textContent()) ??
 check("an error inside a 200 response is reported verbatim",
   inlineErr.includes("No endpoints found for this model"), inlineErr.trim().slice(0, 100));
 
+// --- Per-task model overrides ----------------------------------------------
+// The point of the feature: a cheap model for the drilling loop and a strong
+// one for generation, without switching Settings between the two.
+await nav(page, /Settings/);
+await page.waitForSelector("#baseUrl");
+await page.fill("#baseUrl", MOCK_URL);
+await page.locator('input[placeholder*="exact model ID"]').fill("default-model");
+await page.locator(".task-models > summary").click();
+await page.fill("#task-grading", "cheap-grader");
+await page.fill("#task-generation", "strong-generator");
+await page.getByRole("button", { name: "Save Settings" }).click();
+await page.waitForTimeout(300);
+
+const savedOverrides = await page.evaluate(
+  () => JSON.parse(localStorage.getItem("quantprep_data_v2")).settings.taskModels,
+);
+check("overrides are stored per provider",
+  savedOverrides.custom?.grading === "cheap-grader" && savedOverrides.custom?.generation === "strong-generator",
+  JSON.stringify(savedOverrides));
+
+// Grade an answer, then generate a quiz, and compare what each actually sent.
+await nav(page, /Drill/);
+await page.locator("textarea").first().fill("Another attempt.");
+await page.getByRole("button", { name: /Submit/i }).first().click();
+await page.waitForTimeout(1500);
+
+await nav(page, /Topics/);
+await page
+  .locator(".topic-card")
+  .filter({ has: page.locator(".topic-card-title", { hasText: "Bayes theorem" }) })
+  .click();
+await page.getByRole("button", { name: "Generate quiz from note" }).click();
+await page.waitForSelector(".staged-item", { timeout: 20000 });
+
+const calls = await (await fetch("http://localhost:4599/__received")).json();
+const forSystem = (needle) =>
+  [...calls].reverse().find((r) => r.body.messages[0].content.includes(needle))?.body.model;
+
+check("grading uses its override", forSystem("grading a candidate's free-text answer") === "cheap-grader",
+  forSystem("grading a candidate's free-text answer"));
+check("generation uses a different override", forSystem("writing practice questions") === "strong-generator",
+  forSystem("writing practice questions"));
+check("validation falls back to the default when not overridden",
+  forSystem("checking draft interview questions") === "default-model",
+  forSystem("checking draft interview questions"));
+
 // --- A bad base URL must fail with an actionable message, not a crash -------
 await nav(page, /Settings/);
 await page.waitForSelector("#baseUrl");
