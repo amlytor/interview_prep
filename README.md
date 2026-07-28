@@ -113,6 +113,14 @@ OLLAMA_ORIGINS=http://localhost:5173 ollama serve
 Multiple-choice questions never call the API — only free-text grading, quiz
 generation, and note drafting do.
 
+**A note on reasoning models.** Models like `deepseek/deepseek-v4-pro` spend
+output tokens on internal reasoning before writing anything visible. QuantPrep
+budgets enough headroom for that, so they work — but for grading they're mostly
+wasted money: the task is "compare an answer to a rubric and write two
+sentences", which a standard chat model does as well, faster and cheaper. If a
+model ever runs out of budget mid-thought, the error says so explicitly rather
+than reporting a mysterious empty response.
+
 ### Spend awareness
 
 QuantPrep does not track live API spend (that would require a backend). Settings

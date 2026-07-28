@@ -79,6 +79,44 @@ check("sent system + user messages in OpenAI shape",
   sent.every((r) => r.body.messages.length === 2 && r.body.messages[0].role === "system" && r.body.messages[1].role === "user"));
 check("sent max_tokens", typeof sent[0]?.body.max_tokens === "number", String(sent[0]?.body.max_tokens));
 
+// --- Reasoning models: empty content must be explained, not just reported ---
+// A reasoning model spends its output budget thinking and returns empty visible
+// content with finish_reason "length". The old code called that "an empty
+// response", which told the user nothing about what to do.
+await nav(page, /Settings/);
+await page.waitForSelector("#baseUrl");
+await page.locator('input[placeholder*="exact model ID"]').fill("reasoning-model");
+await page.getByRole("button", { name: "Test Connection" }).click();
+await page.waitForSelector(".banner-success, .banner-error", { timeout: 15000 });
+const reasoningBanner = (await page.locator(".banner-success, .banner-error").first().textContent()) ?? "";
+// The real fix is the token budget: Test Connection now sends enough headroom
+// that a reasoning model gets past its thinking and answers normally.
+check("a reasoning model no longer fails the connection test",
+  reasoningBanner.includes("responded"), reasoningBanner.trim().slice(0, 100));
+
+const budget = await (await fetch("http://localhost:4599/__received")).json();
+check("Test Connection sends enough tokens for a reasoning model",
+  budget[budget.length - 1].body.max_tokens >= 200,
+  `max_tokens=${budget[budget.length - 1].body.max_tokens}`);
+
+// If even the raised budget isn't enough, the message must name the cause and
+// the fix rather than just saying "empty response".
+await page.locator('input[placeholder*="exact model ID"]').fill("always-truncates");
+await page.getByRole("button", { name: "Test Connection" }).click();
+await page.waitForSelector(".banner-error", { timeout: 15000 });
+const truncErr = (await page.locator(".banner-error").first().textContent()) ?? "";
+check("exhausted-budget error names the cause and the fix",
+  truncErr.includes("output-token limit") && truncErr.includes("reasoning models"),
+  truncErr.trim().slice(0, 120));
+
+// --- A provider error inside a 200 body is surfaced, not swallowed ----------
+await page.locator('input[placeholder*="exact model ID"]').fill("error-in-200");
+await page.getByRole("button", { name: "Test Connection" }).click();
+await page.waitForSelector(".banner-error", { timeout: 15000 });
+const inlineErr = (await page.locator(".banner-error").first().textContent()) ?? "";
+check("an error inside a 200 response is reported verbatim",
+  inlineErr.includes("No endpoints found for this model"), inlineErr.trim().slice(0, 100));
+
 // --- A bad base URL must fail with an actionable message, not a crash -------
 await nav(page, /Settings/);
 await page.waitForSelector("#baseUrl");

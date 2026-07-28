@@ -31,8 +31,25 @@ function run(name) {
   });
 }
 
+/**
+ * A server left over from an interrupted run would satisfy waitFor() while
+ * serving a stale build or an outdated mock, producing confusing failures.
+ * Refuse to start rather than silently test the wrong thing.
+ */
+async function assertPortFree(url, label) {
+  try {
+    await fetch(url);
+  } catch {
+    return; // nothing listening, which is what we want
+  }
+  throw new Error(`${label} is already running at ${url}. Stop it first (it may be stale).`);
+}
+
 let exitCode = 0;
 try {
+  await assertPortFree("http://localhost:4173/", "A preview server");
+  await assertPortFree("http://localhost:4599/__received", "A mock provider");
+
   start("preview", "npx", ["vite", "preview", "--port", "4173"]);
   start("mock", process.execPath, ["tests/mock-provider.mjs"]);
   await waitFor("http://localhost:4173/", "preview server");

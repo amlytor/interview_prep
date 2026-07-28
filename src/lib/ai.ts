@@ -195,14 +195,53 @@ async function completeOpenAiCompatible(cfg: LlmConfig, req: CompletionRequest):
     throw new GradingError(`${cfg.providerLabel} returned a non-JSON response.`, err);
   }
 
-  const choices = (payload as Record<string, unknown>)?.choices;
-  const first = Array.isArray(choices) ? (choices[0] as Record<string, unknown> | undefined) : undefined;
-  const message = first?.message as Record<string, unknown> | undefined;
-  const content = message?.content;
-  if (typeof content !== "string" || content.trim().length === 0) {
-    throw new GradingError(`${cfg.providerLabel} returned an empty response. Retry.`);
+  const body = payload as Record<string, unknown>;
+
+  // OpenRouter (and some gateways) can report a failure inside a 200 response
+  // rather than via the status code.
+  const inlineError = openAiErrorMessage(body);
+  if (inlineError) {
+    throw new GradingError(`${cfg.providerLabel} error: ${inlineError}`);
   }
-  return content;
+
+  const choices = body.choices;
+  const first = Array.isArray(choices) ? (choices[0] as Record<string, unknown> | undefined) : undefined;
+  if (!first) {
+    throw new GradingError(`${cfg.providerLabel} returned no completion for "${cfg.model}". Retry.`);
+  }
+
+  const message = first.message as Record<string, unknown> | undefined;
+  const content = message?.content;
+  if (typeof content === "string" && content.trim().length > 0) return content;
+
+  // Empty visible content has a few distinct causes, and saying which one saves
+  // a lot of guesswork. The common one is a reasoning model: it spends the
+  // output budget on internal reasoning and emits nothing visible, which shows
+  // up as finish_reason "length" and/or a populated `reasoning` field.
+  const finish = typeof first.finish_reason === "string" ? first.finish_reason : null;
+  const reasoning = typeof message?.reasoning === "string" ? message.reasoning : "";
+
+  if (finish === "length") {
+    throw new GradingError(
+      `"${cfg.model}" hit its output-token limit before producing an answer` +
+        (reasoning ? " — it spent the whole budget on internal reasoning." : ".") +
+        ` This is typical of reasoning models. Pick a non-reasoning model in Settings (for grading, a ` +
+        `standard chat model is both faster and cheaper), or retry — the limit is already generous.`,
+    );
+  }
+
+  // Truncation aside, a reasoning model may put everything in `reasoning`.
+  // Better to use it than to fail — the schema validators reject it if unusable.
+  if (reasoning.trim().length > 0) return reasoning;
+
+  if (finish === "content_filter") {
+    throw new GradingError(`"${cfg.model}" refused this request via its content filter. Try a different model.`);
+  }
+  throw new GradingError(
+    `${cfg.providerLabel} returned an empty response for "${cfg.model}"` +
+      (finish ? ` (finish_reason: ${finish})` : "") +
+      `. The model may be temporarily unavailable on this provider — retry, or pick another model in Settings.`,
+  );
 }
 
 /** One system + one user message in, text out — whichever provider is active. */
@@ -282,7 +321,7 @@ export async function testConnection(settings: Settings): Promise<string> {
   await completeText(settings, {
     system: "You are a connection test. Reply with the single word OK.",
     user: "Reply with the single word OK.",
-    maxTokens: 16,
+    maxTokens: 600,
   });
   return `${cfg.providerLabel} responded — ${cfg.model} is reachable.`;
 }
@@ -367,7 +406,7 @@ export async function gradeFreeTextAnswer(
   const raw = await completeText(settings, {
     system: SYSTEM_PROMPT,
     user: buildUserPrompt(question, userAnswer),
-    maxTokens: 1024,
+    maxTokens: 4000,
   });
   return parseGradingResponse(raw);
 }
@@ -501,7 +540,7 @@ Study note (markdown):
 ${note.body}
 
 ${existing}`,
-    maxTokens: 3000,
+    maxTokens: 8000,
   });
   return validateQuizPayload(raw, note);
 }
@@ -546,7 +585,7 @@ There is no note for this topic yet — write one from scratch.`;
   const raw = await completeText(settings, {
     system: NOTE_SYSTEM_PROMPT,
     user: userPrompt,
-    maxTokens: 2500,
+    maxTokens: 6000,
   });
   const body = stripFences(raw);
   if (body.length < 40) {
@@ -608,7 +647,7 @@ ${topics.map((t) => `${t.id} — ${t.label}`).join("\n")}
 
 Raw notes from the student:
 ${rawNotes}`,
-    maxTokens: 3000,
+    maxTokens: 8000,
   });
 
   let parsed: unknown;
