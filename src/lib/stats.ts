@@ -1,5 +1,6 @@
 import type { Attempt, Question, SrsState } from "../types";
 import { dueCount as srsDueCount } from "./srs";
+import { topicsForQuestion } from "./mastery";
 
 export interface TopicStat {
   topic: string;
@@ -27,9 +28,9 @@ export function computeTopicStats(questions: Question[], attempts: Attempt[]): T
   const agg = new Map<string, { attempts: number; correct: number }>();
 
   for (const a of attempts) {
-    const q = byId.get(a.questionId);
-    if (!q) continue;
-    for (const topic of q.topics) {
+    // topicsForQuestion also resolves attempts on v1 seed questions that were
+    // dropped in the v2 migration, so old history still counts.
+    for (const topic of topicsForQuestion(a.questionId, byId)) {
       const entry = agg.get(topic) ?? { attempts: 0, correct: 0 };
       entry.attempts += 1;
       if (isCorrect(a)) entry.correct += 1;

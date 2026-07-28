@@ -1,0 +1,139 @@
+{
+  "_comment": "QuantPrep study notes — seed content for the Math Academy-style learning layer. One entry per topic id. `body` is markdown. `prereqs` lists prerequisite topic ids (edit to match your approved knowledge graph). `source` marks these as human-authored so the app won't overwrite them with AI drafts without confirmation.",
+  "_schemaVersion": "notes_v1",
+  "notes": [
+    {
+      "topicId": "basic-probability",
+      "title": "Basic Probability & Expected Value",
+      "prereqs": [],
+      "source": "authored",
+      "body": "## Core idea\nProbability measures how likely an event is (0 to 1). Expected value is the long-run average of a random quantity — a weighted average of outcomes by their probabilities.\n\n## When to use (trigger)\nAny time you're asked \"what's the chance of...\" or \"on average, how many/how much...\". This is the foundation every other probability topic builds on.\n\n## Key formulas\n- $P(\\text{event}) = \\dfrac{\\text{favourable outcomes}}{\\text{total outcomes}}$ (equally likely case)\n- $E[X] = \\sum_i x_i \\, P(x_i)$ — sum each outcome times its probability\n- Independent events: $P(A \\text{ and } B) = P(A) \\times P(B)$\n- Mutually exclusive: $P(A \\text{ or } B) = P(A) + P(B)$\n\n## Worked example\nFair coin: win \u00a32 on heads, lose \u00a31 on tails. Expected profit per flip:\n$$E = \\tfrac{1}{2}(2) + \\tfrac{1}{2}(-1) = 1 - 0.5 = \u00a30.50$$\n\n## Common mistakes\n- **Adding when you should multiply**: \"A and B both happen\" multiplies; \"A or B happens\" (exclusive) adds.\n- **Confusing a count with a probability**: the number of arrangements (e.g. 3) is not the probability (e.g. 3/8).\n- Forgetting outcomes aren't always equally likely."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "title": "Geometric Distribution",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nModels how many independent trials you need until the **first success**, where every trial has the same success probability $p$.\n\n## When to use (trigger)\n\"Repeat independent trials until the first success.\" Coin until heads, die until a six, free throws until a basket.\n\n## Key formula\n$$E = \\frac{1}{p}$$\n\n## Key properties\n- **Memoryless**: past failures don't change the expected wait. Flipped 10 tails? Still expect 2 more flips to get heads.\n- Only valid when $p$ is **constant** across trials.\n\n## Worked example\nRoll a die until you get a 1 or 2. Success prob $p = 2/6 = 1/3$, so $E = 1/p = 3$ rolls.\n\n## Common mistakes\n- **Drawing without replacement is NOT geometric** — $p$ changes each draw. Use the without-replacement shortcut or enumeration instead.\n- **\"Any match\" problems**: for two dice showing the same number, $p = 1/6$ (condition on the first die), not $1/36$.\n- Confusing $E = 1/p$ (a count of trials) with $p$ itself."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "title": "Enumerate Scenarios",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nWhen probabilities change each step (dependent trials) and there are only a few possible outcomes, list every scenario, find each one's probability, and combine.\n\n## When to use (trigger)\nDrawing without replacement, dependent events, small number of ways the process can end.\n\n## Key formula\n$$E = \\sum_n n \\cdot P(\\text{ends on trial } n)$$\n\n## Steps\n1. List every scenario (ends on trial 1, 2, 3, ...).\n2. Multiply the conditional probabilities **along each path**.\n3. Sanity check: the scenario probabilities must sum to 1.\n4. Compute the weighted sum.\n\n## Worked example\n3 red, 2 blue balls, draw without replacement until first blue:\n- P(blue draw 1) = 2/5\n- P(blue draw 2) = (3/5)(2/4) = 3/10\n- P(blue draw 3) = (3/5)(2/4)(2/3) = 1/5\n- P(blue draw 4) = (3/5)(2/4)(1/3)(2/2) = 1/10\n- Sum = 1 \u2713, and $E = 1(2/5)+2(3/10)+3(1/5)+4(1/10) = 2$\n\n## Common mistakes\n- **Multiply along a path, don't add.**\n- On the final draw the target is often guaranteed (probability 1) — e.g. 2/2, not 1/2.\n- Too many scenarios? Look for the shortcut instead."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "title": "First Success Without Replacement (Shortcut)",
+      "prereqs": ["enumerate-scenarios"],
+      "source": "authored",
+      "body": "## Core idea\nA symmetry shortcut for the expected position of the first \"success\" when drawing without replacement — no enumeration needed.\n\n## When to use (trigger)\n$N$ total items, $k$ of them are \"successes\", drawing without replacement, want the expected draw of the **first** success.\n\n## Key formula\n$$E[\\text{first}] = \\frac{N+1}{k+1}$$\n\nFor the **last** success, flip it: use the count of the *other* type and measure from the far end.\n\n## Intuition\n$k$ successes split the $N$ items into $k+1$ equal gaps by symmetry. The first success sits just past the first gap.\n\n## Worked examples\n- 3 red, 2 blue, first blue: $E = (5+1)/(2+1) = 2$ \u2713 (matches enumeration)\n- 4 red, 2 blue, first blue: $E = 7/3 \\approx 2.33$\n- 1 blue among 5: $E = 6/2 = 3$ (middle, by symmetry)\n\n## Common mistakes\n- Using this **with replacement** — then it's geometric ($1/p$) instead.\n- Plugging in the wrong $k$ (it's the count of the type you're waiting for).\n- Forgetting the $+1$s."
+    },
+    {
+      "topicId": "complementary-counting",
+      "title": "Complementary Counting",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\n\"At least one\" is hard to count directly (too many cases). Compute the probability of the **opposite** event and subtract from 1.\n\n## When to use (trigger)\n\"At least one / at least two\" where a direct count would mean summing many cases.\n\n## Key formula\n$$P(\\text{at least one}) = 1 - P(\\text{none})$$\n\n## Steps\n1. Compute $P(\\text{opposite})$ — usually one clean chain of fractions.\n2. **Multiply** the chain (you need every step to hold), don't add.\n3. Subtract from 1.\n\n## Worked example\nBirthday problem, 30 people, P(at least two share):\n$$1 - \\frac{365}{365}\\cdot\\frac{364}{365}\\cdots\\frac{336}{365} \\approx 70\\%$$\nThe surprising 70% is the \"birthday paradox\".\n\n## Common mistakes\n- **Adding the chain instead of multiplying.**\n- Stopping the chain too early (it runs over all the people/items).\n- Forgetting the first term is 365/365 = 1 (the first person is unconstrained)."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "title": "Symmetry / Condition on First Step",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nWhen you don't care *which* specific outcome, fix the first item as a free reference point and ask what the rest must do to match it. Symmetry often gives the answer with no calculation.\n\n## When to use (trigger)\n\"Any match / any double / any pair\", or setups where interchangeable parts make outcomes equally likely.\n\n## Key idea\nFirst item lands anywhere (probability 1). Then compute the probability the others match/relate to it.\n\n## Worked example\nTwo dice, probability of any double: first die lands anywhere, second must match \u2192 $1/6$. (Equivalently, 6 doubles out of 36 outcomes.)\n\n## Classic trap\n- $1/36$ = probability of a **specific** double (both 3s).\n- $1/6$ = probability of **any** double.\n\n## Common mistakes\n- Multiplying $1/6 \\times 1/6$ when you only need a match, not a specific value.\n- Missing an available symmetry and grinding a long calculation instead."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "title": "Gambler's Ruin",
+      "prereqs": ["symmetry-condition-first", "recursive-states"],
+      "source": "authored",
+      "body": "## Core idea\nA random walk moving \u00b11 each step. What's the probability of hitting an upper target before a lower one (ruin)?\n\n## When to use (trigger)\n\"Reach +N before going broke at \u2212N\", random up/down moves.\n\n## Key formulas\nBoundary conditions (always start here): $p(-N)=0$ (broke), $p(+N)=1$ (won).\n\nFair coin, start at $k$, boundaries $\\pm N$:\n$$p(k) = \\frac{k+N}{2N}$$\n\nUnfair coin ($q=1-p$):\n$$p(k) = \\frac{1-(q/p)^{k+N}}{1-(q/p)^{2N}}$$\n\n## Worked example\nStart \u00a30, win at +\u00a33, lose at \u2212\u00a33, fair coin. You start exactly halfway, coin is fair \u2192 by symmetry $p(0) = 1/2$.\n\n## Common mistakes\n- Trying to calculate the boundaries instead of reading them off (0 and 1).\n- Forgetting this asks for a **probability of ruin**, not an expected value.\n- Overcomplicating the fair symmetric case, which is just 1/2."
+    },
+    {
+      "topicId": "coupon-collector",
+      "title": "Staged Geometric (Coupon Collector)",
+      "prereqs": ["geometric-distribution", "linearity-of-expectation"],
+      "source": "authored",
+      "body": "## Core idea\nCollecting all $n$ distinct types. Break the wait into stages; each stage is its own geometric distribution; add up the expected waits.\n\n## When to use (trigger)\n\"See every outcome at least once\" / \"collect all n types\".\n\n## Key formula\n$$E = \\frac{n}{n} + \\frac{n}{n-1} + \\dots + \\frac{n}{1} = n\\sum_{k=1}^n \\frac{1}{k}$$\n\n## Steps\n1. Stage 1: any new type, $p_1 = n/n = 1$, expected = 1.\n2. Stage 2: need a new one, $p_2 = (n-1)/n$, expected = $n/(n-1)$.\n3. ... continue to stage $n$ where only 1 type is left, $p_n = 1/n$, expected = $n$.\n4. Sum all stages (uses linearity of expectation).\n\n## Worked example\nRoll a die until all six faces seen: $E = 6(1 + 1/2 + \\dots + 1/6) \\approx 14.7$ rolls.\n\n## Common mistakes\n- Trying $(1/n)^n$ or a single geometric — it's a **sum of stages**.\n- Forgetting each stage flips $p$ into $1/p$ for its expected wait."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "title": "Bayes' Theorem",
+      "prereqs": ["conditional-probability"],
+      "source": "authored",
+      "body": "## Core idea\nUpdate a belief after observing evidence. Combines a base rate (prior) with how likely the evidence is under each hypothesis.\n\n## When to use (trigger)\n\"You observed X \u2014 what's the probability of underlying cause Y?\", test-accuracy + rare-condition problems, \"given X happened, P(Y)?\".\n\n## Best interview method: population table\n1. Pick a round number of trials (100, 300, 1000).\n2. Split into groups by the prior.\n3. Apply the likelihoods to get counts.\n4. Answer = (count you want) / (total count matching the observation).\n\n## Formal formula\n$$P(A|B) = \\frac{P(B|A)\\,P(A)}{P(B)}$$\n\n## Worked example\nDisease affects 1%, test 90% accurate, you test positive. Out of 1000: 10 sick \u2192 9 test positive; 990 healthy \u2192 99 false positives. $P(\\text{sick}\\,|\\,+) = 9/108 \\approx 8.3\\%$. Base rate dominates.\n\n## Classic traps\n- \"At least one child is a boy, P(both boys)?\" = 1/3 (three cases: BB, BG, GB).\n- \"The **older** child is a boy, P(both boys)?\" = 1/2 (pins down a specific child \u2014 more information).\n\n## Common mistakes\n- Answering with the test accuracy (90%) instead of the posterior (8.3%).\n- Counting all sick people rather than only those matching the observation (9, not 10)."
+    },
+    {
+      "topicId": "conditional-probability",
+      "title": "Conditional Probability",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nThe probability of A **given** that B has happened. Conditioning restricts the sample space to the outcomes where B holds.\n\n## When to use (trigger)\n\"Given that...\", \"if we know...\", any time information updates the odds. Prerequisite for Bayes and recursive states.\n\n## Key formula\n$$P(A|B) = \\frac{P(A \\text{ and } B)}{P(B)}$$\n\n## Worked example\nTwo children, at least one is a boy. Sample space {BB, BG, GB, GG}; condition on \"at least one boy\" removes GG, leaving 3 equally likely cases; P(both boys) = 1/3.\n\n## Common mistakes\n- Treating \"at least one is a boy\" the same as \"the older is a boy\" (1/3 vs 1/2) \u2014 what the condition pins down matters.\n- Forgetting to shrink the denominator to only the conditioned outcomes."
+    },
+    {
+      "topicId": "combinatorics",
+      "title": "Combinatorics (Permutations & Combinations)",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nCounting arrangements and selections. The one decision that matters: **does order matter?**\n\n## When to use (trigger)\n\"How many ways\", \"how many arrangements\", \"how many hands\".\n\n## Key formulas\n- Permutations (order matters): $P(n,k) = \\dfrac{n!}{(n-k)!}$\n- Combinations (order doesn't): $\\binom{n}{k} = \\dfrac{n!}{k!(n-k)!}$\n- Binomial probability (exactly $k$ successes in $n$ trials): $\\binom{n}{k} p^k (1-p)^{n-k}$\n\n## Decision rule\n- \"Arrange / line up / rank\" \u2192 permutation.\n- \"Choose / select / committee\" \u2192 combination.\n\n## \"Exactly k of a special type\" pattern\n$$\\binom{\\text{special}}{k} \\times \\binom{\\text{remaining}}{\\text{rest}}$$\n\n## Worked examples\n- Arrange 4 letters: $4! = 24$.\n- Choose 2 from 5: $\\binom{5}{2} = 10$.\n- Exactly 2 aces in a 5-card hand: $\\binom{4}{2}\\binom{48}{3} = 103{,}776$.\n\n## Common mistakes\n- Grabbing numbers from a previous problem \u2014 restate first.\n- Computing a probability when asked for a count (or vice versa).\n- Using combinations when order actually matters."
+    },
+    {
+      "topicId": "pigeonhole",
+      "title": "Pigeonhole Principle",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nIf $n+1$ items go into $n$ boxes, at least one box holds 2 or more. Simple to state; the skill is spotting the boxes.\n\n## When to use (trigger)\n\"Prove that at least two must share / match / collide.\"\n\n## Steps\n1. Define the boxes (categories).\n2. Count boxes ($n$) and items ($n+1$ or more).\n3. Conclude.\n\n## Worked examples\n- 13 people \u2192 two share a birth month (12 months = boxes).\n- Pick 6 numbers from 1\u201310 \u2192 two sum to 11. Boxes are the pairs {1,10},{2,9},{3,8},{4,7},{5,6} = 5 boxes; 6 picks force a collision.\n\n## Common mistakes\n- Not realising you sometimes have to **construct** the boxes (e.g. pairs summing to 11), they're not always obvious.\n- Miscounting boxes vs items."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "title": "Linearity of Expectation",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nThe expected value of a sum equals the sum of expected values \u2014 **even when the pieces are dependent**. This is what makes it so powerful.\n\n## When to use (trigger)\nA complex expected-value problem that looks impossible to compute directly. Break the whole into small pieces.\n\n## Key formula\n$$E[X_1 + \\dots + X_n] = E[X_1] + \\dots + E[X_n]$$\n\n## Three steps\n1. Define individual pieces (indicators): each person, pair, roll, adjacent slot.\n2. Find $P$ for one piece (usually easy).\n3. Multiply by the number of pieces.\n\n## Worked examples\n- 10 people, random hats: $E = 10 \\times \\tfrac{1}{10} = 1$.\n- 30 people, expected shared-birthday pairs: $\\binom{30}{2}\\times \\tfrac{1}{365} \\approx 1.19$.\n- Deck of 52, expected Aces immediately before a King: $51 \\times \\tfrac{4}{52}\\times \\tfrac{4}{51} = \\tfrac{4}{13}$.\n\n## Common mistakes\n- Thinking you need independence \u2014 you don't.\n- Not spotting the right \"piece\" to sum over (adjacent pairs, individual people, etc.)."
+    },
+    {
+      "topicId": "recursive-states",
+      "title": "Recursive States / Conditioning",
+      "prereqs": ["conditional-probability", "geometric-distribution"],
+      "source": "authored",
+      "body": "## Core idea\nSet up equations for the expected value from each \"state\" (how much progress you've made), based on what happens after one step. Solve simultaneously.\n\n## When to use (trigger)\nSequential process where a setback can send you backward (waiting for a pattern like HH, random walks).\n\n## Key structure\n$$E_{\\text{state}} = 1 + \\sum_{\\text{outcomes}} P(\\text{outcome}) \\times E_{\\text{new state}}$$\nThe \"1\" is the step you just took; game-over states contribute 0.\n\n## Worked example\nExpected flips to get HH. States: 0 (no progress), 1 (one H). $E_1 = 1 + \\tfrac12(0) + \\tfrac12 E_0$; $E_0 = 1 + \\tfrac12 E_1 + \\tfrac12 E_0$. Solving gives $E_0 = 6$. (For HT, $E_0 = 4$ \u2014 a near miss doesn't reset you.)\n\n## Common mistakes\n- **Sign errors** when solving: collect all $E$ terms on one side *before* dividing.\n- Choosing states by the full history instead of by progress toward the goal.\n- Forgetting the \"+1\" for the current step."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "title": "Continuous Distributions",
+      "prereqs": ["basic-probability", "combinatorics"],
+      "source": "authored",
+      "body": "## Core idea\nThe continuous analogues of discrete probability. Sums become integrals; probabilities become areas under a curve. Know three distributions and order statistics.\n\n## When to use (trigger)\nUniform/normal/Poisson setups, \"expected max/min\", anything measured on a continuum.\n\n## The three distributions\n- **Uniform** $U(a,b)$: $E[X] = \\tfrac{a+b}{2}$, $P(X<x) = \\tfrac{x-a}{b-a}$.\n- **Normal** $N(\\mu,\\sigma^2)$: 68% within $1\\sigma$, 95% within $2\\sigma$, 99.7% within $3\\sigma$. Sum of independent normals is normal. Foundation of parametric VaR.\n- **Poisson** $\\text{Pois}(\\lambda)$: $E[X]=\\text{Var}(X)=\\lambda$; counts rare events per period (defaults/year, trades/sec).\n\n## Order statistics (uniform on [0,1])\n$$E[\\min] = \\frac{1}{n+1}, \\qquad E[\\max] = \\frac{n}{n+1}$$\nSymmetric around 0.5; as $n$ grows, min\u21920 and max\u21921.\n\n## Deeper (revisit after calculus refresh)\n$P(\\max < x) = x^n$ (all $n$ below $x$), differentiate for the PDF, integrate for $E[\\max]$. The $P(\\max<x)=x^n$ step is the key move.\n\n## Common mistakes\n- Reaching for a formula without the gap/symmetry intuition.\n- Mixing up which is min vs max in the $\\tfrac{k}{n+1}$ form."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "title": "Out of the Box / Lateral Thinking",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nNo formula applies. Find a hidden constraint, an invariant, or reframe the problem entirely.\n\n## When to use (trigger)\nPhysical puzzles, logic puzzles, \"how do you measure/achieve X\" with odd constraints.\n\n## Go-to moves\n- **Small cases first** (n = 1, 2, 3) \u2014 the pattern usually shows by n = 3.\n- **Odd/even parity** \u2014 many problems flip state each step.\n- **Find what's expensive and minimise it** (bridge crossing: the slow people should cross together).\n- **Look for an invariant** \u2014 something conserved regardless of choices.\n\n## Worked examples\n- Burning ropes \u2192 light both ends (halves burn time regardless of unevenness) \u2192 measure 45 min with two ropes.\n- Bridge crossing (1,2,5,10 min, one torch) \u2192 pair the two slow people, use a fast runner as ferry \u2192 17 min.\n- Tiger & sheep (100 tigers) \u2192 even count \u2192 sheep is safe (parity argument).\n- Card game (red pairs to you, black to dealer) \u2192 red pairs always equal black pairs \u2192 guaranteed tie \u2192 pay \u00a30.\n- Screwy pirates \u2192 work backward from 1 pirate, buy the cheapest votes \u2192 {98,1,0,1,0}.\n\n## Common mistakes\n- Reaching for expected-value machinery when the answer is a structural invariant.\n- Getting the right answer with shaky reasoning (check parity/small cases explicitly)."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "title": "Derivatives & Greeks Intuition",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nOptions interview questions lean more on **intuition** (how a hedged book behaves, how a Greek moves) than on grinding the Black\u2013Scholes formula. Build a feel for the sensitivities.\n\n## When to use (trigger)\n\"Which has higher gamma...\", \"you're delta-hedged and the stock jumps, what do you do\", \"how does a digital option's price vary with vol\", put-call parity questions.\n\n## Key facts to have cold\n- **Put-call parity**: $C - P = S - K e^{-rT}$.\n- **Delta** ($\\partial C/\\partial S$): ~0.5 ATM; \u21921 deep ITM call, \u21920 deep OTM.\n- **Gamma**: highest ATM near expiry; measures how fast delta changes.\n- **Vega**: highest ATM, longer maturities; sensitivity to volatility.\n- **Theta**: time decay, worst for ATM near expiry.\n\n## Worked example (reasoning style)\nDelta-hedged long a call, stock gaps down sharply. You're long gamma, so as spot falls your delta drops \u2014 to stay hedged you **buy** stock back. Interviewers want this qualitative chain, not a number.\n\n## Common mistakes\n- Reciting formulas when they want the intuition (say \"explain carefully\" \u2192 talk through the mechanism).\n- Forgetting parity links calls and puts \u2014 many \"paradoxes\" dissolve with parity.\n\n## Note\nYour vol-surface / smile-strangle work gives you real texture here \u2014 lean on it."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "title": "VaR & Risk Theory",
+      "prereqs": ["basic-probability", "continuous-distributions", "statistics"],
+      "source": "authored",
+      "body": "## Core idea\nValue at Risk and Expected Shortfall quantify portfolio risk. Know the three VaR methods, their trade-offs, and how the models get validated.\n\n## When to use (trigger)\nRisk-role interviews: \"walk me through VaR methods\", \"why ES over VaR\", \"how do you backtest a VaR model\".\n\n## The three VaR methods\n- **Parametric (variance\u2013covariance)**: assumes normal returns; fast but misses fat tails.\n- **Historical simulation**: replays past returns; no distributional assumption but backward-looking.\n- **Monte Carlo**: simulate paths from a model; flexible but compute-heavy and model-dependent.\n\n## Expected Shortfall (ES)\nAverage loss **beyond** the VaR threshold. Coherent (subadditive), unlike VaR; replaced VaR under FRTB.\n\n## Backtesting\n- **Kupiec** test: are the number of exceptions consistent with the confidence level?\n- **Christoffersen** test: are exceptions independent (not clustered)?\n\n## Key intuition\nBase rates and tails dominate. Parametric VaR underestimates tail risk when returns are fat-tailed; correlations tend to \u21921 in stress, killing diversification just when you need it.\n\n## Common mistakes\n- Describing VaR as the worst case \u2014 it's a **threshold**, ES describes the tail beyond it.\n- Forgetting VaR isn't subadditive (can penalise diversification).\n\n## Note\nYour clearinghouse MC-VaR work is a strong, concrete talking point \u2014 have it ready."
+    },
+    {
+      "topicId": "statistics",
+      "title": "Statistics",
+      "prereqs": ["basic-probability"],
+      "source": "authored",
+      "body": "## Core idea\nThe descriptive and inferential toolkit underneath risk modelling: distributions, moments, correlation, hypothesis testing, time-series basics.\n\n## When to use (trigger)\n\"Estimate/ test / regress\" questions, fat tails, volatility clustering, correlation behaviour.\n\n## Key facts\n- **Mean / variance / covariance**: $\\text{Var}(X) = E[X^2] - (E[X])^2$; covariance drives portfolio risk.\n- **Correlation** is covariance normalised to [\u22121, 1]; it breaks down (\u21921) in stress.\n- **Fat tails / kurtosis**: real returns have more extreme moves than the normal predicts \u2014 why parametric VaR under-warns.\n- **Volatility clustering** (GARCH): big moves follow big moves.\n- **Hypothesis testing**: null vs alternative, p-values, type I/II errors.\n\n## Worked intuition\nWhy does historical VaR understate risk in a calm-then-crisis regime? Because the sample is dominated by calm data \u2014 the estimator is only as fat-tailed as its window.\n\n## Common mistakes\n- Assuming normality where tails are fat.\n- Treating correlation as stable across regimes.\n- Confusing variance of a sum with sum of variances when assets are correlated (the covariance term matters)."
+    }
+  ]
+}

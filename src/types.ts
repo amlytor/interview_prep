@@ -1,4 +1,4 @@
-import type { Topic } from "./lib/topics";
+import type { TopicId } from "./lib/topics";
 
 export type Difficulty = "easy" | "medium" | "hard";
 
@@ -12,7 +12,7 @@ export interface Choice {
 export interface Question {
   id: string;
   prompt: string;
-  topics: Topic[];
+  topics: TopicId[];
   difficulty: Difficulty;
   answerMode: AnswerMode;
   // Free-text questions always have a canonical answer + explanation.
@@ -22,7 +22,8 @@ export interface Question {
   choices?: Choice[];
   correctChoiceId?: string;
   createdAt: number;
-  custom: boolean; // true if user-authored, false if seeded starter question
+  custom: boolean; // true if user-authored or AI-generated, false if seeded
+  origin?: "seed" | "user" | "ai"; // where the question came from (v2)
 }
 
 export type Verdict = "correct" | "partial" | "incorrect";
@@ -42,7 +43,7 @@ export const WHY_MISSED_TAGS: WhyMissedTag[] = [
   "ran out of time",
 ];
 
-export type AttemptSource = "drill" | "review" | "mock";
+export type AttemptSource = "drill" | "review" | "mock" | "learn";
 
 export interface Attempt {
   id: string;
@@ -64,6 +65,21 @@ export interface SrsState {
   nextReviewAt: number | null; // epoch ms; null = not currently scheduled
   lastResult: Verdict;
   updatedAt: number;
+  // "Encompassing" credit trickled down from correct answers on dependent
+  // (more advanced) topics. When it reaches 1.0 it is consumed as one passed
+  // review, advancing the 2/7/21 ladder without a direct re-drill.
+  trickleCredit: number;
+}
+
+// One study note per topic. Seeded from src/data/studyNotes.json.
+export interface StudyNote {
+  topicId: TopicId;
+  title: string;
+  prereqs: TopicId[]; // the knowledge graph: direct prerequisite topic ids
+  source: "authored" | "ai"; // authored notes are never overwritten without confirmation
+  body: string; // markdown (with $...$ / $$...$$ LaTeX math)
+  lastEdited: number | null; // epoch ms of the last in-app edit; null = untouched seed
+  modified: boolean; // true once the user has edited the seeded body
 }
 
 export interface Settings {
@@ -78,4 +94,8 @@ export interface AppData {
   attempts: Attempt[];
   srs: SrsState[];
   settings: Settings;
+  studyNotes: StudyNote[];
+  // AI-generated questions awaiting user approval. They only enter the live
+  // bank (and the mastery signal) once explicitly approved.
+  stagedQuestions: Question[];
 }

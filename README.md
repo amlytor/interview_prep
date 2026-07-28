@@ -14,11 +14,27 @@ using your own API key.
 
 - **Dashboard** — overall hit rate, current streak, hit rate by topic, weak-area
   callouts, due-for-review count, and a 30-day performance chart.
+- **Topics (knowledge tree)** — all 19 topics laid out in prerequisite tiers with a
+  mastery ring per topic (0–100, recency-weighted). Proficiency (60+ over 3+
+  attempts) unlocks dependent topics; 80+ over 5+ attempts counts as mastered.
+  A "next up" recommendation points at your knowledge frontier.
+- **Study notes** — one human-authored markdown note per topic (core idea /
+  trigger / formulas / worked example / common mistakes), rendered with KaTeX
+  math. Fully editable in-app with live preview. An "Expand with AI" button
+  drafts improvements you review before applying — authored notes are never
+  overwritten without explicit confirmation.
+- **Learn mode** — read the note, then immediately get a 3–5 question practice
+  burst and see your mastery score move. Minimal reading, fast into recall.
+- **AI quiz generation** — generate recall + application questions from any
+  note. Output is schema-validated and lands in a staging queue; nothing enters
+  the live bank (or your mastery signal) until you approve it.
 - **Drill** — one question at a time, filterable by topic and difficulty. Free-text
   answers are graded by Claude (correct / partial / incorrect, Socratic feedback,
   and a "why missed" tag); multiple-choice is graded instantly and locally.
 - **Review** — serves only questions you've previously missed, on a spaced-repetition
-  schedule (2 → 7 → 21 days, resets on a repeat miss).
+  schedule (2 → 7 → 21 days, resets on a repeat miss). Correct answers on advanced
+  topics trickle partial review credit down to their direct prerequisites, so you
+  aren't re-drilling basics you're exercising implicitly.
 - **Mock Interview** — a timed, mixed-topic session (default 5 questions, configurable).
   No feedback is shown until you finish; the debrief screen grades everything at once
   and gives you a per-question breakdown plus session-level weak topics.
@@ -26,12 +42,10 @@ using your own API key.
 - **Settings** — API key, grading model (defaults to `claude-sonnet-4-6`, configurable),
   a personal spend-awareness note, and JSON export/import of all your data.
 
-Seeded with ~24 starter questions covering the full technique taxonomy: geometric
-distribution, Bayes' theorem, combinatorics, linearity of expectation,
-symmetry/condition-on-first-step, complementary counting, without-replacement
-shortcuts, gambler's ruin, coupon collector, pigeonhole, recursive states,
-continuous distributions, out-of-the-box logic, derivatives/Greeks, VaR/risk
-theory, and statistics.
+Seed content lives in `src/data/studyNotes.json` (19 authored notes, whose
+`prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
+(35 authored questions), merged with the original starter bank for ~53 seeded
+questions across the taxonomy.
 
 ## Setup
 
@@ -68,9 +82,12 @@ self-imposed cap — check actual usage anytime at
 
 ## Your data
 
-All progress (question bank, attempt history, spaced-repetition schedule, and
-settings) lives in your browser's `localStorage` under the key
-`quantprep_data_v1`. This means:
+All progress (question bank, attempt history, spaced-repetition schedule, study
+notes, staged AI questions, and settings) lives in your browser's `localStorage`
+under the key `quantprep_data_v2`. Data from the original v1 schema is migrated
+automatically on first load (the old `quantprep_data_v1` key is left in place as
+a rollback backup), and importing an old v1 JSON export runs the same migration.
+This means:
 
 - It persists across sessions on the same browser/machine.
 - It does **not** sync across browsers or devices.
@@ -86,18 +103,24 @@ back that up too).
 
 ```
 src/
-  types.ts              Core data model (Question, Attempt, SrsState, Settings, ...)
+  types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
+  data/
+    studyNotes.json      19 authored study notes + the prerequisite graph (source of truth)
+    seedQuestions.json   35 authored seed questions (source of truth)
   lib/
-    topics.ts            Fixed technique taxonomy
-    storage.ts            localStorage read/write + JSON export/import
-    store.tsx              React context: single source of truth + actions
-    srs.ts                   Spaced-repetition scheduling (2/7/21-day ladder)
-    stats.ts                  Hit-rate, streak, weak-area, and time-series aggregation
-    anthropic.ts               Anthropic API client: grading + connection test
-    seedQuestions.ts             Starter question bank (~24 questions)
-  components/            Shared UI: Sidebar, QuestionAttempt, badges, timer, banners
-  pages/                  One file per sidebar destination (Dashboard, Drill, Review,
-                          Mock, AddQuestion, Settings)
+    topics.ts            Canonical topic taxonomy (ids + display labels)
+    seedData.ts          Import adapter for the src/data JSON files
+    seedQuestions.ts     The original starter bank (retagged, deduped)
+    storage.ts           localStorage read/write, v1→v2 migration, JSON export/import
+    store.tsx            React context: single source of truth + actions
+    srs.ts               Spaced repetition (2/7/21 ladder + trickle-down credit)
+    mastery.ts           Mastery scores, unlock rules, tiers, next-topic recommendation
+    stats.ts             Hit-rate, streak, weak-area, and time-series aggregation
+    anthropic.ts         Anthropic API client: grading, quiz generation, note drafting
+  components/            Shared UI: Sidebar, QuestionAttempt, Markdown+KaTeX renderer,
+                         MasteryRing, TopicDetail, LearnSession, badges, timer, banners
+  pages/                 One file per sidebar destination (Dashboard, Topics, Drill,
+                         Review, Mock, AddQuestion, Settings)
 ```
 
 The code is intentionally flat (no routing library, no state management library

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useStore } from "../lib/store";
 import { TOPICS } from "../lib/topics";
+import type { TopicId } from "../lib/topics";
 import type { Difficulty, Question } from "../types";
 import { QuestionAttempt } from "../components/QuestionAttempt";
 import { ApiKeyBanner } from "../components/ApiKeyBanner";
@@ -14,9 +15,15 @@ function pickRandom(pool: Question[], excludeId: string | null): Question | null
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
-export function Drill({ onNavigate }: { onNavigate: (page: Page) => void }) {
+interface DrillProps {
+  onNavigate: (page: Page) => void;
+  // Pre-selects a topic filter when arriving via "Drill this topic".
+  initialTopicId?: TopicId | null;
+}
+
+export function Drill({ onNavigate, initialTopicId }: DrillProps) {
   const { data } = useStore();
-  const [topicFilter, setTopicFilter] = useState<string[]>([]);
+  const [topicFilter, setTopicFilter] = useState<TopicId[]>(initialTopicId ? [initialTopicId] : []);
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty[]>([]);
   const [attemptCount, setAttemptCount] = useState(0);
 
@@ -30,7 +37,7 @@ export function Drill({ onNavigate }: { onNavigate: (page: Page) => void }) {
 
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(() => pickRandom(pool, null));
 
-  function toggleTopic(topic: string) {
+  function toggleTopic(topic: TopicId) {
     setTopicFilter((prev) => (prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]));
   }
 
@@ -70,14 +77,12 @@ export function Drill({ onNavigate }: { onNavigate: (page: Page) => void }) {
           <div className="pill-select">
             {TOPICS.map((t) => (
               <button
-                key={t}
+                key={t.id}
                 type="button"
-                className={`pill-option${topicFilter.includes(t) ? " selected" : ""}`}
-                onClick={() => {
-                  toggleTopic(t);
-                }}
+                className={`pill-option${topicFilter.includes(t.id) ? " selected" : ""}`}
+                onClick={() => toggleTopic(t.id)}
               >
-                {t}
+                {t.label}
               </button>
             ))}
           </div>

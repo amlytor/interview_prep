@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStore } from "../lib/store";
 import { TOPICS } from "../lib/topics";
-import type { Topic } from "../lib/topics";
+import type { TopicId } from "../lib/topics";
 import type { AnswerMode, Choice, Difficulty } from "../types";
 import type { Page } from "../App";
 
@@ -20,7 +20,7 @@ export function AddQuestion({ onNavigate }: { onNavigate: (page: Page) => void }
   const { addQuestion } = useStore();
 
   const [prompt, setPrompt] = useState("");
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topics, setTopics] = useState<TopicId[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [answerMode, setAnswerMode] = useState<AnswerMode>("free-text");
   const [canonicalAnswer, setCanonicalAnswer] = useState("");
@@ -30,7 +30,7 @@ export function AddQuestion({ onNavigate }: { onNavigate: (page: Page) => void }
   const [justAdded, setJustAdded] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  function toggleTopic(t: Topic) {
+  function toggleTopic(t: TopicId) {
     setTopics((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
   }
 
@@ -137,11 +137,11 @@ export function AddQuestion({ onNavigate }: { onNavigate: (page: Page) => void }
             {TOPICS.map((t) => (
               <button
                 type="button"
-                key={t}
-                className={`pill-option${topics.includes(t) ? " selected" : ""}`}
-                onClick={() => toggleTopic(t)}
+                key={t.id}
+                className={`pill-option${topics.includes(t.id) ? " selected" : ""}`}
+                onClick={() => toggleTopic(t.id)}
               >
-                {t}
+                {t.label}
               </button>
             ))}
           </div>

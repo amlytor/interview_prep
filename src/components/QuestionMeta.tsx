@@ -1,4 +1,5 @@
 import type { Difficulty } from "../types";
+import { topicLabel } from "../lib/topics";
 
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
   return <span className={`badge badge-${difficulty}`}>{difficulty}</span>;
@@ -9,7 +10,7 @@ export function TopicBadges({ topics }: { topics: string[] }) {
     <div className="tag-row">
       {topics.map((t) => (
         <span key={t} className="badge badge-topic">
-          {t}
+          {topicLabel(t)}
         </span>
       ))}
     </div>

@@ -1,0 +1,290 @@
+{
+  "_comment": "QuantPrep seed question bank — the problems worked through in prep sessions, tagged to the topic ids in studyNotes.json. Types: 'free_text' (graded by the API against canonicalAnswer + explanation) and 'multiple_choice' (graded locally against correctOption index). Difficulty: easy | medium | hard. Import alongside studyNotes.json.",
+  "_schemaVersion": "questions_v1",
+  "questions": [
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You flip a fair coin repeatedly until you get heads. What is the expected number of flips?",
+      "canonicalAnswer": "2",
+      "explanation": "Geometric distribution with p = 1/2 (constant, independent trials, waiting for first success). E = 1/p = 1/(1/2) = 2."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You roll a fair six-sided die repeatedly until you roll a 6, counting the final roll. What is the expected number of rolls?",
+      "canonicalAnswer": "6",
+      "explanation": "Geometric with p = 1/6. E = 1/p = 6. 'Including the final roll' changes nothing \u2014 the geometric already counts the success trial."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You roll two fair dice repeatedly until both show the same number (any double). What is the expected number of rolls?",
+      "canonicalAnswer": "6",
+      "explanation": "Condition on the first die: the second must match it, probability 1/6 (not 1/36, which would be a specific double). So p = 1/6 and E = 1/p = 6."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A basketball player hits each free throw independently with probability 1/3. What is the expected number of shots until his first make?",
+      "canonicalAnswer": "3",
+      "explanation": "Geometric with p = 1/3. E = 1/p = 3."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You roll a fair die until you see a 1 or a 2. What is the expected number of rolls?",
+      "options": ["2", "3", "6", "7/3"],
+      "correctOption": 1,
+      "explanation": "Rolling with replacement \u2192 geometric, not the without-replacement shortcut. p = 2/6 = 1/3, so E = 3."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A bag has 3 red and 2 blue balls. You draw without replacement until you get a blue ball. What is the expected number of draws?",
+      "canonicalAnswer": "2",
+      "explanation": "Without-replacement shortcut: N = 5, k = 2 blue. E = (N+1)/(k+1) = 6/3 = 2. (Enumeration agrees.)"
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A bag has 4 red and 2 blue balls. Drawing without replacement, what is the expected draw number of the first blue ball?",
+      "canonicalAnswer": "7/3 (about 2.33)",
+      "explanation": "N = 6, k = 2. E = (N+1)/(k+1) = 7/3 \u2248 2.33."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A jar has 3 red, 2 blue and 1 green ball. You draw without replacement until you get the green ball. Expected number of draws?",
+      "canonicalAnswer": "3.5 (7/2)",
+      "explanation": "N = 6 total, k = 1 green. E = (6+1)/(1+1) = 7/2 = 3.5. One green ball is equally likely in any position, so expected position is the midpoint."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A bag has 5 red and 5 blue balls. You draw without replacement until you have drawn all 5 red balls. What is the expected number of draws?",
+      "canonicalAnswer": "About 9.17 (55/6)",
+      "explanation": "This is the LAST red, so flip the shortcut. Equivalent to N - (N+1)/(k_other+1) + 1 with N=10, k_other=5 blue: 10 - 11/6 + 1 = 55/6 \u2248 9.17. Sanity: the last red sits near the end, so ~9 of 10 draws makes sense."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a room of 30 people, what is the probability that at least two share a birthday? (365 days, uniform.) Set up the calculation.",
+      "canonicalAnswer": "1 - (365/365 \u00d7 364/365 \u00d7 ... \u00d7 336/365), about 70%",
+      "explanation": "Complement: P(all different) = product of 365/365 down to 336/365 (30 terms). Subtract from 1 \u2248 0.706. Multiply the chain, don't add; it runs over all 30 people."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Two fair dice are rolled. What is the probability they show the same number (any double)?",
+      "options": ["1/36", "1/12", "1/6", "1/2"],
+      "correctOption": 2,
+      "explanation": "First die lands anywhere; second must match it \u2192 1/6. Equivalently 6 doubles / 36 outcomes. 1/36 would be one specific double."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You flip a fair coin: +\u00a31 on heads, \u2212\u00a31 on tails, starting at \u00a30. What is the probability you reach +\u00a33 before hitting \u2212\u00a33?",
+      "canonicalAnswer": "1/2",
+      "explanation": "Boundaries: p(\u22123)=0, p(+3)=1. Fair coin, start exactly halfway \u2192 by symmetry p(0)=1/2. (General fair formula p(k)=(k+N)/2N gives 3/6=1/2.)"
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You roll a fair die repeatedly until you have seen all six faces at least once. What is the expected number of rolls?",
+      "canonicalAnswer": "14.7 (= 6(1 + 1/2 + 1/3 + 1/4 + 1/5 + 1/6))",
+      "explanation": "Coupon collector. Each stage is geometric: stage k has p = (7-k)/6, expected 6/(7-k). Sum: 6/6+6/5+6/4+6/3+6/2+6/1 = 6\u00b7H(6) \u2248 14.7. Uses linearity of expectation to add the stages."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A disease affects 1% of people. A test is 90% accurate in both directions (90% true positive, 90% true negative). You test positive. What is the probability you actually have the disease?",
+      "canonicalAnswer": "About 8.3% (9/108)",
+      "explanation": "Per 1000: 10 sick \u2192 9 test positive; 990 healthy \u2192 99 false positives. P(sick | +) = 9/(9+99) = 9/108 \u2248 8.3%. The rare base rate means false positives swamp true positives. Count only positive-testing sick people (9, not 10)."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Bag A has 3 red and 1 blue ball; Bag B has 1 red and 3 blue. You pick a bag at random (50/50) and draw a red ball. What is the probability you picked Bag A?",
+      "canonicalAnswer": "3/4 (75%)",
+      "explanation": "Per 100 picks: 50 A \u00d7 3/4 = 37.5 reds; 50 B \u00d7 1/4 = 12.5 reds; 50 reds total. P(A | red) = 37.5/50 = 3/4. (Bayes: (3/4\u00b71/2)/(1/2) = 3/4.)"
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You pick one of three coins at random: fair (50% heads), biased (75% heads), or double-headed (100% heads). You flip it and get heads. What is the probability it was the biased coin?",
+      "canonicalAnswer": "1/3 (75/225)",
+      "explanation": "Per 300 flips, 100 per coin: heads are 50 + 75 + 100 = 225. Biased contributes 75. P(biased | heads) = 75/225 = 1/3."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A family has two children. Given that at least one is a boy, what is the probability both are boys?",
+      "options": ["1/2", "1/3", "1/4", "2/3"],
+      "correctOption": 1,
+      "explanation": "Sample space {BB, BG, GB, GG}; 'at least one boy' removes GG, leaving 3 equally likely cases, one of which is BB \u2192 1/3."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A family has two children. Given that the OLDER child is a boy, what is the probability both are boys?",
+      "options": ["1/2", "1/3", "1/4", "2/3"],
+      "correctOption": 0,
+      "explanation": "Pinning down the older child leaves {BB, BG} \u2192 1/2. Contrast with 'at least one is a boy' (1/3): naming a specific child gives more information."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many ways can you arrange the letters A, B, C, D in a row?",
+      "canonicalAnswer": "24",
+      "explanation": "Order matters: 4 \u00d7 3 \u00d7 2 \u00d7 1 = 4! = 24."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many ways can you choose 2 people from a group of 5 to form a committee?",
+      "canonicalAnswer": "10",
+      "explanation": "Order doesn't matter: C(5,2) = 5!/(2!3!) = 10."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You flip a fair coin 3 times. What is the probability of getting exactly 2 heads?",
+      "canonicalAnswer": "3/8",
+      "explanation": "C(3,2) = 3 arrangements (HHT, HTH, THH); each has probability (1/2)^3 = 1/8; total 3 \u00d7 1/8 = 3/8. Binomial with n=3, k=2, p=1/2."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "From a standard 52-card deck, what is the probability a 5-card hand contains exactly 2 aces? Set up the expression.",
+      "canonicalAnswer": "[C(4,2) \u00d7 C(48,3)] / C(52,5) \u2248 3.99%",
+      "explanation": "'Exactly k of a special type': choose 2 aces from 4 and 3 non-aces from 48, over all hands. C(4,2)\u00b7C(48,3)/C(52,5) = 103,776/2,598,960 \u2248 0.0399."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "In a group of 13 people, prove at least two share a birth month.",
+      "canonicalAnswer": "12 months are the boxes, 13 people the items; by pigeonhole at least one month holds two people.",
+      "explanation": "n+1 items (13) into n boxes (12 months) forces a collision."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You pick 6 distinct numbers from 1 to 10. Prove at least two of them sum to 11.",
+      "canonicalAnswer": "The pairs summing to 11 are the boxes: {1,10},{2,9},{3,8},{4,7},{5,6} \u2014 5 boxes. Picking 6 numbers forces two into one box.",
+      "explanation": "Construct 5 boxes as the pairs that sum to 11; 6 picks into 5 boxes guarantees a pair by pigeonhole."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Ten people throw their hats into a pile and each picks up a random hat. What is the expected number of people who get their own hat back?",
+      "canonicalAnswer": "1",
+      "explanation": "Linearity: each person recovers their own hat with probability 1/10; sum over 10 people = 10 \u00d7 1/10 = 1. Works despite dependence between picks."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You roll a fair die 100 times. What is the expected number of 6s?",
+      "canonicalAnswer": "100/6 (about 16.7)",
+      "explanation": "Linearity: each roll is a 6 with probability 1/6; 100 \u00d7 1/6 = 100/6."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "In a group of 30 people, what is the expected number of pairs of people who share a birthday? (365 days.)",
+      "canonicalAnswer": "About 1.19 (= C(30,2)/365 = 435/365)",
+      "explanation": "Linearity over pairs: C(30,2) = 435 pairs, each shares a birthday with probability 1/365. 435/365 \u2248 1.19."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Shuffle a 52-card deck and flip through it. What is the expected number of times an Ace appears immediately before a King?",
+      "canonicalAnswer": "4/13 (about 0.31)",
+      "explanation": "Linearity over the 51 adjacent position-pairs: each is Ace-then-King with probability (4/52)(4/51). 51 \u00d7 (4/52)(4/51) = 16/52 = 4/13. The 51s cancel \u2014 a sign the setup is right."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You flip a fair coin repeatedly. What is the expected number of flips to get two heads in a row (HH)?",
+      "canonicalAnswer": "6",
+      "explanation": "States by progress. E1 = 1 + \u00bd(0) + \u00bd E0; E0 = 1 + \u00bd E1 + \u00bd E0. Solving: E0 = 6. (HT is only 4 \u2014 a near miss doesn't reset you the same way.) Collect all E terms on one side before dividing to avoid a sign error."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You pick 5 numbers independently and uniformly from [0,1]. What is the expected value of the minimum? And the maximum?",
+      "canonicalAnswer": "min = 1/6, max = 5/6",
+      "explanation": "Order statistics on [0,1]: E[min] = 1/(n+1) = 1/6, E[max] = n/(n+1) = 5/6. Symmetric around 0.5."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have two ropes, each burning in exactly 1 hour but at non-uniform rates. Using only these ropes and matches, how do you measure exactly 45 minutes?",
+      "canonicalAnswer": "Light rope A at both ends and rope B at one end at once. A burns out at 30 min; then light B's other end; B burns out 15 min later. Total 45.",
+      "explanation": "Lighting both ends halves the burn time regardless of unevenness. That's the only operation giving a predictable time here."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Four people cross a bridge at night with one torch; at most two cross at a time, at the slower person's pace. Times: A=10, B=5, C=2, D=1 minutes. Minimum total time to get all across?",
+      "canonicalAnswer": "17 minutes",
+      "explanation": "C+D cross (2), C returns (2), A+B cross (10), D returns (1), C+D cross (2) = 17. Key: pair the two slow people (A,B) so their cost is paid once; don't waste the fastest runner as the sole ferry."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "One sheep and 100 perfectly rational, survival-first tigers are on an island with only grass. A tiger that eats the sheep becomes a sheep. Will the sheep be eaten?",
+      "canonicalAnswer": "No (100 is even).",
+      "explanation": "Parity argument. 1 tiger: eats safely. 2: eating is suicide (you become prey). Each added tiger flips the outcome. Odd \u2192 eaten, even \u2192 safe. 100 is even \u2192 sheep is safe."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A deck of 52 is turned over two cards at a time: both black \u2192 dealer's pile, both red \u2192 your pile, mixed \u2192 discarded. More cards in your pile wins \u00a3100; a tie pays nothing. What would you pay to play?",
+      "canonicalAnswer": "\u00a30 (nothing).",
+      "explanation": "Every discarded pair removes one red and one black equally, so red pairs always equal black pairs. Your pile always ties the dealer's \u2192 you can never have more \u2192 probability of winning is 0."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Five pirates (ranked by seniority) split 100 gold coins. The senior proposes a split; if at least half (including the proposer) approve, it passes, else the proposer is thrown overboard and the next proposes. Pirates are rational: survive first, maximise gold second, and prefer fewer pirates if indifferent. What does the senior propose?",
+      "canonicalAnswer": "98 to himself, 0 and 1 and 0 and 1 (i.e. {98, 0, 1, 0, 1} giving 1 coin each to the 3rd and 5th pirates \u2014 buy the two who would otherwise get 0).",
+      "explanation": "Work backwards. With 1 pirate he takes all. With 2, senior takes all (his own vote is 50%). With 3, buy pirate 3 with 1 coin \u2192 {99,0,1}. With 4, buy pirate 3 (gets 0 in the 3-pirate case) \u2192 {99,0,1,0}. With 5, senior needs 2 more votes; buy the two who get 0 in the 4-pirate case (pirates 2 and 4) with 1 coin each \u2192 {98,1,0,1,0}."
+    }
+  ]
+}

@@ -814,3 +814,174 @@ select:focus {
   outline: 2px solid var(--gold-500);
   outline-offset: 2px;
 }
+
+/* ---------- Knowledge tree (Topics page) ---------- */
+.tier-heading {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--gray-500);
+  font-family: inherit;
+  margin-bottom: 10px;
+}
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 12px;
+}
+
+.topic-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.topic-card:hover {
+  border-color: var(--blue-500);
+  box-shadow: var(--shadow-md);
+}
+
+.topic-card.locked {
+  background: var(--gray-50);
+  opacity: 0.75;
+}
+
+.topic-card-title {
+  font-weight: 600;
+  color: var(--navy-900);
+  margin-bottom: 2px;
+}
+
+.topic-card-sub {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.topic-card-prereqs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.prereq-chip {
+  font-size: 10.5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--red-50);
+  color: var(--red-600);
+  font-weight: 600;
+}
+
+.prereq-chip.met {
+  background: var(--green-50);
+  color: var(--green-600);
+}
+
+.mastery-ring {
+  flex-shrink: 0;
+}
+
+/* ---------- Study note rendering ---------- */
+.md-content {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--gray-900);
+}
+
+.md-content h3,
+.md-content h4,
+.md-content h5,
+.md-content h6 {
+  margin-top: 1.2em;
+  margin-bottom: 0.35em;
+}
+
+.md-content h3 {
+  font-size: 17px;
+  border-bottom: 1px solid var(--gray-100);
+  padding-bottom: 4px;
+}
+
+.md-content ul {
+  margin: 0 0 1em;
+  padding-left: 22px;
+}
+
+.md-content li {
+  margin-bottom: 4px;
+}
+
+.md-content code {
+  background: var(--gray-100);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.md-math-block {
+  margin: 10px 0 16px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.math-inline .katex {
+  font-size: 1.02em;
+}
+
+/* ---------- Note editor ---------- */
+.note-editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .note-editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.note-preview {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  background: var(--gray-50);
+  min-height: 200px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.ai-draft-panel {
+  border: 1.5px dashed var(--gold-500);
+  border-radius: var(--radius-md);
+  background: #fdf9f0;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+
+/* ---------- Staged AI questions ---------- */
+.staged-item {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: var(--gray-50);
+}
+
+.staged-item:last-child {
+  margin-bottom: 0;
+}

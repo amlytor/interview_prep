@@ -1,32 +1,17 @@
 import type { Question } from "../types";
 
-// Starter question bank. Weighted toward the core probability techniques
-// (geometric, Bayes, combinatorics, linearity of expectation, symmetry) with
-// a smaller set covering derivatives/Greeks, VaR/risk theory, and statistics
-// so every topic in the taxonomy has at least one seeded question.
+// The v1 starter bank, retagged to canonical topic ids and trimmed of six
+// questions superseded by near-identical entries in src/data/seedQuestions.json
+// (see DROPPED_V1_SEED_IDS in seedData.ts). These merge with the 35 questions
+// from that file to form the full seeded bank.
 const now = Date.now();
 
 export const SEED_QUESTIONS: Question[] = [
   {
-    id: "seed-1",
-    prompt:
-      "You flip a fair coin repeatedly until you see the first heads. What is the expected number of flips?",
-    topics: ["Geometric distribution"],
-    difficulty: "easy",
-    answerMode: "free-text",
-    canonicalAnswer: "2",
-    explanation:
-      "The number of flips until the first success follows a Geometric(p) distribution with p = 0.5. " +
-      "For a geometric distribution, E[X] = 1/p. Here E[X] = 1/0.5 = 2 flips. " +
-      "Intuition: on average you need 2 tries to hit an event with 50% probability.",
-    createdAt: now,
-    custom: false,
-  },
-  {
     id: "seed-2",
     prompt:
       "You roll a fair six-sided die repeatedly until you roll a 6. What is the probability that it takes MORE than 10 rolls?",
-    topics: ["Geometric distribution"],
+    topics: ["geometric-distribution"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer: "(5/6)^10 ≈ 0.1615",
@@ -37,12 +22,13 @@ export const SEED_QUESTIONS: Question[] = [
       "it comes up constantly and avoids summing a geometric series by hand.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-3",
     prompt:
       "You have two coins in your pocket: one fair coin and one two-headed coin (always lands heads). You pick one at random and flip it 3 times, getting heads all 3 times. What is the probability the coin you picked is the two-headed one?",
-    topics: ["Bayes theorem"],
+    topics: ["bayes-theorem"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer: "8/9 ≈ 0.889",
@@ -55,12 +41,13 @@ export const SEED_QUESTIONS: Question[] = [
       "Note how quickly the two-headed hypothesis dominates as you get more consecutive heads — this is the core intuition behind likelihood ratios.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-4",
     prompt:
       "A disease affects 1 in 1000 people. A test for the disease has a 99% true positive rate and a 5% false positive rate. If a random person tests positive, what is the probability they actually have the disease?",
-    topics: ["Bayes theorem"],
+    topics: ["bayes-theorem"],
     difficulty: "hard",
     answerMode: "free-text",
     canonicalAnswer: "≈ 1.94%",
@@ -75,11 +62,12 @@ export const SEED_QUESTIONS: Question[] = [
       "so of the ~5,094 positives, only ~99 are truly sick.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-5",
     prompt: "How many distinct ways can you arrange the letters in the word \"STATISTICS\"?",
-    topics: ["Combinatorics"],
+    topics: ["combinatorics"],
     difficulty: "easy",
     answerMode: "free-text",
     canonicalAnswer: "50,400",
@@ -89,12 +77,13 @@ export const SEED_QUESTIONS: Question[] = [
       "General rule: for a multiset with n total items and repeat counts n1, n2, ..., the arrangement count is n! / (n1!·n2!·...).",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-6",
     prompt:
       "How many people must be in a room to GUARANTEE that at least 3 of them share a birth month (assume 12 possible birth months)?",
-    topics: ["Pigeonhole", "Combinatorics"],
+    topics: ["pigeonhole", "combinatorics"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer: "25",
@@ -105,28 +94,13 @@ export const SEED_QUESTIONS: Question[] = [
       "General formula: to guarantee k+1 items in some hole with n holes, you need n·k + 1 items. Here n=12, k=2, so 12·2+1 = 25.",
     createdAt: now,
     custom: false,
-  },
-  {
-    id: "seed-7",
-    prompt:
-      "n people at a party each throw their hat into a pile, then everyone grabs a random hat. What is the expected number of people who get their OWN hat back?",
-    topics: ["Linearity of expectation"],
-    difficulty: "medium",
-    answerMode: "free-text",
-    canonicalAnswer: "1 (for any n)",
-    explanation:
-      "Define indicator X_i = 1 if person i gets their own hat back, 0 otherwise. E[X_i] = P(person i gets their own hat) = 1/n " +
-      "(by symmetry, each person is equally likely to end up with any of the n hats).\n" +
-      "By linearity of expectation, E[total matches] = E[sum X_i] = sum E[X_i] = n · (1/n) = 1.\n" +
-      "The key insight is that linearity of expectation holds even though the X_i are NOT independent — you never need to reason about the joint distribution.",
-    createdAt: now,
-    custom: false,
+    origin: "seed",
   },
   {
     id: "seed-8",
     prompt:
       "A standard 52-card deck is shuffled and revealed one card at a time. What is the expected number of times you see a 'record' — a card of higher rank than every card revealed so far (the first card is always a record)?",
-    topics: ["Linearity of expectation"],
+    topics: ["linearity-of-expectation"],
     difficulty: "hard",
     answerMode: "free-text",
     canonicalAnswer: "H_52 = sum_{k=1}^{52} 1/k ≈ 4.54",
@@ -138,12 +112,13 @@ export const SEED_QUESTIONS: Question[] = [
       "This is a very common 'records' pattern — recognize it whenever a problem asks for the expected count of running maxima/minima in a random permutation.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-9",
     prompt:
       "Two players alternate flipping a fair coin; Player A goes first. The first player to flip heads wins. What is the probability Player A wins?",
-    topics: ["Symmetry/condition-on-first-step", "Geometric distribution"],
+    topics: ["symmetry-condition-first", "geometric-distribution"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer: "2/3",
@@ -155,12 +130,13 @@ export const SEED_QUESTIONS: Question[] = [
       "This 'condition on the first step, then recognize a self-similar sub-problem' trick generalizes to many first-to-X games.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-10",
     prompt:
       "n people are randomly seated around a round table. What is the probability that two specific people, Alice and Bob, end up sitting next to each other?",
-    topics: ["Symmetry/condition-on-first-step"],
+    topics: ["symmetry-condition-first"],
     difficulty: "easy",
     answerMode: "free-text",
     canonicalAnswer: "2/(n-1)",
@@ -170,11 +146,12 @@ export const SEED_QUESTIONS: Question[] = [
       "So P(adjacent) = 2/(n-1). This 'fix one person, count favorable seats for the other' shortcut avoids enumerating all n! seatings.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-11",
     prompt: "You roll two fair six-sided dice. What is the probability that AT LEAST one die shows a 6?",
-    topics: ["Complementary counting"],
+    topics: ["complementary-counting"],
     difficulty: "easy",
     answerMode: "multiple-choice",
     canonicalAnswer: "11/36",
@@ -192,28 +169,13 @@ export const SEED_QUESTIONS: Question[] = [
       "Whenever you see 'at least one', check whether the complement ('none') is easier to compute — it almost always is for independent trials.",
     createdAt: now,
     custom: false,
-  },
-  {
-    id: "seed-12",
-    prompt:
-      "In a room of 30 people, what is the approximate probability that at least two people share the same birthday? (Assume 365 equally likely birthdays, ignore leap years.)",
-    topics: ["Complementary counting"],
-    difficulty: "hard",
-    answerMode: "free-text",
-    canonicalAnswer: "≈ 70.6%",
-    explanation:
-      "Complement is much easier: P(no shared birthday) = P(all 30 birthdays distinct).\n" +
-      "P(all distinct) = (365/365)(364/365)(363/365)...(336/365) = 365! / [(365-30)! · 365^30].\n" +
-      "Computing this product gives ≈ 0.294, so P(at least one match) = 1 - 0.294 ≈ 0.706, or about 70.6%.\n" +
-      "The famous 'birthday paradox' result — it only takes 23 people to cross the 50% threshold, which is far fewer than most people's intuition suggests.",
-    createdAt: now,
-    custom: false,
+    origin: "seed",
   },
   {
     id: "seed-13",
     prompt:
       "A standard 52-card deck is shuffled and dealt face up one card at a time. What is the probability that the first Ace appears before the first King?",
-    topics: ["Without-replacement shortcut", "Symmetry/condition-on-first-step"],
+    topics: ["without-replacement-shortcut", "symmetry-condition-first"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer: "1/2",
@@ -225,12 +187,13 @@ export const SEED_QUESTIONS: Question[] = [
       "This 'shrink to only the relevant cards' shortcut avoids a full without-replacement calculation and works for any 'which type appears first' question.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-14",
     prompt:
       "A gambler starts with $3 and makes $1 bets on fair coin flips (win $1 on heads, lose $1 on tails), stopping when they reach $10 or go broke ($0). What is the probability they reach $10 before going broke?",
-    topics: ["Gambler's ruin"],
+    topics: ["gamblers-ruin"],
     difficulty: "hard",
     answerMode: "free-text",
     canonicalAnswer: "3/10 = 0.3",
@@ -242,48 +205,12 @@ export const SEED_QUESTIONS: Question[] = [
       "Know the general (unfair, p ≠ 0.5) formula too: P(i) = [1-(q/p)^i] / [1-(q/p)^N] where q=1-p — interviewers love asking the follow-up.",
     createdAt: now,
     custom: false,
-  },
-  {
-    id: "seed-15",
-    prompt:
-      "A cereal box contains one of 6 different toys, chosen uniformly at random and independently each time you buy a box. What is the expected number of boxes you need to buy to collect all 6 toys?",
-    topics: ["Coupon collector"],
-    difficulty: "medium",
-    answerMode: "free-text",
-    canonicalAnswer: "14.7 boxes (= 6·H_6)",
-    explanation:
-      "This is the Coupon Collector's Problem. Break the process into 6 stages: stage k is the time spent collecting the k-th new toy after already having k-1 distinct toys.\n" +
-      "While you have k-1 distinct toys, the probability a new box gives a new toy is (6-(k-1))/6, so the expected number of boxes in stage k is a geometric mean of 6/(6-k+1).\n" +
-      "Total expectation = sum_{k=1}^{6} 6/(6-k+1) = 6·(1/6 + 1/5 + 1/4 + 1/3 + 1/2 + 1/1) = 6·H_6 ≈ 6 × 2.45 = 14.7 boxes.\n" +
-      "General formula: for n distinct coupons, E[boxes to collect all] = n·H_n ≈ n·ln(n) for large n.",
-    createdAt: now,
-    custom: false,
-  },
-  {
-    id: "seed-16",
-    prompt:
-      "You flip a fair coin repeatedly. What is the expected number of flips until you see the pattern HH (two heads in a row)?",
-    topics: ["Recursive states"],
-    difficulty: "hard",
-    answerMode: "free-text",
-    canonicalAnswer: "6",
-    explanation:
-      "Set up states based on progress toward the pattern. Let E0 = expected additional flips from 'no progress' (last flip wasn't H, or we just started), " +
-      "and E1 = expected additional flips given the last flip WAS an H.\n" +
-      "From E0: flip once (1 step). With prob 1/2 it's H → move to state E1. With prob 1/2 it's T → stay in E0.\n" +
-      "  E0 = 1 + 0.5·E1 + 0.5·E0  =>  0.5·E0 = 1 + 0.5·E1  =>  E0 = 2 + E1\n" +
-      "From E1: flip once. With prob 1/2 it's H → DONE (pattern complete). With prob 1/2 it's T → back to E0.\n" +
-      "  E1 = 1 + 0.5·(0) + 0.5·E0 = 1 + 0.5·E0\n" +
-      "Substitute: E0 = 2 + 1 + 0.5·E0 = 3 + 0.5·E0  =>  0.5·E0 = 3  =>  E0 = 6.\n" +
-      "Fun fact: E[flips to see HT] is only 4 — patterns with 'overlap' (like HH) take longer on average than non-overlapping ones (like HT), " +
-      "even though both have the same per-flip probability.",
-    createdAt: now,
-    custom: false,
+    origin: "seed",
   },
   {
     id: "seed-17",
     prompt: "You flip 3 fair coins. What is the probability of getting EXACTLY 2 heads?",
-    topics: ["Enumerate scenarios", "Combinatorics"],
+    topics: ["enumerate-scenarios", "combinatorics"],
     difficulty: "easy",
     answerMode: "multiple-choice",
     canonicalAnswer: "3/8",
@@ -300,32 +227,13 @@ export const SEED_QUESTIONS: Question[] = [
       "In general, for n fair coin flips, P(exactly k heads) = C(n,k) / 2^n.",
     createdAt: now,
     custom: false,
-  },
-  {
-    id: "seed-18",
-    prompt:
-      "You have two ropes. Each takes exactly 60 minutes to burn end-to-end, but each burns UNEVENLY along its length (so the halfway point isn't necessarily reached at the 30-minute mark). Using only these two ropes and a lighter, how can you measure exactly 45 minutes?",
-    topics: ["Out-of-the-box logic"],
-    difficulty: "medium",
-    answerMode: "free-text",
-    canonicalAnswer:
-      "Light rope A at both ends and rope B at one end simultaneously. When A finishes (30 min), light B's other end too — B finishes 15 min later. Total: 45 min.",
-    explanation:
-      "The key insight: even though a rope burns unevenly, lighting it from BOTH ends always makes it finish in exactly HALF its total burn time — " +
-      "because the two flame fronts are consuming the rope's total 'fuel' from opposite directions simultaneously, so together they always finish in 30 minutes no matter how the unevenness is distributed.\n" +
-      "Step 1: Light rope A at both ends AND rope B at one end, all at t=0. Rope A will fully burn in exactly 30 minutes (regardless of unevenness).\n" +
-      "Step 2: The instant rope A finishes (t=30 min), light rope B's other end too. Rope B has been burning from one end for 30 minutes, so it has exactly " +
-      "30 minutes of 'single-end' burn time left. Lighting the other end now means those remaining 30 minutes of fuel burn from both ends, finishing in 15 more minutes.\n" +
-      "Step 3: Total elapsed time when rope B fully burns = 30 + 15 = 45 minutes.\n" +
-      "This is a great example of 'uneven burning doesn't break time symmetry, only distance symmetry' — a common trap that leads people to (incorrectly) try to find a physical halfway point on the rope.",
-    createdAt: now,
-    custom: false,
+    origin: "seed",
   },
   {
     id: "seed-19",
     prompt:
       "A portfolio's daily returns are normally distributed with mean 0 and standard deviation 2%. What is the 1-day 99% Value at Risk (VaR), expressed as a percentage of portfolio value?",
-    topics: ["VaR/risk theory", "Continuous distributions"],
+    topics: ["var-risk-theory", "continuous-distributions"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer: "≈ 4.65% (= 2.326 × 2%)",
@@ -337,12 +245,13 @@ export const SEED_QUESTIONS: Question[] = [
       "Interpretation: on a 'normal' day, you'd expect to lose no more than ~4.65% with 99% confidence — but VaR says nothing about how bad the remaining 1% of days can be, which is exactly what Expected Shortfall is designed to address.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-20",
     prompt:
       "Using the same portfolio as above (daily returns ~ N(0, 2%)), what is the 1-day 99% Expected Shortfall (ES) — the expected loss GIVEN that the loss exceeds the VaR threshold?",
-    topics: ["VaR/risk theory", "Continuous distributions", "Statistics"],
+    topics: ["var-risk-theory", "continuous-distributions", "statistics"],
     difficulty: "hard",
     answerMode: "free-text",
     canonicalAnswer: "≈ 5.33%",
@@ -355,11 +264,12 @@ export const SEED_QUESTIONS: Question[] = [
       "this is exactly why regulators (Basel III/FRTB) shifted market risk capital requirements from VaR to ES.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-21",
     prompt: "For a European call option that is deep in-the-money, what does its delta approach as expiration nears?",
-    topics: ["Derivatives/Greeks"],
+    topics: ["derivatives-greeks"],
     difficulty: "easy",
     answerMode: "multiple-choice",
     canonicalAnswer: "1",
@@ -377,12 +287,13 @@ export const SEED_QUESTIONS: Question[] = [
       "At-the-money options have delta near 0.5 and it's the AT-the-money delta whose GAMMA spikes hardest as expiry nears (since a tiny move can flip it ITM/OTM).",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-22",
     prompt:
       "You are long a call option (bought, not sold). Is your gamma positive or negative, and what does this mean about how your delta changes as the underlying price rises?",
-    topics: ["Derivatives/Greeks"],
+    topics: ["derivatives-greeks"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer:
@@ -395,12 +306,13 @@ export const SEED_QUESTIONS: Question[] = [
       "and why option buyers pay a premium (theta decay) for positive gamma exposure.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-23",
     prompt:
       "X and Y are two random variables. What is Var(X+Y) in terms of Var(X) and Var(Y) when X and Y are independent? What changes if they are NOT independent, with covariance Cov(X,Y)?",
-    topics: ["Statistics"],
+    topics: ["statistics"],
     difficulty: "medium",
     answerMode: "free-text",
     canonicalAnswer: "Independent: Var(X)+Var(Y). Otherwise: Var(X)+Var(Y)+2Cov(X,Y).",
@@ -411,11 +323,12 @@ export const SEED_QUESTIONS: Question[] = [
       "diversification reduces portfolio variance only when asset correlations are less than 1.",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
   {
     id: "seed-24",
     prompt: "X is uniformly distributed on [0, 1]. What is E[X²]?",
-    topics: ["Continuous distributions"],
+    topics: ["continuous-distributions"],
     difficulty: "easy",
     answerMode: "free-text",
     canonicalAnswer: "1/3",
@@ -426,5 +339,7 @@ export const SEED_QUESTIONS: Question[] = [
       "consistent with the general identity Var(X) = E[X²] - (E[X])².",
     createdAt: now,
     custom: false,
+    origin: "seed",
   },
 ];
+

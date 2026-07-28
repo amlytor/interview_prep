@@ -1,6 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useStore } from "../lib/store";
 import { computeOverallStats, computePerformanceOverTime } from "../lib/stats";
+import { topicLabel } from "../lib/topics";
 import type { Page } from "../App";
 
 function pct(x: number): string {
@@ -76,8 +77,8 @@ export function Dashboard({ onNavigate }: { onNavigate: (page: Page) => void }) 
           ) : (
             stats.topicStats.map((t) => (
               <div className="progress-row" key={t.topic}>
-                <span className="progress-label" title={t.topic}>
-                  {t.topic}
+                <span className="progress-label" title={topicLabel(t.topic)}>
+                  {topicLabel(t.topic)}
                 </span>
                 <span className="progress-track">
                   <span
@@ -113,7 +114,7 @@ export function Dashboard({ onNavigate }: { onNavigate: (page: Page) => void }) 
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{t.topic}</div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{topicLabel(t.topic)}</div>
                     <div className="muted" style={{ fontSize: 12.5 }}>
                       {t.correct}/{t.attempts} correct
                     </div>

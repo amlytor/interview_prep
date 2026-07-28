@@ -8,6 +8,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { page: "dashboard", label: "Dashboard", icon: "▦" },
+  { page: "topics", label: "Topics", icon: "◈" },
   { page: "drill", label: "Drill", icon: "✎" },
   { page: "review", label: "Review", icon: "↻" },
   { page: "mock", label: "Mock Interview", icon: "⏱" },
