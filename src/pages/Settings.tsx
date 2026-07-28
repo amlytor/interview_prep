@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../lib/store";
-import { testConnection, GradingError } from "../lib/ai";
-import { PROVIDERS, providerInfo } from "../lib/providers";
+import { testConnection, fetchProviderModels, GradingError } from "../lib/ai";
+import { PROVIDERS, providerInfo, DEFAULT_PROVIDER_ID, DEFAULT_MODEL } from "../lib/providers";
+import type { ProviderModel } from "../lib/providers";
 import type { Settings } from "../types";
 
 const CUSTOM_MODEL = "__custom__";
@@ -26,11 +27,47 @@ export function SettingsPage() {
   const info = providerInfo(provider);
   const isOpenAiCompatible = info.kind === "openai-compatible";
 
+  // Providers exposing a public model list get the live catalogue rather than a
+  // hardcoded set that can go stale. Failures are non-fatal — the built-in
+  // suggestions stay usable, and the custom-ID field always works.
+  const [liveModels, setLiveModels] = useState<ProviderModel[] | null>(null);
+  const [modelsState, setModelsState] = useState<"idle" | "loading" | "ok" | "error">("idle");
+
+  useEffect(() => {
+    if (!info.modelsUrl) {
+      setLiveModels(null);
+      setModelsState("idle");
+      return;
+    }
+    let cancelled = false;
+    setModelsState("loading");
+    fetchProviderModels(info.id)
+      .then((models) => {
+        if (cancelled || !models) return;
+        setLiveModels(models);
+        setModelsState("ok");
+      })
+      .catch(() => {
+        if (!cancelled) setModelsState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [info.id, info.modelsUrl]);
+
+  const catalogue = liveModels ?? info.models;
+
   // The model for the provider currently selected, defaulting to its first
   // suggestion so switching providers never leaves a nonsense model ID behind.
-  const model = modelByProvider[provider] ?? info.models[0]?.id ?? "";
+  const model =
+    modelByProvider[provider] ??
+    (provider === DEFAULT_PROVIDER_ID ? DEFAULT_MODEL : info.models[0]?.id ?? "");
   const modelIsPreset = info.models.some((m) => m.id === model);
   const modelChoice = modelIsPreset ? model : CUSTOM_MODEL;
+  // A live catalogue runs to hundreds of entries, so it gets a searchable text
+  // input backed by a datalist rather than an unusable dropdown.
+  const useDatalist = liveModels !== null && liveModels.length > 20;
+  const selectedInfo = catalogue.find((m) => m.id === model);
 
   const apiKey = apiKeys[provider] ?? "";
   const baseUrl = baseUrls[provider] ?? info.baseUrl;
@@ -174,30 +211,65 @@ export function SettingsPage() {
 
         <div className="field">
           <label htmlFor="model">Model</label>
-          <select
-            id="model"
-            value={modelChoice}
-            onChange={(e) => setModel(e.target.value === CUSTOM_MODEL ? "" : e.target.value)}
-          >
-            {info.models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-            <option value={CUSTOM_MODEL}>Custom model ID...</option>
-          </select>
-          {modelChoice === CUSTOM_MODEL && (
-            <input
-              type="text"
-              style={{ marginTop: 8 }}
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="exact model ID from the provider's docs"
-            />
+
+          {useDatalist ? (
+            <>
+              <input
+                id="model"
+                type="text"
+                list="model-catalogue"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                placeholder="start typing — e.g. deepseek, qwen, kimi, claude"
+                autoComplete="off"
+              />
+              <datalist id="model-catalogue">
+                {catalogue.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </datalist>
+            </>
+          ) : (
+            <>
+              <select
+                id="model"
+                value={modelChoice}
+                onChange={(e) => setModel(e.target.value === CUSTOM_MODEL ? "" : e.target.value)}
+              >
+                {info.models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+                <option value={CUSTOM_MODEL}>Custom model ID...</option>
+              </select>
+              {modelChoice === CUSTOM_MODEL && (
+                <input
+                  type="text"
+                  style={{ marginTop: 8 }}
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  placeholder="exact model ID from the provider's docs"
+                />
+              )}
+            </>
           )}
+
           <p className="field-hint">
-            Used for grading free-text answers, generating quizzes, and drafting notes. The suggestions are a
-            starting point — any model ID the provider accepts works.
+            Used for grading free-text answers, generating quizzes, and drafting notes.
+            {modelsState === "loading" && " Loading the live model list..."}
+            {modelsState === "ok" && ` ${catalogue.length} models available.`}
+            {selectedInfo && <> Selected: {selectedInfo.label}.</>}
+            {modelsState === "error" && (
+              <>
+                {" "}
+                Couldn't load the live model list (offline, or the request was blocked), so these are built-in
+                suggestions — any model ID the provider accepts still works.
+              </>
+            )}
+            {modelsState === "idle" && " The suggestions are a starting point — any ID the provider accepts works."}
           </p>
         </div>
 

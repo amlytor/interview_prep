@@ -13,6 +13,7 @@ import { WHY_MISSED_TAGS } from "../types";
 import type { TopicId, TopicInfo } from "./topics";
 import { topicLabel } from "./topics";
 import { providerInfo } from "./providers";
+import type { ProviderModel } from "./providers";
 
 export interface GradingResult {
   verdict: Verdict;
@@ -216,6 +217,50 @@ async function completeText(settings: Settings, req: CompletionRequest): Promise
   return cfg.kind === "anthropic"
     ? completeAnthropic(cfg, req)
     : completeOpenAiCompatible(cfg, req);
+}
+
+/** Format an OpenRouter per-token price string as dollars per million tokens. */
+function perMillion(raw: unknown): string | null {
+  const n = typeof raw === "string" ? Number(raw) : typeof raw === "number" ? raw : NaN;
+  if (!Number.isFinite(n)) return null;
+  if (n === 0) return "free";
+  const perM = n * 1_000_000;
+  return `$${perM < 1 ? perM.toFixed(2) : perM.toFixed(perM < 10 ? 1 : 0)}`;
+}
+
+/**
+ * Load a provider's live model catalogue from its public (unauthenticated)
+ * models endpoint. Used so the model picker never depends on a hardcoded list
+ * going stale. Returns null when the provider has no such endpoint; throws only
+ * on an unexpected shape — callers fall back to the built-in suggestions.
+ */
+export async function fetchProviderModels(providerId: string): Promise<ProviderModel[] | null> {
+  const info = providerInfo(providerId);
+  if (!info.modelsUrl) return null;
+
+  const response = await fetch(info.modelsUrl);
+  if (!response.ok) throw new Error(`model list request failed (${response.status})`);
+  const payload = (await response.json()) as { data?: unknown };
+  if (!Array.isArray(payload.data)) throw new Error("unexpected model list shape");
+
+  const models: ProviderModel[] = [];
+  for (const entry of payload.data) {
+    if (!entry || typeof entry !== "object") continue;
+    const e = entry as Record<string, unknown>;
+    if (typeof e.id !== "string") continue;
+
+    const name = typeof e.name === "string" ? e.name : e.id;
+    const pricing = e.pricing as Record<string, unknown> | undefined;
+    const inPrice = perMillion(pricing?.prompt);
+    const outPrice = perMillion(pricing?.completion);
+    // "free" on both sides reads better than "free/free".
+    const price =
+      inPrice && outPrice ? (inPrice === "free" && outPrice === "free" ? "free" : `${inPrice}/${outPrice} per M`) : null;
+
+    models.push({ id: e.id, label: price ? `${name} · ${price}` : name });
+  }
+  models.sort((a, b) => a.id.localeCompare(b.id));
+  return models;
 }
 
 /**

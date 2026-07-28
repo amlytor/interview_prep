@@ -25,6 +25,12 @@ export interface ProviderInfo {
   baseUrl: string;
   /** Suggested models. The custom-model field always overrides this. */
   models: ProviderModel[];
+  /**
+   * Public, unauthenticated endpoint returning an OpenAI-style {data: [{id}]}
+   * model list. When set, Settings loads the live catalogue instead of relying
+   * on the hardcoded `models` above (which become a fallback).
+   */
+  modelsUrl?: string;
   keyUrl: string;
   keyLabel: string;
   keyPlaceholder: string;
@@ -54,18 +60,20 @@ export const PROVIDERS: ProviderInfo[] = [
     label: "OpenRouter (DeepSeek, Qwen, Kimi, everything)",
     kind: "openai-compatible",
     baseUrl: "https://openrouter.ai/api/v1",
+    // Fallback only — the live catalogue below is fetched at runtime, so these
+    // are used just when the browser can't reach openrouter.ai.
     models: [
       { id: "deepseek/deepseek-chat", label: "DeepSeek Chat" },
-      { id: "deepseek/deepseek-reasoner", label: "DeepSeek Reasoner" },
       { id: "qwen/qwen-max", label: "Qwen Max" },
       { id: "moonshotai/kimi-k2", label: "Kimi K2 (Moonshot)" },
       { id: "anthropic/claude-sonnet-5", label: "Claude Sonnet 5 (via OpenRouter)" },
     ],
+    modelsUrl: "https://openrouter.ai/api/v1/models",
     keyUrl: "https://openrouter.ai/keys",
     keyLabel: "openrouter.ai/keys",
     keyPlaceholder: "sk-or-v1-...",
     browserNote:
-      "One key, hundreds of models, and it explicitly supports being called from a browser — the least friction if you want to mix providers. Model IDs are listed at openrouter.ai/models; paste any of them into the custom field.",
+      "One key, hundreds of models, and it explicitly supports being called from a browser — the least friction if you want to mix providers. The model list below is loaded live from OpenRouter, with prices, so it's always current.",
   },
   {
     id: "deepseek",
@@ -146,7 +154,19 @@ export const PROVIDERS: ProviderInfo[] = [
 
 const BY_ID = new Map(PROVIDERS.map((p) => [p.id, p]));
 
-export const DEFAULT_PROVIDER_ID = "anthropic";
+// OpenRouter is the default for a fresh install: one key reaches Claude,
+// DeepSeek, Qwen, and Kimi alike, and it is the provider least likely to be
+// blocked by CORS from a browser-only app. Existing installs keep whatever
+// they already had — this only affects first run.
+export const DEFAULT_PROVIDER_ID = "openrouter";
+export const DEFAULT_MODEL = "anthropic/claude-sonnet-5";
+
+/**
+ * What a settings payload with no `provider` field must have been. Those
+ * predate multi-provider support, when Anthropic was the only option — so they
+ * migrate to Anthropic, not to the new default, which they'd have no key for.
+ */
+export const LEGACY_PROVIDER_ID = "anthropic";
 
 export function providerInfo(id: string): ProviderInfo {
   return BY_ID.get(id) ?? PROVIDERS[0];

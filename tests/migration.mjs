@@ -1,4 +1,4 @@
-import { APP_URL, launch, reporter } from "./harness.mjs";
+import { APP_URL, launch, nav, reporter } from "./harness.mjs";
 
 const { check, finish } = reporter();
 
@@ -43,7 +43,10 @@ const browser = await launch();
     JSON.stringify(d.settings.apiKeys));
   check("v1: chosen model preserved (not reset to the new default)",
     d.settings.model === "claude-sonnet-4-6", `model=${d.settings.model}`);
-  check("v1: provider defaults to anthropic", d.settings.provider === "anthropic");
+  // Critically NOT the current default (OpenRouter) — a legacy install has an
+  // Anthropic key and an Anthropic model ID, so moving it would break grading.
+  check("v1: legacy install stays on Anthropic, not the new default",
+    d.settings.provider === "anthropic", `provider=${d.settings.provider}`);
   check("v1: spend note preserved", d.settings.spendNote === "cap at $20");
   check("v1: customTopics backfilled", Array.isArray(d.customTopics) && d.customTopics.length === 0);
   const mine = d.questions.find((q) => q.id === "mine-1");
@@ -55,7 +58,7 @@ const browser = await launch();
     await page.evaluate(() => localStorage.getItem("quantprep_data_v1") !== null));
 
   // The dropped question's attempt must still feed its topic's mastery.
-  await page.getByRole("button", { name: /Topics/ }).click();
+  await nav(page, /Topics/);
   await page.waitForSelector(".topic-card");
   // Filter on the title element specifically — prereq chips on other cards
   // also carry the topic's name.
@@ -103,6 +106,8 @@ const browser = await launch();
   check("old-v2: attempts preserved", d.attempts.length === 1);
   check("old-v2: legacy key migrated", d.settings.apiKeys.anthropic === "sk-ant-old-v2");
   check("old-v2: model preserved", d.settings.model === "claude-opus-5");
+  check("old-v2: stays on Anthropic (key + model would not work elsewhere)",
+    d.settings.provider === "anthropic", `provider=${d.settings.provider}`);
   check("old-v2: customTopics backfilled", Array.isArray(d.customTopics));
   check("old-v2: edited note NOT clobbered by re-seeding",
     d.studyNotes.find((n) => n.topicId === "bayes-theorem")?.body === "my edited note");
@@ -118,7 +123,7 @@ const browser = await launch();
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: /Topics/ }).click();
+  await nav(page, /Topics/);
   await page.getByRole("button", { name: "+ New topic" }).click();
   await page.waitForSelector("#topicTitle");
   await page.fill("#topicTitle", "Martingale stopping");
@@ -131,7 +136,7 @@ const browser = await launch();
   await page.reload({ waitUntil: "networkidle" });
 
   // Feed the export back through the real import path.
-  await page.getByRole("button", { name: /Settings/ }).click();
+  await nav(page, /Settings/);
   // The real input is display:none behind an "Import from JSON" button.
   await page.waitForSelector('input[type="file"]', { state: "attached" });
   await page.setInputFiles('input[type="file"]', {
@@ -139,7 +144,7 @@ const browser = await launch();
   });
   await page.waitForTimeout(500);
 
-  await page.getByRole("button", { name: /Topics/ }).click();
+  await nav(page, /Topics/);
   await page.waitForSelector(".topic-card");
   check("import: custom topic round-trips through export/import",
     (await page.locator(".topic-card-title", { hasText: "Martingale stopping" }).count()) === 1);

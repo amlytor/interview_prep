@@ -15,6 +15,14 @@ export function launch() {
   );
 }
 
+/**
+ * Click a sidebar destination. Scoped to the nav because page content can carry
+ * buttons with the same words ("Start Drilling" vs the Drill nav item).
+ */
+export function nav(page, name) {
+  return page.locator("nav.sidebar").getByRole("button", { name }).click();
+}
+
 /** Collects pass/fail lines and exits non-zero if anything failed. */
 export function reporter() {
   const results = [];

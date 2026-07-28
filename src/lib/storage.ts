@@ -3,7 +3,7 @@ import { SEED_QUESTIONS } from "./seedQuestions";
 import { seedQuestionBank, seedStudyNotes, DROPPED_V1_SEED_IDS } from "./seedData";
 import { V1_LABEL_TO_ID, isKnownTopicId } from "./topics";
 import type { TopicId } from "./topics";
-import { DEFAULT_PROVIDER_ID } from "./providers";
+import { DEFAULT_PROVIDER_ID, DEFAULT_MODEL, LEGACY_PROVIDER_ID } from "./providers";
 
 // v2 is the live key. v1 is read once for migration and then left untouched
 // as a permanent rollback backup — it is never deleted or rewritten.
@@ -18,7 +18,7 @@ const CURRENT_VERSION = 2;
 function defaultSettings(): Settings {
   return {
     provider: DEFAULT_PROVIDER_ID,
-    model: "claude-sonnet-5",
+    model: DEFAULT_MODEL,
     apiKeys: {},
     baseUrls: {},
     spendNote: "",
@@ -41,7 +41,11 @@ function normalizeSettings(raw: unknown): Settings {
   }
 
   return {
-    provider: typeof s.provider === "string" && s.provider ? s.provider : defaults.provider,
+    // No `provider` means this payload predates multi-provider support, so it
+    // was an Anthropic install. Sending it to the *current* default would strand
+    // the user on a provider they have no key for, with an incompatible model
+    // ID — so legacy data migrates to Anthropic and keeps working untouched.
+    provider: typeof s.provider === "string" && s.provider ? s.provider : LEGACY_PROVIDER_ID,
     model: typeof s.model === "string" && s.model ? s.model : defaults.model,
     apiKeys,
     baseUrls: { ...(s.baseUrls ?? {}) },

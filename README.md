@@ -76,8 +76,8 @@ forth without re-entering them.
 
 | Provider | Models | Notes |
 | --- | --- | --- |
-| **Anthropic** | Claude Sonnet 5, Opus 5, Fable 5, Haiku 4.5 | Native API. The default. |
-| **OpenRouter** | DeepSeek, Qwen, Kimi, Claude, and hundreds more | One key for everything, and the least likely to be blocked from the browser. |
+| **OpenRouter** *(default)* | DeepSeek, Qwen, Kimi, Claude, and hundreds more | One key for everything, and the least likely to be blocked from the browser. The model picker loads OpenRouter's live catalogue with per-million prices, so it's never out of date — type to search it. |
+| **Anthropic** | Claude Sonnet 5, Opus 5, Fable 5, Haiku 4.5 | Native API, via the official SDK. |
 | **DeepSeek** | `deepseek-chat`, `deepseek-reasoner` | Direct, cheap. |
 | **Moonshot / Kimi** | `kimi-k2-*`, `moonshot-v1-*` | Direct. Switch the base URL for the `.cn` endpoint. |
 | **Qwen / DashScope** | `qwen-max`, `qwen-plus`, `qwen-turbo` | Direct. International endpoint by default. |
@@ -87,6 +87,11 @@ forth without re-entering them.
 Every provider except Anthropic speaks the OpenAI-compatible
 `POST /chat/completions` shape, so any model ID the endpoint accepts works —
 the dropdowns are starting points, and "Custom model ID..." takes anything.
+
+A fresh install starts on OpenRouter with `anthropic/claude-sonnet-5`; add a key
+and you're going, or switch the model to `deepseek/...` or `qwen/...` from the
+live list. **Upgrading an existing install never moves you** — data saved before
+multi-provider support stays on Anthropic with the key and model it already had.
 
 **The one thing that can bite you is CORS.** QuantPrep has no backend, so
 requests go straight from the page to the provider, and a provider that doesn't

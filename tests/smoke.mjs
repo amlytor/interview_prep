@@ -1,28 +1,48 @@
-import { APP_URL, launch, reporter } from "./harness.mjs";
+import { APP_URL, launch, nav, reporter } from "./harness.mjs";
 
 const { check, finish } = reporter();
 
 const browser = await launch();
 const page = await browser.newPage();
+// Settings fetches OpenRouter's public model catalogue. That request is meant
+// to fail in a sandboxed or offline environment — the "model picker still
+// usable" check below asserts the fallback. So network-layer failures are
+// tolerated here; every other error still fails the suite.
+const EXPECTED_OFFLINE = /net::ERR_|Failed to fetch|NetworkError/;
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
-page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+page.on("console", (m) => {
+  if (m.type() === "error" && !EXPECTED_OFFLINE.test(m.text())) errors.push(m.text());
+});
 
 await page.goto(APP_URL, { waitUntil: "networkidle" });
 check("app boots", (await page.locator("h1").first().textContent()) !== null);
 
 // --- Fresh install writes the expected settings shape -----------------------
 const settings = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")).settings);
-check("fresh settings have provider", settings.provider === "anthropic", `provider=${settings.provider}`);
+check("fresh install defaults to OpenRouter", settings.provider === "openrouter", `provider=${settings.provider}`);
 check("fresh settings have apiKeys map", typeof settings.apiKeys === "object" && settings.apiKeys !== null);
-check("fresh settings default model", settings.model === "claude-sonnet-5", `model=${settings.model}`);
+check("fresh settings default model", settings.model === "anthropic/claude-sonnet-5", `model=${settings.model}`);
 
 // --- Settings page: provider switching -------------------------------------
-await page.getByRole("button", { name: /Settings/ }).click();
+await nav(page, /Settings/);
 await page.waitForSelector("#provider");
 const providerCount = await page.locator("#provider option").count();
 check("provider dropdown populated", providerCount === 7, `${providerCount} providers`);
 
+// This sandbox can't reach openrouter.ai, so the live model fetch fails here —
+// which is exactly the fallback path worth asserting: the built-in suggestions
+// must remain usable rather than leaving an empty picker.
+await page.waitForFunction(
+  () => !document.body.textContent.includes("Loading the live model list"),
+  null,
+  { timeout: 15000 },
+);
+const orModelValue = await page.locator("#model").inputValue();
+check("model picker still usable when the live list can't load",
+  orModelValue.length > 0, `model=${orModelValue}`);
+
+await page.selectOption("#provider", "anthropic");
 check("base URL hidden for Anthropic", (await page.locator("#baseUrl").count()) === 0);
 await page.selectOption("#provider", "deepseek");
 check("base URL shown for DeepSeek", (await page.locator("#baseUrl").inputValue()) === "https://api.deepseek.com/v1");
@@ -45,7 +65,7 @@ check("both keys persisted", saved.apiKeys.anthropic === "sk-ant-test" && saved.
 check("provider persisted", saved.provider === "deepseek");
 
 // --- Custom topic creation --------------------------------------------------
-await page.getByRole("button", { name: /Topics/ }).click();
+await nav(page, /Topics/);
 await page.waitForSelector(".topic-card");
 const seededCount = await page.locator(".topic-card").count();
 check("seeded topics render", seededCount === 19, `${seededCount} topics`);
@@ -83,19 +103,19 @@ check("placed in a deeper tier by its prereqs",
   (await lastTier.locator(".topic-card-title", { hasText: "Reflection principle" }).count()) === 1,
   `tiers: ${tierHeadings.join(" | ")}`);
 
-await page.getByRole("button", { name: /Add Question/ }).click();
+await nav(page, /Add Question/);
 await page.waitForTimeout(200);
 check("custom topic offered in Add Question",
   (await page.getByText("Reflection principle", { exact: true }).count()) > 0);
 
-await page.getByRole("button", { name: /Drill/ }).click();
+await nav(page, /Drill/);
 await page.waitForTimeout(200);
 check("custom topic offered in Drill filters",
   (await page.getByText("Reflection principle", { exact: true }).count()) > 0);
 
 // --- Persistence across a reload -------------------------------------------
 await page.reload({ waitUntil: "networkidle" });
-await page.getByRole("button", { name: /Topics/ }).click();
+await nav(page, /Topics/);
 await page.waitForSelector(".topic-card");
 check("survives a reload", (await page.locator(".topic-card").count()) === 20);
 check("label survives (not a raw slug)",
