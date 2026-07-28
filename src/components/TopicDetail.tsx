@@ -4,7 +4,7 @@
 import { useMemo, useState } from "react";
 import type { Attempt, Question } from "../types";
 import type { TopicId } from "../lib/topics";
-import { topicLabel } from "../lib/topics";
+import { allTopics, topicLabel } from "../lib/topics";
 import { useStore } from "../lib/store";
 import {
   computeAllMastery,
@@ -13,7 +13,7 @@ import {
   blockingPrereqs,
   topicsWithQuestionsSet,
 } from "../lib/mastery";
-import { generateNoteMarkdown, generateQuizFromNote, GradingError } from "../lib/anthropic";
+import { generateNoteMarkdown, generateQuizFromNote, aiConfigured, GradingError } from "../lib/ai";
 import { Markdown } from "./Markdown";
 import { MasteryRing } from "./MasteryRing";
 import { LearnSession } from "./LearnSession";
@@ -52,11 +52,16 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
     stageQuestions,
     approveStagedQuestion,
     rejectStagedQuestion,
+    setTopicPrereqs,
+    deleteCustomTopic,
+    topicDeletionImpact,
   } = useStore();
 
   const note = data.studyNotes.find((n) => n.topicId === topicId);
+  const isCustom = data.customTopics.some((t) => t.id === topicId);
 
   const [mode, setMode] = useState<"view" | "edit" | "learn">("view");
+  const [editingPrereqs, setEditingPrereqs] = useState(false);
   const [editorText, setEditorText] = useState("");
   const [learnQuestions, setLearnQuestions] = useState<Question[]>([]);
   const [aiDraft, setAiDraft] = useState<string | null>(null);
@@ -89,7 +94,7 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
     runAction(async () => {
       setBusy("quiz");
       const existingPrompts = [...topicQuestions, ...staged].map((q) => q.prompt);
-      const drafts = await generateQuizFromNote(note!, existingPrompts, data.settings.apiKey, data.settings.model);
+      const drafts = await generateQuizFromNote(note!, existingPrompts, data.settings);
       stageQuestions(drafts);
       setBusy(null);
     });
@@ -101,8 +106,7 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
       const draft = await generateNoteMarkdown(
         note!.title,
         note!.body.trim().length > 0 ? note!.body : null,
-        data.settings.apiKey,
-        data.settings.model,
+        data.settings,
       );
       setAiDraft(draft);
       setBusy(null);
@@ -131,6 +135,31 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
   function startLearn() {
     setLearnQuestions(pickLearnQuestions(data.questions, data.attempts, topicId));
     setMode("learn");
+  }
+
+  // Spell out exactly what goes, since questions are unrecoverable afterwards.
+  function handleDelete() {
+    const impact = topicDeletionImpact(topicId);
+    const losses = [
+      `the "${note!.title}" study note`,
+      impact.questions > 0 && `${impact.questions} question${impact.questions === 1 ? "" : "s"}`,
+      impact.staged > 0 && `${impact.staged} staged question${impact.staged === 1 ? "" : "s"}`,
+    ].filter(Boolean);
+    const dependentWarning =
+      impact.dependents.length > 0
+        ? `\n\n${impact.dependents.join(", ")} list${impact.dependents.length === 1 ? "s" : ""} this as a prerequisite; ` +
+          `that link will be dropped and those topics may unlock earlier.`
+        : "";
+
+    if (
+      confirm(
+        `Delete this topic?\n\nThis removes ${losses.join(", ")}.` +
+          `${dependentWarning}\n\nYour attempt history is kept. This cannot be undone.`,
+      )
+    ) {
+      deleteCustomTopic(topicId);
+      onBack();
+    }
   }
 
   if (mode === "learn") {
@@ -182,6 +211,7 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
               )}
               {note.modified && <span className="badge badge-topic">Edited</span>}
               {note.source === "ai" && <span className="badge badge-verdict-partial">AI-drafted</span>}
+              {isCustom && <span className="badge badge-topic">Your topic</span>}
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -211,7 +241,7 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
       </div>
 
       {error && <ErrorBanner message={error} onRetry={lastAction ?? undefined} />}
-      {!data.settings.apiKey && (
+      {!aiConfigured(data.settings) && (
         <div className="banner banner-warn">
           <p>AI quiz generation and note drafting need an Anthropic API key.</p>
           <button className="btn btn-secondary btn-sm" onClick={() => onNavigate("settings")}>
@@ -287,7 +317,7 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
                 <button
                   className="btn btn-secondary btn-sm"
                   onClick={handleGenerateNote}
-                  disabled={busy !== null || !data.settings.apiKey}
+                  disabled={busy !== null || !aiConfigured(data.settings)}
                 >
                   {busy === "note" ? (
                     <>
@@ -300,7 +330,7 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
                 <button
                   className="btn btn-primary btn-sm"
                   onClick={handleGenerateQuiz}
-                  disabled={busy !== null || !data.settings.apiKey}
+                  disabled={busy !== null || !aiConfigured(data.settings)}
                 >
                   {busy === "quiz" ? (
                     <>
@@ -376,6 +406,74 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
           <Markdown source={note.body} />
         )}
       </div>
+
+      {/* ---------- Prerequisites + deletion, for user-created topics ---------- */}
+      {isCustom && (
+        <div className="card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div className="card-title" style={{ marginBottom: 0 }}>
+              Topic settings
+            </div>
+            <button className="btn btn-secondary btn-sm" onClick={() => setEditingPrereqs((v) => !v)}>
+              {editingPrereqs ? "Done" : "Edit prerequisites"}
+            </button>
+          </div>
+
+          <p className="muted" style={{ marginTop: 0, fontSize: 13.5 }}>
+            Prerequisites decide where this topic sits in the knowledge tree, when it unlocks, and which topics
+            get spaced-repetition credit when you answer it correctly.
+          </p>
+
+          {editingPrereqs ? (
+            <div className="prereq-picker">
+              {allTopics()
+                .filter((t) => t.id !== topicId)
+                .map((t) => {
+                  const checked = note.prereqs.includes(t.id);
+                  return (
+                    <label key={t.id} className={`prereq-option${checked ? " checked" : ""}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() =>
+                          setTopicPrereqs(
+                            topicId,
+                            checked ? note.prereqs.filter((p) => p !== t.id) : [...note.prereqs, t.id],
+                          )
+                        }
+                      />
+                      {t.label}
+                    </label>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="tag-row">
+              {note.prereqs.length === 0 ? (
+                <span className="muted" style={{ fontSize: 13.5 }}>
+                  No prerequisites — this sits in the Foundation tier.
+                </span>
+              ) : (
+                note.prereqs.map((p) => (
+                  <span key={p} className="prereq-chip met">
+                    {topicLabel(p)}
+                  </span>
+                ))
+              )}
+            </div>
+          )}
+
+          <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid var(--gray-200)" }}>
+            <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+              Delete this topic
+            </button>
+            <p className="field-hint" style={{ marginTop: 8 }}>
+              Removes the topic, its note, and its questions. Your attempt history is kept — only seeded topics
+              are undeletable.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

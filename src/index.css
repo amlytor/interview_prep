@@ -985,3 +985,44 @@ select:focus {
 .staged-item:last-child {
   margin-bottom: 0;
 }
+
+/* ---------- Prerequisite picker (new topic + topic settings) ---------- */
+
+.prereq-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.prereq-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--gray-300);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12.5px;
+  color: var(--gray-700);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+
+.prereq-option:hover {
+  border-color: var(--blue-500);
+}
+
+.prereq-option.checked {
+  border-color: var(--blue-500);
+  background: var(--blue-50, #eef4fb);
+  color: var(--navy-900);
+  font-weight: 600;
+}
+
+.prereq-option input {
+  width: auto;
+  margin: 0;
+  accent-color: var(--blue-600);
+}

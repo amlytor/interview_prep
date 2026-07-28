@@ -1,37 +1,58 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useStore } from "../lib/store";
-import { testConnection, GradingError } from "../lib/anthropic";
+import { testConnection, GradingError } from "../lib/ai";
+import { PROVIDERS, providerInfo } from "../lib/providers";
+import type { Settings } from "../types";
 
-const MODEL_OPTIONS = [
-  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6 (default)" },
-  { id: "claude-sonnet-5", label: "Claude Sonnet 5" },
-  { id: "claude-opus-5", label: "Claude Opus 5 (highest quality, pricier)" },
-  { id: "claude-haiku-4-5", label: "Claude Haiku 4.5 (fastest, cheapest)" },
-  { id: "custom", label: "Custom model ID..." },
-];
+const CUSTOM_MODEL = "__custom__";
 
 export function SettingsPage() {
   const { data, updateSettings, exportData, importData, resetAllData } = useStore();
-  const [apiKeyInput, setApiKeyInput] = useState(data.settings.apiKey);
-  const [showKey, setShowKey] = useState(false);
-  const knownModel = MODEL_OPTIONS.some((m) => m.id === data.settings.model);
-  const [modelChoice, setModelChoice] = useState(knownModel ? data.settings.model : "custom");
-  const [customModel, setCustomModel] = useState(knownModel ? "" : data.settings.model);
+
+  const [provider, setProvider] = useState(data.settings.provider);
+  const [apiKeys, setApiKeys] = useState<Record<string, string>>(data.settings.apiKeys);
+  const [baseUrls, setBaseUrls] = useState<Record<string, string>>(data.settings.baseUrls);
+  const [modelByProvider, setModelByProvider] = useState<Record<string, string>>({
+    [data.settings.provider]: data.settings.model,
+  });
   const [spendNote, setSpendNote] = useState(data.settings.spendNote);
+  const [showKey, setShowKey] = useState(false);
   const [testState, setTestState] = useState<"idle" | "testing" | "ok" | "error">("idle");
   const [testMessage, setTestMessage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [importMessage, setImportMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const effectiveModel = modelChoice === "custom" ? customModel.trim() : modelChoice;
+  const info = providerInfo(provider);
+  const isOpenAiCompatible = info.kind === "openai-compatible";
+
+  // The model for the provider currently selected, defaulting to its first
+  // suggestion so switching providers never leaves a nonsense model ID behind.
+  const model = modelByProvider[provider] ?? info.models[0]?.id ?? "";
+  const modelIsPreset = info.models.some((m) => m.id === model);
+  const modelChoice = modelIsPreset ? model : CUSTOM_MODEL;
+
+  const apiKey = apiKeys[provider] ?? "";
+  const baseUrl = baseUrls[provider] ?? info.baseUrl;
+
+  // The settings that Save (or Test) would apply, assembled once.
+  const draft = useMemo<Settings>(
+    () => ({
+      provider,
+      model: model.trim(),
+      apiKeys,
+      baseUrls: { ...baseUrls, [provider]: baseUrl.trim() },
+      spendNote,
+    }),
+    [provider, model, apiKeys, baseUrls, baseUrl, spendNote],
+  );
+
+  function setModel(next: string) {
+    setModelByProvider((prev) => ({ ...prev, [provider]: next }));
+  }
 
   function handleSave() {
-    updateSettings({
-      apiKey: apiKeyInput.trim(),
-      model: effectiveModel || "claude-sonnet-4-6",
-      spendNote,
-    });
+    updateSettings(draft);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -40,9 +61,8 @@ export function SettingsPage() {
     setTestState("testing");
     setTestMessage(null);
     try {
-      await testConnection(apiKeyInput.trim(), effectiveModel || "claude-sonnet-4-6");
+      setTestMessage(await testConnection(draft));
       setTestState("ok");
-      setTestMessage("Connection successful — Claude responded.");
     } catch (err) {
       setTestState("error");
       setTestMessage(err instanceof GradingError ? err.message : "Unknown error testing the connection.");
@@ -63,7 +83,11 @@ export function SettingsPage() {
   }
 
   function handleReset() {
-    if (confirm("This will permanently erase all local progress, attempts, and custom questions. Export a backup first?\n\nClick OK to erase, Cancel to keep your data.")) {
+    if (
+      confirm(
+        "This will permanently erase all local progress, attempts, custom topics, and custom questions. Export a backup first?\n\nClick OK to erase, Cancel to keep your data.",
+      )
+    ) {
       resetAllData();
     }
   }
@@ -73,12 +97,32 @@ export function SettingsPage() {
       <div className="page-header">
         <div>
           <h1>Settings</h1>
-          <p className="page-subtitle">API key, model, spend awareness, and your local data.</p>
+          <p className="page-subtitle">AI provider, model, spend awareness, and your local data.</p>
         </div>
       </div>
 
-      <div className="card" style={{ maxWidth: 620 }}>
-        <div className="card-title">Anthropic API</div>
+      <div className="card" style={{ maxWidth: 660 }}>
+        <div className="card-title">AI Provider</div>
+
+        <div className="field">
+          <label htmlFor="provider">Provider</label>
+          <select
+            id="provider"
+            value={provider}
+            onChange={(e) => {
+              setProvider(e.target.value);
+              setTestState("idle");
+              setTestMessage(null);
+            }}
+          >
+            {PROVIDERS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+          {info.browserNote && <p className="field-hint">{info.browserNote}</p>}
+        </div>
 
         <div className="field">
           <label htmlFor="apiKey">API key</label>
@@ -86,9 +130,9 @@ export function SettingsPage() {
             <input
               id="apiKey"
               type={showKey ? "text" : "password"}
-              value={apiKeyInput}
-              onChange={(e) => setApiKeyInput(e.target.value)}
-              placeholder="sk-ant-..."
+              value={apiKey}
+              onChange={(e) => setApiKeys((prev) => ({ ...prev, [provider]: e.target.value }))}
+              placeholder={info.keyPlaceholder}
               autoComplete="off"
             />
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowKey((s) => !s)}>
@@ -96,34 +140,65 @@ export function SettingsPage() {
             </button>
           </div>
           <p className="field-hint">
-            Stored only in this browser's local storage. Never sent anywhere except directly to api.anthropic.com
-            when grading. Get a key at{" "}
-            <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">
-              console.anthropic.com
-            </a>
-            .
+            Kept per provider, so switching back and forth doesn't lose your keys. Stored only in this browser's
+            local storage and sent only to the provider you select.
+            {info.keyUrl && (
+              <>
+                {" "}
+                Get one at{" "}
+                <a href={info.keyUrl} target="_blank" rel="noreferrer">
+                  {info.keyLabel}
+                </a>
+                .
+              </>
+            )}
           </p>
         </div>
 
+        {isOpenAiCompatible && (
+          <div className="field">
+            <label htmlFor="baseUrl">Base URL</label>
+            <input
+              id="baseUrl"
+              type="text"
+              value={baseUrl}
+              onChange={(e) => setBaseUrls((prev) => ({ ...prev, [provider]: e.target.value }))}
+              placeholder="https://api.example.com/v1"
+            />
+            <p className="field-hint">
+              Everything up to but not including <code>/chat/completions</code>. Change this for a regional
+              endpoint or a self-hosted gateway.
+            </p>
+          </div>
+        )}
+
         <div className="field">
-          <label htmlFor="model">Grading model</label>
-          <select id="model" value={modelChoice} onChange={(e) => setModelChoice(e.target.value)}>
-            {MODEL_OPTIONS.map((m) => (
+          <label htmlFor="model">Model</label>
+          <select
+            id="model"
+            value={modelChoice}
+            onChange={(e) => setModel(e.target.value === CUSTOM_MODEL ? "" : e.target.value)}
+          >
+            {info.models.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.label}
               </option>
             ))}
+            <option value={CUSTOM_MODEL}>Custom model ID...</option>
           </select>
-          {modelChoice === "custom" && (
+          {modelChoice === CUSTOM_MODEL && (
             <input
               type="text"
               style={{ marginTop: 8 }}
-              value={customModel}
-              onChange={(e) => setCustomModel(e.target.value)}
-              placeholder="e.g. claude-opus-4-8"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="exact model ID from the provider's docs"
             />
           )}
-          <p className="field-hint">Used for grading free-text answers in Drill, Review, and Mock modes.</p>
+          <p className="field-hint">
+            Used for grading free-text answers, generating quizzes, and drafting notes. The suggestions are a
+            starting point — any model ID the provider accepts works.
+          </p>
         </div>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -143,13 +218,16 @@ export function SettingsPage() {
         </div>
 
         {testMessage && (
-          <div className={`banner ${testState === "ok" ? "banner-success" : "banner-error"}`} style={{ marginTop: 16, marginBottom: 0 }}>
+          <div
+            className={`banner ${testState === "ok" ? "banner-success" : "banner-error"}`}
+            style={{ marginTop: 16, marginBottom: 0 }}
+          >
             <p>{testMessage}</p>
           </div>
         )}
       </div>
 
-      <div className="card" style={{ maxWidth: 620 }}>
+      <div className="card" style={{ maxWidth: 660 }}>
         <div className="card-title">Spend Awareness</div>
         <div className="field" style={{ marginBottom: 8 }}>
           <label htmlFor="spendNote">Personal budget note</label>
@@ -158,14 +236,19 @@ export function SettingsPage() {
             value={spendNote}
             onChange={(e) => setSpendNote(e.target.value)}
             rows={3}
-            placeholder="e.g. Cap monthly Anthropic spend at $20 — check console.anthropic.com/settings/cost if drilling heavily."
+            placeholder="e.g. Cap monthly API spend at $20 — check the provider's usage page if drilling heavily."
           />
           <p className="field-hint">
-            QuantPrep doesn't track live spend — this is just a reminder shown to you. Check actual usage in the{" "}
+            QuantPrep doesn't track live spend — this is just a reminder shown to you. Check actual usage in your
+            provider's console (
             <a href="https://console.anthropic.com/settings/cost" target="_blank" rel="noreferrer">
-              Anthropic Console
+              Anthropic
             </a>
-            .
+            ,{" "}
+            <a href="https://openrouter.ai/activity" target="_blank" rel="noreferrer">
+              OpenRouter
+            </a>
+            ). Local models cost nothing.
           </p>
         </div>
         <button className="btn btn-primary btn-sm" onClick={handleSave}>
@@ -178,11 +261,13 @@ export function SettingsPage() {
         )}
       </div>
 
-      <div className="card" style={{ maxWidth: 620 }}>
+      <div className="card" style={{ maxWidth: 660 }}>
         <div className="card-title">Your Data</div>
         <p className="muted" style={{ marginTop: 0 }}>
-          {data.questions.length} questions · {data.attempts.length} attempts logged. All progress lives in this
-          browser's local storage — export regularly so you never lose it.
+          {data.questions.length} questions · {data.attempts.length} attempts logged · {data.studyNotes.length}{" "}
+          study notes ({data.customTopics.length} your own). All progress lives in this browser's local storage
+          under <code>quantprep_data_v2</code> — it survives restarts, but it is tied to this browser at this exact
+          URL. Export regularly.
         </p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button className="btn btn-primary" onClick={exportData}>
@@ -203,7 +288,10 @@ export function SettingsPage() {
           </button>
         </div>
         {importMessage && (
-          <div className={`banner ${importMessage.ok ? "banner-success" : "banner-error"}`} style={{ marginTop: 16, marginBottom: 0 }}>
+          <div
+            className={`banner ${importMessage.ok ? "banner-success" : "banner-error"}`}
+            style={{ marginTop: 16, marginBottom: 0 }}
+          >
             <p>{importMessage.text}</p>
           </div>
         )}

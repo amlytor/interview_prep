@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from "react";
 import type { AppData, Attempt, AttemptSource, Question, Settings, StudyNote, Verdict } from "../types";
 import type { TopicId } from "./topics";
+import { registerCustomTopics, slugifyTopic } from "./topics";
 import { exportToFile, importFromFile, loadData, saveData } from "./storage";
 import { applyTrickleCredit, scheduleAfterAttempt } from "./srs";
 
@@ -18,11 +19,30 @@ interface RecordAttemptInput {
 
 export type NewQuestion = Omit<Question, "id" | "createdAt">;
 
+export interface NewTopicInput {
+  title: string;
+  prereqs: TopicId[];
+  body: string;
+}
+
+/** What deleting a custom topic would remove, for the confirmation prompt. */
+export interface TopicDeletionImpact {
+  questions: number;
+  staged: number;
+  dependents: string[];
+}
+
 interface StoreValue {
   data: AppData;
   addQuestion: (q: Omit<Question, "id" | "createdAt" | "custom" | "origin">) => Question;
   recordAttempt: (input: RecordAttemptInput) => Attempt;
   updateSettings: (partial: Partial<Settings>) => void;
+  // Custom topics: a user-created topic is a study note plus a taxonomy entry,
+  // so it flows through mastery, the knowledge tree, and Learn mode unchanged.
+  addCustomTopic: (input: NewTopicInput) => TopicId;
+  deleteCustomTopic: (topicId: TopicId) => void;
+  setTopicPrereqs: (topicId: TopicId, prereqs: TopicId[]) => void;
+  topicDeletionImpact: (topicId: TopicId) => TopicDeletionImpact;
   // Study notes
   setNoteBody: (topicId: TopicId, body: string, source: StudyNote["source"]) => void;
   // AI question staging: generated questions sit in stagedQuestions until
@@ -42,7 +62,18 @@ function makeId(): string {
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(() => loadData());
+  const [data, setData] = useState<AppData>(() => {
+    const loaded = loadData();
+    // Seed the display-name registry before the first render, so custom topics
+    // never flash their raw slug.
+    registerCustomTopics(loaded.customTopics);
+    return loaded;
+  });
+
+  // topicLabel() reads a module-level registry rather than the store, so it can
+  // be called from render paths with no context. Keep the two in sync here —
+  // useMemo (not useEffect) so it lands before children render.
+  useMemo(() => registerCustomTopics(data.customTopics), [data.customTopics]);
 
   useEffect(() => {
     saveData(data);
@@ -112,6 +143,76 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setData((prev) => ({ ...prev, settings: { ...prev.settings, ...partial } }));
   }, []);
 
+  const addCustomTopic = useCallback(
+    (input: NewTopicInput): TopicId => {
+    const title = input.title.trim() || "Untitled topic";
+    // Computed outside the updater so it can be returned to the caller, which
+    // navigates straight to the new topic.
+    const topicId = slugifyTopic(title, data.customTopics.map((t) => t.id));
+    const note: StudyNote = {
+      topicId,
+      title,
+      prereqs: input.prereqs,
+      source: "user",
+      body: input.body,
+      lastEdited: Date.now(),
+      modified: false,
+    };
+    setData((prev) => ({
+      ...prev,
+      customTopics: [...prev.customTopics, { id: topicId, label: title }],
+      studyNotes: [...prev.studyNotes, note],
+    }));
+    return topicId;
+    },
+    [data.customTopics],
+  );
+
+  /**
+   * Remove a user-created topic along with its note and questions. Attempts are
+   * deliberately kept: they are historical fact, and mastery simply stops
+   * counting them once the questions are gone.
+   */
+  const deleteCustomTopic = useCallback((topicId: TopicId) => {
+    setData((prev) => {
+      // Guard: seeded topics have no customTopics entry and are not deletable.
+      if (!prev.customTopics.some((t) => t.id === topicId)) return prev;
+      return {
+        ...prev,
+        customTopics: prev.customTopics.filter((t) => t.id !== topicId),
+        studyNotes: prev.studyNotes
+          .filter((n) => n.topicId !== topicId)
+          // Drop dangling prereq edges so the DAG stays well-formed.
+          .map((n) =>
+            n.prereqs.includes(topicId)
+              ? { ...n, prereqs: n.prereqs.filter((p) => p !== topicId) }
+              : n,
+          ),
+        questions: prev.questions.filter((q) => !q.topics.includes(topicId)),
+        stagedQuestions: prev.stagedQuestions.filter((q) => !q.topics.includes(topicId)),
+      };
+    });
+  }, []);
+
+  const setTopicPrereqs = useCallback((topicId: TopicId, prereqs: TopicId[]) => {
+    setData((prev) => ({
+      ...prev,
+      studyNotes: prev.studyNotes.map((n) =>
+        // Self-edges would make the depth walk meaningless.
+        n.topicId === topicId ? { ...n, prereqs: prereqs.filter((p) => p !== topicId) } : n,
+      ),
+    }));
+  }, []);
+
+  const topicDeletionImpact = useCallback(
+    (topicId: TopicId): TopicDeletionImpact => ({
+      questions: data.questions.filter((q) => q.topics.includes(topicId)).length,
+      staged: data.stagedQuestions.filter((q) => q.topics.includes(topicId)).length,
+      dependents: data.studyNotes.filter((n) => n.prereqs.includes(topicId)).map((n) => n.title),
+    }),
+    [data.questions, data.stagedQuestions, data.studyNotes],
+  );
+
   const setNoteBody = useCallback((topicId: TopicId, body: string, source: StudyNote["source"]) => {
     setData((prev) => ({
       ...prev,
@@ -169,6 +270,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addQuestion,
       recordAttempt,
       updateSettings,
+      addCustomTopic,
+      deleteCustomTopic,
+      setTopicPrereqs,
+      topicDeletionImpact,
       setNoteBody,
       stageQuestions,
       approveStagedQuestion,
@@ -182,6 +287,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addQuestion,
       recordAttempt,
       updateSettings,
+      addCustomTopic,
+      deleteCustomTopic,
+      setTopicPrereqs,
+      topicDeletionImpact,
       setNoteBody,
       stageQuestions,
       approveStagedQuestion,

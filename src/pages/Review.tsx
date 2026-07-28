@@ -1,3 +1,4 @@
+import { aiConfigured } from "../lib/ai";
 import { useState } from "react";
 import { useStore } from "../lib/store";
 import { isDue } from "../lib/srs";
@@ -41,7 +42,7 @@ export function Review({ onNavigate }: { onNavigate: (page: Page) => void }) {
         </button>
       </div>
 
-      {!data.settings.apiKey && <ApiKeyBanner onNavigate={onNavigate} />}
+      {!aiConfigured(data.settings) && <ApiKeyBanner onNavigate={onNavigate} />}
 
       {queue.length === 0 ? (
         <div className="card empty-state">

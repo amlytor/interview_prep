@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useStore } from "../lib/store";
-import { TOPICS } from "../lib/topics";
+import { allTopics } from "../lib/topics";
 import type { TopicId } from "../lib/topics";
 import type { AnswerMode, Choice, Difficulty } from "../types";
 import type { Page } from "../App";
@@ -134,7 +134,7 @@ export function AddQuestion({ onNavigate }: { onNavigate: (page: Page) => void }
         <div className="field">
           <label>Topics</label>
           <div className="pill-select">
-            {TOPICS.map((t) => (
+            {allTopics().map((t) => (
               <button
                 type="button"
                 key={t.id}

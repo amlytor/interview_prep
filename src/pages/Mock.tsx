@@ -4,7 +4,7 @@ import type { Question, Verdict, WhyMissedTag } from "../types";
 import { DifficultyBadge, TopicBadges, VerdictBadge } from "../components/QuestionMeta";
 import { TimerBadge } from "../components/Timer";
 import { ApiKeyBanner, ErrorBanner } from "../components/ApiKeyBanner";
-import { gradeFreeTextAnswer, GradingError } from "../lib/anthropic";
+import { gradeFreeTextAnswer, aiConfigured, GradingError } from "../lib/ai";
 import type { Page } from "../App";
 
 type MockPhase = "setup" | "in-progress" | "grading" | "debrief";
@@ -99,7 +99,7 @@ export function Mock({ onNavigate }: { onNavigate: (page: Page) => void }) {
     }
 
     try {
-      const graded = await gradeFreeTextAnswer(q, a.userAnswer, data.settings.apiKey, data.settings.model);
+      const graded = await gradeFreeTextAnswer(q, a.userAnswer, data.settings);
       recordAttempt({
         questionId: q.id,
         source: "mock",
@@ -157,7 +157,7 @@ export function Mock({ onNavigate }: { onNavigate: (page: Page) => void }) {
           </div>
         </div>
 
-        {!data.settings.apiKey && <ApiKeyBanner onNavigate={onNavigate} />}
+        {!aiConfigured(data.settings) && <ApiKeyBanner onNavigate={onNavigate} />}
 
         <div className="card" style={{ maxWidth: 480 }}>
           <div className="card-title">Session Setup</div>

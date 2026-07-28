@@ -71,21 +71,28 @@ export interface SrsState {
   trickleCredit: number;
 }
 
-// One study note per topic. Seeded from src/data/studyNotes.json.
+// One study note per topic. Seeded from src/data/studyNotes.json, or created
+// by the user ("user") for their own topics.
 export interface StudyNote {
   topicId: TopicId;
   title: string;
   prereqs: TopicId[]; // the knowledge graph: direct prerequisite topic ids
-  source: "authored" | "ai"; // authored notes are never overwritten without confirmation
+  source: "authored" | "ai" | "user"; // authored notes are never overwritten without confirmation
   body: string; // markdown (with $...$ / $$...$$ LaTeX math)
   lastEdited: number | null; // epoch ms of the last in-app edit; null = untouched seed
   modified: boolean; // true once the user has edited the seeded body
 }
 
 export interface Settings {
-  apiKey: string;
+  provider: string; // id from lib/providers.ts
   model: string;
+  // One key per provider, so switching back and forth doesn't lose them.
+  apiKeys: Record<string, string>;
+  // Per-provider base-URL overrides (regional endpoints, self-hosted gateways).
+  baseUrls: Record<string, string>;
   spendNote: string; // free-text reminder the user sets for themselves
+  /** @deprecated v2 field — migrated into apiKeys.anthropic on load. */
+  apiKey?: string;
 }
 
 export interface AppData {
@@ -98,4 +105,8 @@ export interface AppData {
   // AI-generated questions awaiting user approval. They only enter the live
   // bank (and the mastery signal) once explicitly approved.
   stagedQuestions: Question[];
+  // User-created topics, on top of the 19 seeded ones. Each has exactly one
+  // study note, same as a seeded topic, so the whole knowledge tree / mastery
+  // / Learn-mode machinery works on them unchanged.
+  customTopics: { id: TopicId; label: string }[];
 }

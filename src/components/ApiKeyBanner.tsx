@@ -4,7 +4,8 @@ export function ApiKeyBanner({ onNavigate }: { onNavigate: (page: Page) => void 
   return (
     <div className="banner banner-warn">
       <p>
-        No Anthropic API key set — free-text answers can't be graded until you add one.
+        No AI provider set up — free-text answers can't be graded until you pick one and add a key. Claude,
+        DeepSeek, Qwen, Kimi, OpenRouter, and local models all work.
       </p>
       <button className="btn btn-secondary btn-sm" onClick={() => onNavigate("settings")}>
         Go to Settings

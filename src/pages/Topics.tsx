@@ -16,6 +16,7 @@ import {
 } from "../lib/mastery";
 import { MasteryRing } from "../components/MasteryRing";
 import { TopicDetail } from "../components/TopicDetail";
+import { NewTopic } from "../components/NewTopic";
 import type { Page } from "../App";
 
 const TIER_NAMES = ["Foundation", "Core techniques", "Composite techniques", "Advanced"];
@@ -28,6 +29,7 @@ interface TopicsProps {
 export function Topics({ onNavigate, onDrillTopic }: TopicsProps) {
   const { data } = useStore();
   const [selected, setSelected] = useState<TopicId | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const mastery = useMemo(() => computeAllMastery(data.questions, data.attempts), [data.questions, data.attempts]);
   const notesById = useMemo(() => new Map(data.studyNotes.map((n) => [n.topicId, n])), [data.studyNotes]);
@@ -37,6 +39,19 @@ export function Topics({ onNavigate, onDrillTopic }: TopicsProps) {
     () => recommendNextTopic(data.studyNotes, data.questions, data.attempts),
     [data.studyNotes, data.questions, data.attempts],
   );
+
+  if (creating) {
+    return (
+      <NewTopic
+        onCreated={(topicId) => {
+          setCreating(false);
+          setSelected(topicId);
+        }}
+        onCancel={() => setCreating(false)}
+        onNavigate={onNavigate}
+      />
+    );
+  }
 
   if (selected) {
     return (
@@ -72,6 +87,9 @@ export function Topics({ onNavigate, onDrillTopic }: TopicsProps) {
             unlocks dependent topics; 80+ with 5 attempts counts as mastered.
           </p>
         </div>
+        <button className="btn btn-primary" onClick={() => setCreating(true)}>
+          + New topic
+        </button>
       </div>
 
       {recommended && (

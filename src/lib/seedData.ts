@@ -6,7 +6,7 @@ import rawNotes from "../data/studyNotes.json";
 import rawQuestions from "../data/seedQuestions.json";
 import type { Question, StudyNote, Difficulty } from "../types";
 import type { TopicId } from "./topics";
-import { isTopicId } from "./topics";
+import { isKnownTopicId } from "./topics";
 
 // ---------- Raw file shapes (as authored in src/data/*.json) ----------
 
@@ -39,7 +39,7 @@ const EXTRA_PREREQS: Partial<Record<TopicId, TopicId[]>> = {
 };
 
 function asTopicId(value: string, context: string): TopicId {
-  if (!isTopicId(value)) {
+  if (!isKnownTopicId(value)) {
     // A typo in the seed files should fail loudly at startup, not corrupt data.
     throw new Error(`Unknown topic id "${value}" in ${context}`);
   }

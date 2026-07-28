@@ -1,6 +1,7 @@
+import { aiConfigured } from "../lib/ai";
 import { useMemo, useState } from "react";
 import { useStore } from "../lib/store";
-import { TOPICS } from "../lib/topics";
+import { allTopics } from "../lib/topics";
 import type { TopicId } from "../lib/topics";
 import type { Difficulty, Question } from "../types";
 import { QuestionAttempt } from "../components/QuestionAttempt";
@@ -68,14 +69,14 @@ export function Drill({ onNavigate, initialTopicId }: DrillProps) {
         </div>
       </div>
 
-      {!data.settings.apiKey && <ApiKeyBanner onNavigate={onNavigate} />}
+      {!aiConfigured(data.settings) && <ApiKeyBanner onNavigate={onNavigate} />}
 
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-title">Filters</div>
         <div className="field">
           <label>Topics {topicFilter.length > 0 && `(${topicFilter.length} selected)`}</label>
           <div className="pill-select">
-            {TOPICS.map((t) => (
+            {allTopics().map((t) => (
               <button
                 key={t.id}
                 type="button"

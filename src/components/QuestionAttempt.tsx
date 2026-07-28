@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import type { Attempt, AttemptSource, Question, Verdict, WhyMissedTag } from "../types";
 import { DifficultyBadge, TopicBadges, VerdictBadge } from "./QuestionMeta";
 import { ErrorBanner } from "./ApiKeyBanner";
-import { gradeFreeTextAnswer, GradingError } from "../lib/anthropic";
+import { gradeFreeTextAnswer, aiConfigured, GradingError } from "../lib/ai";
 import { useStore } from "../lib/store";
 import type { Page } from "../App";
 
@@ -36,7 +36,7 @@ export function QuestionAttempt({ question, source, onDone, onNavigate }: Questi
     setError(null);
     setPhase("grading");
     try {
-      const graded = await gradeFreeTextAnswer(question, freeText, data.settings.apiKey, data.settings.model);
+      const graded = await gradeFreeTextAnswer(question, freeText, data.settings);
       setResult(graded);
       setPhase("graded");
       const attempt = recordAttempt({
@@ -170,7 +170,7 @@ export function QuestionAttempt({ question, source, onDone, onNavigate }: Questi
             >
               Next Question
             </button>
-            {!data.settings.apiKey && question.answerMode === "free-text" && (
+            {!aiConfigured(data.settings) && question.answerMode === "free-text" && (
               <button className="btn btn-secondary" onClick={() => onNavigate("settings")}>
                 Set up API key
               </button>

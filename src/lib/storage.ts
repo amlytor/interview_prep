@@ -1,17 +1,52 @@
-import type { AppData, Question, SrsState } from "../types";
+import type { AppData, Question, Settings, SrsState } from "../types";
 import { SEED_QUESTIONS } from "./seedQuestions";
 import { seedQuestionBank, seedStudyNotes, DROPPED_V1_SEED_IDS } from "./seedData";
-import { V1_LABEL_TO_ID, isTopicId } from "./topics";
+import { V1_LABEL_TO_ID, isKnownTopicId } from "./topics";
 import type { TopicId } from "./topics";
+import { DEFAULT_PROVIDER_ID } from "./providers";
 
 // v2 is the live key. v1 is read once for migration and then left untouched
 // as a permanent rollback backup — it is never deleted or rewritten.
+//
+// Later additions to the v2 shape (multi-provider settings, custom topics) are
+// purely additive and backfilled by normalizeCurrent(), so the storage key
+// deliberately does NOT change — bumping it would strand existing progress.
 const STORAGE_KEY_V2 = "quantprep_data_v2";
 const STORAGE_KEY_V1 = "quantprep_data_v1";
 const CURRENT_VERSION = 2;
 
-function defaultSettings() {
-  return { apiKey: "", model: "claude-sonnet-4-6", spendNote: "" };
+function defaultSettings(): Settings {
+  return {
+    provider: DEFAULT_PROVIDER_ID,
+    model: "claude-sonnet-5",
+    apiKeys: {},
+    baseUrls: {},
+    spendNote: "",
+  };
+}
+
+/**
+ * Bring a settings object up to the current shape. Handles the original
+ * single-provider form, where the key lived in a flat `apiKey` field.
+ */
+function normalizeSettings(raw: unknown): Settings {
+  const defaults = defaultSettings();
+  if (!raw || typeof raw !== "object") return defaults;
+  const s = raw as Partial<Settings> & { apiKey?: string };
+
+  const apiKeys = { ...(s.apiKeys ?? {}) };
+  // The pre-multi-provider key was always an Anthropic one.
+  if (typeof s.apiKey === "string" && s.apiKey && !apiKeys.anthropic) {
+    apiKeys.anthropic = s.apiKey;
+  }
+
+  return {
+    provider: typeof s.provider === "string" && s.provider ? s.provider : defaults.provider,
+    model: typeof s.model === "string" && s.model ? s.model : defaults.model,
+    apiKeys,
+    baseUrls: { ...(s.baseUrls ?? {}) },
+    spendNote: typeof s.spendNote === "string" ? s.spendNote : "",
+  };
 }
 
 /** The full seeded bank: trimmed v1 starter questions + the 35 authored ones. */
@@ -28,6 +63,7 @@ function defaultData(): AppData {
     settings: defaultSettings(),
     studyNotes: seedStudyNotes(),
     stagedQuestions: [],
+    customTopics: [],
   };
 }
 
@@ -37,7 +73,7 @@ function migrateTopics(topics: unknown): TopicId[] {
   const ids: TopicId[] = [];
   for (const t of topics) {
     if (typeof t !== "string") continue;
-    const id = V1_LABEL_TO_ID[t] ?? (isTopicId(t) ? t : null);
+    const id = V1_LABEL_TO_ID[t] ?? (isKnownTopicId(t) ? t : null);
     if (id && !ids.includes(id)) ids.push(id);
   }
   return ids;
@@ -56,10 +92,7 @@ function migrateV1toV2(v1: Record<string, unknown>): AppData {
   const oldQuestions = Array.isArray(v1.questions) ? (v1.questions as Question[]) : [];
   const oldAttempts = Array.isArray(v1.attempts) ? (v1.attempts as AppData["attempts"]) : [];
   const oldSrs = Array.isArray(v1.srs) ? (v1.srs as SrsState[]) : [];
-  const oldSettings =
-    v1.settings && typeof v1.settings === "object"
-      ? { ...defaultSettings(), ...(v1.settings as AppData["settings"]) }
-      : defaultSettings();
+  const oldSettings = normalizeSettings(v1.settings);
 
   const keptQuestions: Question[] = oldQuestions
     .filter((q) => !DROPPED_V1_SEED_IDS.has(q.id))
@@ -89,21 +122,28 @@ function migrateV1toV2(v1: Record<string, unknown>): AppData {
     settings: oldSettings,
     studyNotes: seedStudyNotes(),
     stagedQuestions: [],
+    customTopics: [],
   };
 }
 
-/** Shape-guard + backfill for parsed v2 data (from storage or an import). */
-function normalizeV2(parsed: AppData): AppData {
+/**
+ * Shape-guard + backfill for parsed v2 data (from storage or an import).
+ * Every field added after the original v2 release is backfilled here, so an
+ * older export imports cleanly and an older localStorage payload loads without
+ * a migration step.
+ */
+function normalizeCurrent(parsed: AppData): AppData {
   if (!Array.isArray(parsed.questions) || !Array.isArray(parsed.attempts)) {
     throw new Error("malformed data");
   }
-  if (!parsed.settings) parsed.settings = defaultSettings();
+  parsed.settings = normalizeSettings(parsed.settings);
   if (!Array.isArray(parsed.srs)) parsed.srs = [];
   parsed.srs = parsed.srs.map((s) => ({ ...s, trickleCredit: s.trickleCredit ?? 0 }));
   if (!Array.isArray(parsed.studyNotes) || parsed.studyNotes.length === 0) {
     parsed.studyNotes = seedStudyNotes();
   }
   if (!Array.isArray(parsed.stagedQuestions)) parsed.stagedQuestions = [];
+  if (!Array.isArray(parsed.customTopics)) parsed.customTopics = [];
   parsed.version = CURRENT_VERSION;
   return parsed;
 }
@@ -113,7 +153,7 @@ export function loadData(): AppData {
   const rawV2 = localStorage.getItem(STORAGE_KEY_V2);
   if (rawV2) {
     try {
-      return normalizeV2(JSON.parse(rawV2) as AppData);
+      return normalizeCurrent(JSON.parse(rawV2) as AppData);
     } catch {
       // Don't clobber whatever bad data is there — back it up before resetting.
       localStorage.setItem(`${STORAGE_KEY_V2}_corrupt_backup_${Date.now()}`, rawV2);
@@ -138,8 +178,23 @@ export function loadData(): AppData {
   return fresh;
 }
 
-export function saveData(data: AppData): void {
-  localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(data));
+/**
+ * Persist to localStorage. A failed write must not take the app down mid-drill,
+ * so quota/permission errors are reported rather than thrown — the in-memory
+ * state stays usable and the user can still export.
+ */
+export function saveData(data: AppData): boolean {
+  try {
+    localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(data));
+    return true;
+  } catch (err) {
+    console.error(
+      "QuantPrep couldn't save to localStorage — your progress this session is in memory only. " +
+        "Export to JSON from Settings to avoid losing it.",
+      err,
+    );
+    return false;
+  }
 }
 
 export function exportToFile(data: AppData): void {
@@ -171,7 +226,7 @@ export function importFromFile(file: File): Promise<AppData> {
           resolve(migrateV1toV2(parsed as unknown as Record<string, unknown>));
           return;
         }
-        resolve(normalizeV2(parsed));
+        resolve(normalizeCurrent(parsed));
       } catch (err) {
         reject(err instanceof Error ? err : new Error("Failed to parse import file."));
       }

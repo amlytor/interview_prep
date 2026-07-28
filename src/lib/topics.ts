@@ -2,7 +2,12 @@
 // the stable identifiers stored on questions, notes, and attempts; `label` is
 // only for display. Two topics (basic-probability, conditional-probability)
 // were added in v2 and have no v1 counterpart.
-export type TopicId =
+//
+// TopicId is `KnownTopicId | (string & {})` rather than a closed union: the
+// union half keeps editor autocomplete for the 19 seeded ids, the `string`
+// half lets user-created topics carry runtime-generated slugs. Custom ids are
+// registered at load time so topicLabel() can render them.
+export type KnownTopicId =
   | "basic-probability"
   | "geometric-distribution"
   | "enumerate-scenarios"
@@ -22,6 +27,9 @@ export type TopicId =
   | "derivatives-greeks"
   | "var-risk-theory"
   | "statistics";
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type TopicId = KnownTopicId | (string & {});
 
 export interface TopicInfo {
   id: TopicId;
@@ -50,15 +58,54 @@ export const TOPICS: TopicInfo[] = [
   { id: "statistics", label: "Statistics" },
 ];
 
-const LABEL_BY_ID = new Map<string, string>(TOPICS.map((t) => [t.id, t.label]));
+const SEED_LABEL_BY_ID = new Map<string, string>(TOPICS.map((t) => [t.id, t.label]));
+
+// User-created topics live in AppData, but topicLabel() is called from dozens
+// of render paths that have no access to the store. The store mirrors them into
+// this module-level registry on every load/change so display stays a pure
+// id -> label lookup. Display-only: nothing here is persisted.
+let customTopics: TopicInfo[] = [];
+let labelById = new Map(SEED_LABEL_BY_ID);
+
+/** Called by the store whenever AppData.customTopics changes. */
+export function registerCustomTopics(topics: TopicInfo[]): void {
+  customTopics = topics;
+  labelById = new Map(SEED_LABEL_BY_ID);
+  for (const t of topics) labelById.set(t.id, t.label);
+}
+
+/** The 19 seeded topics plus whatever the user has added, for pickers. */
+export function allTopics(): TopicInfo[] {
+  return [...TOPICS, ...customTopics];
+}
 
 /** Display label for a topic id; falls back to the raw id for unknown values. */
 export function topicLabel(id: string): string {
-  return LABEL_BY_ID.get(id) ?? id;
+  return labelById.get(id) ?? id;
 }
 
-export function isTopicId(value: string): value is TopicId {
-  return LABEL_BY_ID.has(value);
+/** True for one of the 19 seeded ids (not user-created ones). */
+export function isKnownTopicId(value: string): value is KnownTopicId {
+  return SEED_LABEL_BY_ID.has(value);
+}
+
+/**
+ * Turn a title into a stable topic id, avoiding collisions with seeded ids and
+ * with topics the user already has.
+ */
+export function slugifyTopic(title: string, taken: Iterable<string>): TopicId {
+  const base =
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) || "topic";
+  const used = new Set<string>([...SEED_LABEL_BY_ID.keys(), ...taken]);
+  if (!used.has(base)) return base;
+  for (let n = 2; ; n++) {
+    const candidate = `${base}-${n}`;
+    if (!used.has(candidate)) return candidate;
+  }
 }
 
 // v1 stored topics as display strings. This map drives the v1 -> v2 migration
