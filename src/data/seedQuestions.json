@@ -5187,6 +5187,156 @@
       "explanation": "Because volatility mean-reverts. A shock raises the expected volatility over the next few weeks enormously, but expected volatility over the next two years far less — the market expects conditions to normalise. Since implied vol at maturity T reflects the average expected variance over that horizon, the short end spikes and the long end barely moves, inverting the curve. In calm periods the reverse holds: current vol is below its long-run level, so the curve slopes upward as the market prices reversion back toward normal. This is exactly the GARCH forecast structure — E[variance at n+k] = V_L + (alpha+beta)^k*(current - V_L) — expressed in traded prices, and it is why fitting GARCH gives you a term structure that can be compared against the implied one for relative value. Practical consequence: after a spike, a short-dated long-vol position is expensive and decays fast, so the trade is usually expressed further out the curve or as a calendar spread.",
       "technique": "Mean reversion in the volatility term structure",
       "difficultyRationale": "Medium: the mechanism is the answer, and the GARCH link makes it concrete."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Artzner et al. proposed four properties a risk measure should have to be 'coherent'. Name them, and say which one VaR fails.",
+      "canonicalAnswer": "Monotonicity, translation invariance, homogeneity, and subadditivity. VaR satisfies the first three but fails SUBADDITIVITY.",
+      "explanation": "THE FOUR AXIOMS. (1) MONOTONICITY: if portfolio A does worse than B in every state of the world, A's risk measure must be greater. (2) TRANSLATION INVARIANCE: adding cash K to a portfolio reduces its risk measure by exactly K — cash is riskless and directly offsets required capital. (3) HOMOGENEITY: scaling a portfolio by lambda while keeping its composition fixed scales the risk measure by lambda. Note this deliberately ignores liquidity: doubling every position really does more than double your risk if you cannot exit, which is a recognised limitation of the axiom rather than of VaR. (4) SUBADDITIVITY: merging two portfolios cannot increase total measured risk, risk(A+B) <= risk(A) + risk(B). WHICH VaR FAILS. Only subadditivity. VaR is monotonic, translation-invariant and homogeneous, so it fails exactly one axiom — but it is the one that matters most for a capital measure, because it means merging portfolios can INCREASE measured risk, so diversification can be penalised and desk-level limits can all be met while the aggregate breaches. Expected Shortfall satisfies all four and is therefore coherent. THE FRAMING WORTH ADDING: the axioms were derived by asking what properties a measure must have if it is to equal the capital an institution should hold. Under that reading, translation invariance says capital and cash are interchangeable, and subadditivity says a merged firm should never need more capital than its parts — which is why the failure is a governance problem, not just a mathematical curiosity.",
+      "technique": "The coherence axioms and VaR's single failure",
+      "difficultyRationale": "Medium: naming all four is the recall test; identifying exactly one failure is the precision test."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "The loss on a portfolio over 10 days is normal with mean zero and standard deviation $20m. Compute the 10-day 99% VaR and the 10-day 97.5% Expected Shortfall.",
+      "canonicalAnswer": "VaR = 20 * N^-1(0.99) = 20 * 2.326 = $46.5m. ES at 97.5% = sigma * phi(Y)/(1-X) where Y = N^-1(0.975) = 1.96, giving 20 * 0.0584/0.025 = $46.7m.",
+      "explanation": "VaR. Under normality with mean mu and standard deviation sigma, VaR = mu + sigma*N^-1(X). With mu = 0 and X = 0.99: 20 * 2.326 = $46.5m. ES. The closed form is ES = mu + sigma * exp(-Y^2/2)/(sqrt(2*pi)*(1-X)) where Y = N^-1(X). At X = 0.975, Y = 1.960, so Y^2/2 = 1.921 and exp(-1.921) = 0.1464. Divide by sqrt(2*pi) = 2.5066 to get 0.0584, then by (1-X) = 0.025 to get 2.336. Times sigma = 20 gives $46.7m. THE POINT OF DOING BOTH. The two numbers are almost identical — $46.5m against $46.7m — and that is not a coincidence. It is why FRTB chose 97.5% for ES: under normality, 97.5% ES matches 99% VaR very closely, so the switch changed the measure's PROPERTIES (coherent, tail-sensitive) without a discontinuous jump in capital. The corollary is the important one: for a FAT-TAILED distribution the two diverge, with 97.5% ES exceeding 99% VaR — which is exactly the intended bite, since books with genuine tail risk now attract more capital while near-normal books see little change. Also note the ES formula's numerator is just the normal density at Y, so ES = mu + sigma*phi(Y)/(1-X), which is easier to remember.",
+      "technique": "Closed forms for VaR and ES under normality",
+      "difficultyRationale": "Medium: two formula applications, and the near-equality is the insight."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Basel's original market risk framework used a 10-day horizon at 99% confidence. Why 10 days rather than 1?",
+      "options": [
+        "It approximates the time needed to unwind or hedge a troubled position",
+        "Because 10 days is two trading weeks, which matches reporting cycles",
+        "To make the sqrt-of-time scaling exact",
+        "Because daily data is too noisy to use"
+      ],
+      "correctOption": 0,
+      "explanation": "The horizon should reflect how long you would be exposed before you could act — the time to liquidate or hedge a position in an orderly way. Ten days was the regulators' judgement of a plausible unwind period for a trading book. The CONFIDENCE level is chosen for a different reason: it reflects how conservative the capital requirement should be, i.e. how rarely you are prepared to be wrong. In practice banks compute a ONE-day VaR from daily data (there are far more independent daily observations, so the estimate is far better) and then scale by sqrt(10), which is where the accuracy problem enters rather than being solved. Note that FRTB abandoned the blanket 10 days precisely because the liquidation assumption was shown to be wrong for illiquid positions, replacing it with risk-factor-specific liquidity horizons of 10 to 120 days. That progression — a single assumed horizon, then evidence it was wrong, then differentiated horizons — is the useful thing to be able to narrate.",
+      "technique": "The economic meaning of the VaR horizon",
+      "difficultyRationale": "Medium: the liquidation rationale is the answer, and the FRTB follow-on shows depth."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Daily P&L has first-order autocorrelation of 0.1. By what factor should you scale a one-day VaR to get a 10-day VaR, and how does that compare with the sqrt(t) rule?",
+      "canonicalAnswer": "About 3.46, against sqrt(10) = 3.16 — roughly 10% higher. The variance of the T-day sum is sigma^2*[T + 2(T-1)rho + 2(T-2)rho^2 + ... + 2*rho^(T-1)], so positive autocorrelation makes the true multiple exceed sqrt(T).",
+      "explanation": "THE FORMULA. If daily changes each have variance sigma^2 and the correlation between changes j days apart is rho^j, then the standard deviation of the T-day sum is sigma*sqrt(T + 2(T-1)rho + 2(T-2)rho^2 + 2(T-3)rho^3 + ... + 2rho^(T-1)). Every cross-covariance term contributes, weighted by how many pairs are separated by that lag. With rho = 0 all cross terms vanish and you recover sigma*sqrt(T) — the familiar rule is the special case of zero autocorrelation. NUMBERS. Hull tabulates the multiples: at T = 10, the factor is 3.16 for rho = 0, 3.31 for rho = 0.05, 3.46 for rho = 0.1, and 3.79 for rho = 0.2. So a 0.1 autocorrelation understates 10-day VaR by about 10% if you use sqrt(10), and at rho = 0.2 the error is 20%. Over T = 250 the gap widens further, from 15.81 to 19.35. WHY IT MATTERS AND WHICH DIRECTION. Positive autocorrelation means trends persist, so losses compound rather than partially offsetting — the true multi-day risk is HIGHER than sqrt(t) implies. That is the dangerous direction to be wrong in, and it is the empirically relevant one: illiquid assets, credit and hedge fund returns commonly show positive autocorrelation, sometimes substantially, partly from genuine momentum and partly from stale marking. Note the multiple does not depend on sigma or on the confidence level — it is a pure scaling property — which is why a single table of factors suffices. A useful sanity habit: if someone quotes a 10-day VaR scaled from daily, ask what autocorrelation they assumed, because the default assumption is zero and it is rarely true.",
+      "technique": "Autocorrelation-adjusted multi-period scaling",
+      "difficultyRationale": "Hard: the general variance formula is not widely known and the direction of the error is what matters."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two business units have one-day 99% VaRs of $30m and $40m. What is the firm-wide VaR, and what assumption are you making?",
+      "canonicalAnswer": "Under the assumption that both loss distributions are normal with zero mean and correlation rho, the combined VaR is sqrt(30^2 + 40^2 + 2*rho*30*40). At rho = 0 that is $50m; at rho = 1 it is $70m; at rho = 0.5 it is about $60.8m.",
+      "explanation": "THE FORMULA. If each unit's loss is normal with mean zero, VaR is proportional to the standard deviation, so VaRs aggregate exactly like standard deviations: VaR_total = sqrt(VaR_1^2 + VaR_2^2 + 2*rho*VaR_1*VaR_2). At rho = 0: sqrt(900 + 1600) = $50m. At rho = 1: sqrt(900+1600+2400) = $70m, the simple sum. At rho = 0.5: sqrt(2500 + 1200) = $60.8m. THE ASSUMPTIONS, which are the substance of the answer. (1) NORMALITY with zero mean — this is what makes VaR proportional to sigma and therefore additive in quadrature. For fat-tailed or skewed distributions the relationship fails and the formula has no justification. (2) A SINGLE correlation summarising the dependence, which ignores tail dependence entirely: two units can have modest correlation in normal markets and lose together in a crisis. (3) That the units' positions are static and there is no netting benefit or offsetting exposure being missed. WHAT THIS BUYS YOU. The gap between $50m and $70m is the DIVERSIFICATION BENEFIT, and allocating it back to the units is a genuine governance problem — Euler allocation via component VaR is the principled answer, since the components sum exactly to the total. WHAT TO WATCH: aggregating this way credits diversification that may not survive stress, so regulators generally require a conservative correlation or simple summation across risk TYPES (market, credit, operational), where the dependence is least well understood.",
+      "technique": "Aggregating VaR across units, and the assumptions it rests on",
+      "difficultyRationale": "Medium: the formula is easy; the assumption list and the allocation problem are the content."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Why is Expected Shortfall harder to backtest than VaR?",
+      "options": [
+        "ES is a conditional expectation over rare events, so you need the SIZE of tail losses, not just a count of exceptions",
+        "ES cannot be computed from historical data",
+        "ES has no closed form",
+        "Because ES is not a coherent risk measure"
+      ],
+      "correctOption": 0,
+      "explanation": "Backtesting VaR is simple because VaR makes a frequency claim: losses should exceed it X% of the time, so you count exceptions and compare with a binomial. ES makes a claim about the AVERAGE SIZE of losses beyond the threshold, so testing it needs the magnitudes of the exceedances — and by construction there are very few of them. At 97.5% over 250 days you expect about 6 exceedances, and estimating a conditional mean from 6 observations has enormous standard error. That difficulty was the principal argument AGAINST moving to ES, and it is why FRTB still backtests VaR at the desk level while capitalising on ES: you use the easily-testable measure for model validation and the better-behaved measure for capital. Practical approaches to ES backtesting do exist — Acerbi-Szekely tests, or testing the whole predicted distribution rather than just the tail — but none has VaR's simplicity. Note ES IS coherent; that is the reason for adopting it, not an obstacle.",
+      "technique": "Why testing a conditional expectation is harder than counting exceptions",
+      "difficultyRationale": "Medium: the count-versus-magnitude distinction is the answer."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your desk's VaR limit is $10m and you are at $9.8m. A trader proposes a new position with a standalone VaR of $3m. Can you take it?",
+      "canonicalAnswer": "Possibly — it depends on the position's INCREMENTAL VaR, not its standalone VaR. If it is negatively correlated with the existing book its incremental VaR can be small or even negative, reducing total VaR.",
+      "explanation": "THE ERROR to avoid is adding standalone VaRs. VaR is not additive: what matters is the position's contribution to the PORTFOLIO's VaR, which depends on its covariance with what you already hold. THE RIGHT CALCULATION is INCREMENTAL VaR — recompute portfolio VaR with the position included and take the difference. A $3m standalone position that hedges existing exposure might raise total VaR by $0.5m, or lower it. Conversely, a $3m position highly correlated with the book could add nearly the full $3m and breach the limit. The relevant quantity under the variance-covariance approach is the position's covariance with the portfolio, which is what marginal VaR measures. PRACTICAL POINTS. (1) Use INCREMENTAL for a discrete decision like this (the position is large relative to the book) and MARGINAL for small adjustments — marginal VaR times position size is only a first-order approximation and understates the effect for a large addition. (2) Watch the perverse incentive: because incremental VaR can be negative, a limit framework based purely on VaR can encourage taking large offsetting positions that look risk-reducing but increase gross exposure, liquidity risk and operational complexity. That is why desks carry gross notional and stressed-loss limits alongside VaR. (3) Check the position under the STRESS scenarios too — a hedge that works under estimated correlations may fail when correlations converge, and the whole benefit you just credited disappears.",
+      "technique": "Incremental versus standalone VaR for a limit decision",
+      "difficultyRationale": "Medium: the non-additivity is the core, and the perverse-incentive point is the depth."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A risk measure satisfies translation invariance. What does that mean?",
+      "options": [
+        "Adding K of cash to the portfolio reduces the risk measure by exactly K",
+        "The measure is unchanged if all positions are scaled",
+        "The measure does not depend on the currency of reporting",
+        "The measure is unchanged by a shift in the mean return"
+      ],
+      "correctOption": 0,
+      "explanation": "Translation invariance says risk(portfolio + K cash) = risk(portfolio) - K. Cash is riskless, so it directly offsets the capital you need to hold. Read as a capital requirement the axiom is almost a definition: if the measure is meant to say how much capital you need, then holding K more cash must reduce that requirement by exactly K, no more and no less. Both VaR and ES satisfy it. The second option describes HOMOGENEITY, which is a different axiom (and also satisfied by both). The axiom that VaR fails is subadditivity — merging portfolios can raise measured risk — and that is the single reason VaR is not coherent.",
+      "technique": "Translation invariance read as a capital statement",
+      "difficultyRationale": "Easy: definitional, and the capital reading makes it memorable."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is economic capital, and how does it differ from regulatory capital?",
+      "canonicalAnswer": "Economic capital is the firm's OWN estimate of the capital needed to absorb losses at a chosen confidence level over a chosen horizon, aggregated across all risk types. Regulatory capital is what the rules require. They differ in confidence level, in aggregation method, and in which risks are counted.",
+      "explanation": "ECONOMIC CAPITAL is an internal number: pick a horizon (usually one year) and a confidence level, estimate the loss distribution for each risk type, aggregate, and the resulting quantile is the capital you believe you need. The confidence level is typically chosen to match a TARGET CREDIT RATING — a firm wanting a AA rating, whose historical one-year default rate is around 0.03%, would use 99.97% confidence. That link is the elegant part and worth stating: economic capital translates 'what rating do we want' into a number. HOW IT DIFFERS FROM REGULATORY CAPITAL. (1) CONFIDENCE and horizon are chosen by the firm rather than the rules, and are usually far more stringent than the market-risk 99%/10-day standard. (2) AGGREGATION: internally you can credit diversification across market, credit and operational risk; regulators typically require simple addition across risk types because the cross-dependence is poorly understood and conservatism is preferred. So economic capital is often LOWER than regulatory in total even while being more stringent per risk type. (3) SCOPE: economic capital covers risks the rules may not capture well — business risk, strategic risk, reputational risk. (4) The loss distributions have very different SHAPES by risk type: market risk is roughly symmetric, credit risk is heavily right-skewed, operational risk is extremely fat-tailed with rare enormous losses. That shape difference is why aggregating them by a single correlation is dubious. WHAT IT IS FOR: allocating capital between businesses and computing RAROC — return divided by economic capital — so that a business's profit is judged against the risk it consumes rather than its notional size. That is the mechanism by which risk measurement actually affects decisions.",
+      "technique": "Economic capital, the rating link, and RAROC",
+      "difficultyRationale": "Medium: the target-rating link and the aggregation contrast are what make it more than a definition."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Under a normal assumption, the ratio of T-day VaR to one-day VaR does not depend on which two quantities?",
+      "options": [
+        "The daily standard deviation and the confidence level",
+        "The horizon and the autocorrelation",
+        "The mean and the standard deviation",
+        "The portfolio composition and the confidence level"
+      ],
+      "correctOption": 0,
+      "explanation": "Neither sigma nor the confidence level enters the scaling ratio. Under normality with zero mean, VaR = sigma*N^-1(X), so the T-day VaR is sigma_T * N^-1(X) and the ratio to the one-day figure is sigma_T/sigma_1 — the N^-1(X) factor cancels, and so does sigma_1. The ratio depends only on T and on the autocorrelation structure. That is why a single table of scaling factors serves for every portfolio and every confidence level, which is a genuinely convenient property and the reason the sqrt(t) rule is quoted so freely. The caveat is that the whole argument rests on the shape of the distribution being preserved across horizons — under aggregation the distribution actually tends toward normality, so a fat-tailed daily distribution scales differently, and the ratio then does depend on the confidence level.",
+      "technique": "What the scaling ratio does and does not depend on",
+      "difficultyRationale": "Medium: the cancellation is easy to verify and easy to overlook."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A regulator asks why your 99% one-day VaR was breached three times last month. How do you respond?",
+      "canonicalAnswer": "Three breaches in about 21 trading days is far above the expected 0.2, so it warrants investigation rather than a defence. Check whether the breaches clustered (a volatility regime the model is not tracking) or were scattered (a calibration or distributional problem), and check the mundane causes first — a mismapped position, a stale price series, or a new product outside the risk factors.",
+      "explanation": "SET THE EXPECTATION FIRST. At 99% you expect one exception per 100 days, so about 0.2 in a month. Three is well outside luck — under a binomial with n = 21 and p = 0.01, P(3 or more) is well under 0.2%. So the honest answer starts by conceding it needs explaining, not by arguing it is within tolerance. NOTE the annual view matters too: over 250 days you EXPECT 2-3 exceptions, so three in a year would be perfectly normal. Three in one month is the problem, and being precise about that distinction is the first thing a regulator is checking. THEN DIAGNOSE, cheapest causes first. (1) DATA AND MAPPING: is a position mapped to the wrong risk factor, is a price series stale, has a new product been booked that the risk factors do not cover? A surprising share of exceptions are this. (2) CLUSTERING: were the three breaches consecutive? Clustered exceptions point to a volatility regime the model is not tracking — an equally-weighted covariance window that has not caught up, which EWMA or GARCH would fix. That is Christoffersen's independence test, and it is the more dangerous diagnosis because it means the model is most wrong exactly when losses arrive. (3) SCATTERED exceptions instead suggest the model is calibrated too tight in general: the volatility estimate is too low, or the normal assumption is understating the tails, which points to historical simulation or EVT. (4) Was there a genuine market EVENT of a kind no model should be expected to capture at 99%? That is a legitimate answer but only once you have ruled out the others. WHAT NOT TO DO: argue the model is fine because the annual count is acceptable. Also mention what you have already changed, since a regulator is assessing your process as much as the number.",
+      "technique": "Diagnosing VaR exceptions, cheapest causes first",
+      "difficultyRationale": "Medium: the arithmetic frames it; the ordered diagnosis and the honest opening are the substance."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A portfolio's loss distribution is heavily right-skewed with a fat tail. Compared with a normal distribution of the same standard deviation, what happens to 99% VaR and 97.5% ES?",
+      "options": [
+        "Both are larger, and ES rises by more because it averages the whole tail",
+        "Both are smaller",
+        "VaR is larger but ES is unchanged",
+        "VaR is unchanged but ES is larger"
+      ],
+      "correctOption": 0,
+      "explanation": "Both exceed their normal counterparts, and ES rises by MORE. VaR is a single quantile, so it moves out only as far as the 1% point has shifted. ES averages every loss beyond the threshold, so it picks up the entire fat tail including the extreme losses that VaR cannot see — the fatter the tail, the wider the gap. This is precisely the intended behaviour that motivated FRTB's switch: under normality 97.5% ES and 99% VaR nearly coincide, so a near-normal book sees little capital change, while a book with genuine tail risk is charged materially more. It is also why the fat-tail correction matters more at higher confidence: the normal understatement grows as you move further out, so a 99.9% VaR computed under normality can be wrong by a factor approaching two.",
+      "technique": "How tail thickness affects a quantile versus a tail average",
+      "difficultyRationale": "Medium: the direction is easy; that ES moves more is the discriminating part."
     }
   ]
 }

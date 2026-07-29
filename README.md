@@ -84,9 +84,9 @@ nothing leaves your machine at all.
 
 Seed content lives in `src/data/studyNotes.json` (45 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
-(426 authored questions), merged with the original starter bank for ~440 seeded
+(438 authored questions), merged with the original starter bank for ~450 seeded
 questions across the taxonomy. Every topic has at least six questions and a
-note of 1,900–4,700 characters. Topics you add yourself live in your browser
+note of 1,900–6,900 characters. Topics you add yourself live in your browser
 alongside your progress, not in these files.
 
 Coverage spans the material a quant finance or quant risk interview actually
@@ -273,7 +273,7 @@ src/
   types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
   data/
     studyNotes.json      45 authored study notes + the prerequisite graph (source of truth)
-    seedQuestions.json   426 authored seed questions (source of truth)
+    seedQuestions.json   438 authored seed questions (source of truth)
   lib/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files
