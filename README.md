@@ -86,8 +86,8 @@ Seed content lives in `src/data/studyNotes.json` (31 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
 (307 authored questions), merged with the original starter bank for ~325 seeded
 questions across the taxonomy. Every topic has at least six questions and a
-2,000-word-ish note. Topics you add yourself live in your browser alongside
-your progress, not in these files.
+note of 1,900–4,700 characters. Topics you add yourself live in your browser
+alongside your progress, not in these files.
 
 Coverage spans the material a quant finance or quant risk interview actually
 draws on: probability, combinatorics and statistics; calculus methods and
