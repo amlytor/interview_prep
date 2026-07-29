@@ -3861,6 +3861,786 @@
       "explanation": "An invariant. Find a quantity that every legal move changes in a predictable way (or leaves alone), compute it for the start and for the target, and if they differ then no sequence of moves can connect them — because the quantity would have to change in a way no move permits. That is a proof, valid for all sequences of any length, which is exactly what exhaustive searching can never give you: failing to find a solution is not evidence that none exists. Parity is the most common invariant, modular arithmetic the general form. Induction and counting bounds are useful tools but answer different questions — induction proves statements about all n, counting bounds lower-bound the number of steps needed when the target IS reachable.",
       "technique": "Invariants as impossibility proofs",
       "difficultyRationale": "Easy: conceptual, and the contrast with searching is the point."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A bank funds 5-year fixed-rate mortgages with overnight deposits. What is the risk, and how would you manage it?",
+      "canonicalAnswer": "Classic maturity mismatch: if rates rise, the funding reprices immediately while the mortgage income is fixed, compressing net interest income. Manage it by matching repricing dates, or by paying fixed on an interest rate swap to convert the asset to floating.",
+      "explanation": "The exposure is to a RISE in rates. Assets are fixed for five years; liabilities reprice overnight. A 200bp rise costs the bank 2% on the entire funded balance with no offsetting increase in income, and it persists for the remaining life of the mortgages. Management options, in order of directness: (1) match the funding — issue 5-year term debt instead of taking overnight deposits, which is clean but expensive since the yield curve is usually upward-sloping and the mismatch is where the bank's margin comes from; (2) hedge with swaps — pay fixed, receive floating, which converts the mortgage's fixed income into floating and matches the funding, and is what banks actually do; (3) cap the exposure with swaptions or caps if you want to keep upside. Two complications worth raising unprompted. The mortgages are PREPAYABLE, so if rates fall the assets disappear and you are left over-hedged — that is negative convexity, and it means the effective duration is state-dependent rather than a fixed 5 years. And deposits are not contractually overnight in behaviour: a large share is sticky regardless of rates, so banks model a 'deposit beta' and an effective duration rather than treating them as instantaneous. Both effects mean the hedge ratio is a model output, not an arithmetic one.",
+      "technique": "Repricing mismatch and the embedded optionality on both sides",
+      "difficultyRationale": "Medium: the direction is easy; prepayment and deposit behaviour are what make it a real answer."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A yield curve PCA typically finds three factors. What do they represent, and roughly how much variance does the first explain?",
+      "options": [
+        "Level, slope and curvature — the level factor explains 80–90%",
+        "Short, medium and long rates — each explains about a third",
+        "Duration, convexity and vega — the first explains about half",
+        "Level, slope and curvature — but each explains about 30%"
+      ],
+      "correctOption": 0,
+      "explanation": "Level, slope, curvature — and the level factor alone typically explains 80–90% of yield-curve variance, with slope adding 5–10% and curvature 1–2%. That first number is why duration works as well as it does: a parallel shift is by far the dominant mode, so a single number captures most of the risk. But it also shows why duration is not enough — the remaining 10–20% is precisely the twist risk that a duration-neutral book still carries. The factors come from the eigenvectors of the covariance matrix of rate changes, so they are UNCORRELATED by construction, which means their risk contributions add in quadrature and you can hedge them independently. That is the practical payoff: three orthogonal numbers instead of twenty correlated tenor exposures.",
+      "technique": "Principal components of the yield curve",
+      "difficultyRationale": "Medium: naming the three is common; the variance split is the discriminating detail."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your rates book is duration-neutral. Can you still lose money on a yield curve move? Explain, and say what you would report instead.",
+      "canonicalAnswer": "Yes. Duration neutrality only protects against a PARALLEL shift. A steepening or twist can produce large losses — for example long the 2-year and short the 10-year, DV01-matched, loses if the curve steepens. Report bucketed key-rate DV01s, or exposure to the three principal components.",
+      "explanation": "Duration is a first-order sensitivity to a single number — the level of rates — so a duration-neutral book has zero exposure to a parallel shift and possibly large exposure to everything else. Concrete example: long £100m of 2-year and short the DV01-equivalent of 10-year. Parallel shifts net to zero. But if the curve steepens (2y falls, 10y rises) both legs lose, and the loss can be substantial. That is precisely the trade a steepener puts on deliberately, so a book can be running a large view while reporting zero duration. WHAT TO REPORT: (1) KEY-RATE or BUCKETED DV01s — shift each tenor (1y, 2y, 5y, 10y, 30y) by 1bp independently and record the P&L. The vector is the real exposure; its sum is the parallel DV01 that was hiding it. (2) PRINCIPAL COMPONENT exposures — sensitivity to level, slope and curvature, which has the advantage that the three are uncorrelated so you can sum their risks in quadrature rather than worrying about the correlations between twenty tenors. Most desks report both: buckets for hedging (you trade a specific tenor), PCs for risk (you want a small number of orthogonal drivers). Add that neither captures convexity, so you also need gamma for large moves.",
+      "technique": "Why parallel-shift neutrality is not risk neutrality",
+      "difficultyRationale": "Medium: the concept is standard, and the concrete steepener example is what makes it convincing."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two bonds have the same maturity and yield but you can only hold one. Which has more dollar duration per £100 of notional?",
+      "options": [
+        "Cannot say without the coupons — lower coupon means higher duration",
+        "They are equal, since maturity and yield match",
+        "The higher-coupon bond",
+        "It depends only on the yield"
+      ],
+      "correctOption": 0,
+      "explanation": "You need the coupons. Duration is the PV-weighted average time to the cash flows, so a bigger coupon pulls cash forward and shortens duration — the low-coupon bond has more. In the limit, a zero-coupon bond's Macaulay duration equals its maturity exactly, the maximum for that maturity. This is why comparing bonds by maturity alone misleads, and why a desk hedges by DV01 rather than notional: £100m of 30-year zero and £100m of 30-year 8% coupon carry materially different rate risk. Note also that dollar duration, not percentage duration, is the additive quantity across a book.",
+      "technique": "Duration versus coupon, and why DV01 is the hedging unit",
+      "difficultyRationale": "Easy: one property, with the practical consequence attached."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A portfolio has PC exposures of £2m per unit of level, £0.5m per slope and £0.1m per curvature. The factor standard deviations are 15, 5 and 2 units respectively. What is the portfolio's daily standard deviation, and what does this tell you?",
+      "canonicalAnswer": "About £30.1m. Because principal components are uncorrelated, variances add: sqrt((2*15)^2 + (0.5*5)^2 + (0.1*2)^2) = sqrt(900 + 6.25 + 0.04) = 30.1. The level factor accounts for over 99% of the variance.",
+      "explanation": "Principal components are eigenvectors of a symmetric covariance matrix, so they are mutually orthogonal and hence UNCORRELATED. That means no covariance terms and the variances simply add: sigma^2 = (2 x 15)^2 + (0.5 x 5)^2 + (0.1 x 2)^2 = 900 + 6.25 + 0.04 = 906.29, so sigma = £30.1m per day. Multiply by 2.33 for a one-day 99% VaR of about £70m. The instructive part is the decomposition: the level factor contributes 900 of the 906.29 — over 99% of the variance — while curvature contributes 0.04, essentially nothing. So this book is, for risk purposes, a pure duration position, and hedging the level exposure would cut the standard deviation from £30.1m to sqrt(6.29) = £2.5m. That is the value of the PCA framing: it tells you immediately which single hedge does almost all the work, which a table of twenty tenor sensitivities would not. The general lesson is that uncorrelated factors let you rank risks by their variance contribution and ignore the ones that round to zero.",
+      "technique": "Aggregating risk across orthogonal factors",
+      "difficultyRationale": "Hard: the arithmetic is easy but only if you know the PCs are uncorrelated, and the interpretation is the point."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two variables have zero correlation. Are they independent?",
+      "options": [
+        "Not necessarily — correlation only measures linear dependence",
+        "Yes, zero correlation implies independence",
+        "Only if they are both normally distributed... and even then, no",
+        "Only if their variances are equal"
+      ],
+      "correctOption": 0,
+      "explanation": "No. Correlation measures LINEAR association only. The standard counterexample: let X be symmetric about zero and Y = X^2. Then Cov(X,Y) = E[X^3] = 0 by symmetry, so correlation is zero, yet Y is a deterministic function of X — total dependence. The important exception is that for JOINTLY normal variables, zero correlation does imply independence, because the multivariate normal is fully specified by its means and covariance matrix. That exception is why 'uncorrelated equals independent' feels true to people trained on normal examples, and why it fails badly in risk work where returns are not normal. Note the third option is a trap: each variable being marginally normal is NOT the same as being jointly normal, and you can construct uncorrelated, marginally-normal, dependent pairs.",
+      "technique": "Linear dependence versus dependence",
+      "difficultyRationale": "Easy: the counterexample is standard, but the jointly-normal exception is worth stating."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a copula, and why would you use one instead of just specifying a correlation?",
+      "canonicalAnswer": "A copula separates the marginal distributions from the dependence structure. You map each variable to a uniform via its own CDF, then impose a joint distribution on those. It lets you keep realistic fat-tailed marginals while choosing a dependence structure independently — and lets you specify TAIL dependence, which a correlation number cannot.",
+      "explanation": "The construction: take each variable's own marginal distribution and apply its CDF, which by the probability integral transform gives a Uniform[0,1] regardless of the original shape. Then map each uniform to a standard normal (or a t). Now impose a correlation structure on those transformed variables. The dependence lives entirely in that structure — the copula — and the marginals live entirely in the transforms, so the two are specified independently. WHY BOTHER: (1) Real marginals are fat-tailed and skewed, and forcing a multivariate normal on them misrepresents each variable individually. A copula lets you fit each marginal empirically and still have a tractable joint model. (2) A single correlation number cannot express HOW the variables behave in the tails. A Gaussian copula has zero tail dependence — extreme moves become asymptotically independent — whereas a t-copula has genuine tail dependence so extremes co-occur. Two models can share a correlation of 0.5 and behave completely differently in a crisis, which is exactly the regime you are modelling. (3) Sklar's theorem guarantees any joint distribution can be decomposed this way, so nothing is lost. The practical caution: the copula choice matters more than the correlation input, and the Gaussian copula's use in CDO pricing is the canonical illustration — it was calibrated on benign data and priced senior tranches as if joint extreme defaults were vanishingly rare.",
+      "technique": "Separating marginals from the dependence structure",
+      "difficultyRationale": "Medium: the construction is mechanical; explaining why tail dependence matters is the substance."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "What is the key difference between a Gaussian copula and a Student-t copula for risk modelling?",
+      "options": [
+        "The t-copula has tail dependence, so extreme events co-occur; the Gaussian has none",
+        "The t-copula allows negative correlations, the Gaussian does not",
+        "The Gaussian copula is fat-tailed, the t-copula is not",
+        "They differ only in computational cost"
+      ],
+      "correctOption": 0,
+      "explanation": "Tail dependence. Formally the coefficient is the limit of P(V2 > u | V1 > u) as u goes to 1. For a Gaussian copula this limit is ZERO for any correlation below 1 — condition on one variable being extreme and the other becomes asymptotically independent. For a t-copula it is strictly positive and increases as the degrees of freedom fall. That distinction is the whole ballgame in risk: it is the difference between a model in which simultaneous crashes are essentially impossible and one in which they are expected. The 2008 CDO experience is the standard illustration — the Gaussian copula, calibrated on benign correlation data, priced senior tranches as near-riskless because it assigned negligible probability to many defaults at once. Note that both copulas can express any correlation including negatives, and the Gaussian copula's MARGINALS can be anything you like; the tails of the DEPENDENCE are what differ.",
+      "technique": "Tail dependence as the discriminating property",
+      "difficultyRationale": "Hard: requires the formal definition, not just 'the t has fatter tails'."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you update a covariance matrix daily, and what could go wrong?",
+      "canonicalAnswer": "Use EWMA or GARCH on each variance and each covariance: cov_n = lambda*cov_(n-1) + (1-lambda)*x_(n-1)*y_(n-1). The failure mode is applying different schemes or different lambdas to variances and covariances, which can produce a matrix that is not positive semidefinite.",
+      "explanation": "EWMA for the covariance mirrors the variance update exactly: cov_n = lambda * cov_(n-1) + (1 - lambda) * x_(n-1) * y_(n-1), with the correlation recovered as cov/(sigma_x * sigma_y) using variances updated the same way. GARCH adds a long-run covariance term so the forecast mean-reverts rather than persisting at the current level. WHAT GOES WRONG: the resulting matrix must be positive semidefinite, or some portfolio has negative variance and the whole risk framework is incoherent. Using the SAME scheme and the SAME lambda for every variance and covariance guarantees PSD, because the update is then a weighted sum of PSD matrices (each outer product x*x' is PSD, and so is the previous matrix by induction). Mix schemes — GARCH for variances, EWMA for covariances, or different lambdas per pair — and that guarantee is lost. Other routes to a broken matrix: estimating pairs from different-length histories, filling missing data inconsistently, and hand-overriding entries for a stress scenario. Symptoms are a failed Cholesky, an optimiser returning absurd leveraged weights, or a negative VaR. The fix is to eigendecompose, clip negative eigenvalues to a small positive floor, rebuild and renormalise the diagonal — or better, use a factor model, which is PSD by construction.",
+      "technique": "Consistent EWMA updating and the PSD constraint",
+      "difficultyRationale": "Medium: the update is easy; the PSD failure mode is what a risk interviewer is actually testing."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In a one-factor Gaussian copula model of a loan portfolio, what happens to the worst-case default rate as the copula correlation rises?",
+      "options": [
+        "It increases, because defaults become more clustered",
+        "It decreases, because diversification improves",
+        "It is unchanged — correlation affects only the mean",
+        "It increases only if the probability of default also rises"
+      ],
+      "correctOption": 0,
+      "explanation": "It increases. In Vasicek's model each obligor defaults when a_i*F + sqrt(1 - a_i^2)*Z_i falls below a threshold, where F is the common factor. Higher correlation means a bigger loading on F, so obligors' fates move together — the portfolio's default rate becomes more variable even though its MEAN is unchanged at the PD. Since capital is set against a high quantile of the loss distribution, more clustering means a fatter right tail and more capital. The formula behind the Basel IRB charge is the worst-case default rate N[(N^-1(PD) + sqrt(rho)*N^-1(X))/sqrt(1-rho)], which is increasing in rho for any confidence X above 50%. The economic reading: correlation does not change how many defaults you expect, it changes how badly they bunch — and capital is about the bunching.",
+      "technique": "Vasicek's single-factor model and correlation's effect on the tail",
+      "difficultyRationale": "Medium: the intuition is gettable; knowing the mean is unchanged is the precise part."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Walk me through how historical simulation computes a 99% one-day VaR, and state its main weakness.",
+      "canonicalAnswer": "Take ~500 days of history. For each day, apply that day's percentage changes in every risk factor to TODAY's portfolio to get a hypothetical P&L. Sort the 500 results; the 5th worst is the 99% VaR. The main weakness: it cannot produce a loss larger than the worst day in the window.",
+      "explanation": "MECHANICS. Fix today's positions. For each of the last n days (typically 500, about two years), take the proportional change in each risk factor on that day and apply it to today's factor levels, giving a hypothetical set of market values tomorrow. Revalue the portfolio, subtract today's value, and record the P&L. That gives n equally-likely scenarios. Sort them and read the 1% quantile — with 500 scenarios, the 99% VaR is around the 5th worst. Note what you are NOT doing: you are not looking up historical P&L. You are revaluing today's book under past market moves, which is why the method handles nonlinear positions exactly. STRENGTHS: no distributional assumption, so fat tails and skew are captured to the extent they occurred; correlations are implicit in the data rather than estimated; it handles options by full revaluation. WEAKNESSES, in order of importance: (1) it cannot extrapolate — the largest loss it can ever report is the worst scenario in the window, so a 99.9% VaR from 500 days is meaningless; (2) equal weighting means a calm window produces a small VaR even if today's volatility is high, and a big old return drops out abruptly and makes VaR jump for no reason; (3) it assumes the window represents the future, which is precisely the assumption that fails in a regime change; (4) the quantile estimate has substantial sampling error. The standard fixes are volatility scaling (Hull-White), recency weighting (BRW), and EVT for the far tail.",
+      "technique": "The historical simulation procedure and its extrapolation limit",
+      "difficultyRationale": "Medium: the mechanics are routine; ranking the weaknesses correctly is what shows experience."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You compute a 99% VaR from 500 days of historical simulation. How confident are you in the number?",
+      "canonicalAnswer": "Not very. The standard error of a quantile estimate is (1/f(x))*sqrt(q(1-q)/n), and because the density f is small in the tail this is large — commonly several percent of the VaR estimate. Quote a confidence interval, or bootstrap one.",
+      "explanation": "The 99% VaR is the empirical 1% quantile of 500 numbers, so it is effectively determined by the 4th to 6th worst observations — a handful of data points. The standard error of the q-quantile estimate is (1/f(x)) * sqrt(q(1-q)/n), where f is the probability density at the quantile. Two things make this large: q(1-q) with q = 0.01 gives 0.0099, and n = 500 gives sqrt(0.0099/500) = 0.0045 — but that is then DIVIDED by f(x), which is small precisely because you are in the tail. For a typical loss distribution the resulting standard error runs to several percent of the VaR number, and it is worse the further into the tail you go. PRACTICAL CONSEQUENCES, which is what the question is really after: (1) Do not report VaR to three significant figures — a change from £10.2m to £10.6m is very likely noise. (2) Comparing today's VaR with yesterday's is comparing two noisy estimates. (3) For a confidence interval, BOOTSTRAP: resample the 500 scenarios with replacement a few thousand times, recompute VaR each time, and read off the 2.5th and 97.5th percentiles of the resulting distribution. That is more robust than the analytic formula because it does not require estimating f. (4) This sampling error is a strong argument for EVT, which fits a smooth parametric tail and so does not let two or three observations dictate the answer. Being able to say 'the number has a standard error and here is roughly how big' is unusual and lands well.",
+      "technique": "Sampling error of an empirical quantile",
+      "difficultyRationale": "Hard: most people never consider that VaR has a confidence interval at all."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Hull–White volatility scaling adjusts historical simulation by rescaling each past return by the ratio of today's volatility to the volatility at that time. What problem does this solve?",
+      "options": [
+        "A window of calm history produces a low VaR even when current volatility is high",
+        "It removes the need for a covariance matrix",
+        "It makes the returns normally distributed",
+        "It eliminates the sampling error in the quantile"
+      ],
+      "correctOption": 0,
+      "explanation": "It makes historical simulation responsive to the CURRENT volatility regime. Plain historical simulation weights every day in the window equally, so two years of calm markets produce a small VaR even if volatility tripled last week — the model is looking at the wrong regime. Rescaling each historical return by sigma_today/sigma_then puts every scenario on today's volatility footing before you take the quantile, so entering a stressed period raises VaR immediately rather than only after enough bad days accumulate in the window. This is usually the single most valuable extension to historical simulation, more so than recency weighting, because it addresses the regime problem directly rather than just down-weighting old data. Note it does require a volatility model (EWMA or GARCH) for each risk factor, so you have reintroduced a modelling assumption into what was an assumption-free method — a trade-off worth acknowledging.",
+      "technique": "Volatility-adjusting historical scenarios",
+      "difficultyRationale": "Medium: the mechanism is simple, and knowing why it beats recency weighting is the extra."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What does extreme value theory let you do that historical simulation cannot, and what is the key result?",
+      "canonicalAnswer": "It lets you estimate quantiles BEYOND the worst observation in your sample. The key result (Pickands–Balkema–de Haan) is that excesses over a high threshold converge to a generalised Pareto distribution regardless of the parent distribution, so you can fit a two-parameter tail and extrapolate.",
+      "explanation": "THE PROBLEM. Historical simulation's empirical quantile cannot exceed the worst scenario observed. With 500 days you have no basis at all for a 99.9% VaR, and even the 99% figure rests on a handful of points. THE RESULT. For a very wide class of parent distributions, the conditional distribution of the excess over a high threshold u converges as u grows to the generalised Pareto: P(v > u + y | v > u) = (1 + xi*y/beta)^(-1/xi). Two parameters — xi the shape (tail heaviness) and beta the scale — fitted by maximum likelihood to the observations exceeding u. This is the tail analogue of the central limit theorem: whatever the underlying distribution, the TAIL has a universal parametric form, so you can fit it and then evaluate the fitted function at any quantile you like, including ones beyond your data. INTERPRETING xi: xi > 0 is the heavy-tailed Frechet case, which is what financial returns show, typically 0.1 to 0.4; xi = 0 gives an exponential (normal-like) tail; moments of order above 1/xi do not exist, so xi > 0.5 implies infinite variance. THE JUDGEMENT CALL is the threshold u: too low and the GPD approximation is poor, too high and you have too few exceedances to fit. Around the 95th percentile is a common starting point, and you should check the parameter estimates are stable across nearby thresholds — instability means the choice is driving your answer. Two caveats to volunteer: EVT models the TAIL only, not the whole distribution; and it assumes the exceedances are independent, which volatility clustering violates, so it is usually applied to volatility-standardised residuals rather than raw returns.",
+      "technique": "The GPD limit for threshold exceedances",
+      "difficultyRationale": "Hard: the theorem is the content, and the threshold trade-off is where practical judgement shows."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "The power law says P(v > x) = K*x^(-alpha) for large x. How does alpha relate to the EVT shape parameter?",
+      "options": [
+        "alpha = 1/xi",
+        "alpha = xi",
+        "alpha = 1 - xi",
+        "They are unrelated"
+      ],
+      "correctOption": 0,
+      "explanation": "alpha = 1/xi. The power law and the generalised Pareto describe the same heavy tail in different notation: a larger xi means a heavier tail, and correspondingly a smaller alpha means the survival function decays more slowly. Practical use: plot ln(P(v > x)) against ln(x); if the tail follows a power law the plot is a straight line with slope -alpha, which is both a diagnostic that a power law fits and a crude way to estimate alpha (the Hill estimator does this properly). Typical equity return estimates put alpha around 3, so xi is about 0.33 — heavy enough that the fourth moment does not exist, which is why sample kurtosis estimates from financial data are so unstable. Since moments above alpha do not exist, alpha < 2 would mean infinite variance, and that is the boundary at which the central limit theorem stops applying.",
+      "technique": "Power law and GPD as the same tail in different parameters",
+      "difficultyRationale": "Medium: a one-line relationship, and the alpha ≈ 3 anchor is worth carrying."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Walk me through the variance–covariance approach to VaR for a two-asset portfolio, and state its main limitation.",
+      "canonicalAnswer": "Compute the portfolio standard deviation as sqrt(a1^2*s1^2 + a2^2*s2^2 + 2*rho*a1*a2*s1*s2), then VaR = z*sigma_P. The main limitation is that it assumes the portfolio is LINEAR in the risk factors and that they are normally distributed — so it handles options badly and understates fat tails.",
+      "explanation": "MECHANICS. Let a1 and a2 be the money amounts in each asset and s1, s2 their daily return volatilities. Portfolio variance is a1^2*s1^2 + a2^2*s2^2 + 2*rho*a1*a2*s1*s2, so the daily standard deviation is its square root and the one-day VaR is z*sigma_P with z = 2.33 at 99% one-tailed. Scale to T days by sqrt(T) under iid returns. In matrix form for n assets it is simply sqrt(a' * Sigma * a). WHY IT IS ATTRACTIVE: it is fast (one matrix multiplication regardless of portfolio size), and because it is analytic it gives marginal, incremental and component VaR essentially for free — which is why banks use it for risk ATTRIBUTION even when the headline number comes from historical simulation. LIMITATIONS, in order: (1) LINEARITY. The formula assumes portfolio value is linear in the risk factors. Options are not, so you must approximate with delta (which ignores gamma entirely) or extend to delta-gamma. A delta-neutral option book has zero VaR under the linear model, which is obviously wrong. (2) NORMALITY. Daily financial returns have kurtosis of 5-10 against the normal's 3, so the 2.33-sigma point systematically understates the true 1% quantile. (3) It needs a covariance matrix, which must be estimated, must be positive semidefinite, and is exactly what breaks down in stress as correlations converge to 1.",
+      "technique": "The variance-covariance formula and where it fails",
+      "difficultyRationale": "Medium: the formula is standard; ranking the limitations correctly is the discriminator."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Under the linear (delta-only) model, what VaR does a delta-neutral option book have?",
+      "options": [
+        "Zero — which is why the linear model is inadequate for options",
+        "The same as the underlying position",
+        "Its full gamma exposure",
+        "Undefined"
+      ],
+      "correctOption": 0,
+      "explanation": "Zero, and that is the clearest demonstration of the model's inadequacy. The linear approximation says dP = delta * dS, so delta = 0 gives dP = 0 for any move, and hence zero VaR. In reality a delta-neutral option book has substantial risk from GAMMA (large moves in either direction), VEGA (a shift in implied volatility), and theta. A short-gamma delta-neutral book can lose enormously on a large move, and the linear model reports nothing. The fixes are the quadratic (delta-gamma) model, which adds (1/2)*gamma*(dS)^2 and captures the curvature, or Monte Carlo with full revaluation. This is the standard reason banks do not use pure variance-covariance VaR for options desks, and being able to give this one-line counterexample is a much better answer than reciting 'it assumes linearity'.",
+      "technique": "The delta-only model's blind spot",
+      "difficultyRationale": "Medium: the counterexample is the point — it makes the abstract limitation concrete."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You add the gamma term to get dP = delta*dS + (1/2)*gamma*(dS)^2. What breaks, and how do you handle it?",
+      "canonicalAnswer": "dP is no longer normally distributed even if dS is — it is a quadratic form in a normal, which is skewed. So you cannot just multiply the standard deviation by 2.33. Use a Cornish–Fisher expansion to adjust the quantile for skewness, or abandon the analytic route and simulate.",
+      "explanation": "THE PROBLEM. The linear model's whole convenience was that a linear function of a normal is normal, so the quantile is a known multiple of the standard deviation. Once you square dS that breaks: (dS)^2 is chi-squared, so dP is a linear combination of a normal and a chi-squared — skewed, and with the skew's sign set by gamma. Long gamma gives positive skew (large moves help you), short gamma gives negative skew (large moves hurt), and the multiplier 2.33 is wrong in both cases, in opposite directions. It is materially too small for a short-gamma book, which is the dangerous direction. SOLUTIONS. (1) CORNISH-FISHER. Compute the first three (or four) moments of dP analytically — they are available in closed form for a quadratic form in normals — then adjust the normal quantile: q = z + (z^2 - 1)*skew/6 + higher terms. Cheap and usually adequate for moderate gamma; it degrades when the skew is large. (2) MONTE CARLO with full revaluation. Sample the risk factors, reprice the portfolio exactly on each draw, take the quantile. Handles arbitrary nonlinearity but costs one revaluation per path, which for a large book is the binding constraint — hence partial revaluation, grids, or American Monte Carlo in practice. (3) HISTORICAL SIMULATION, which sidesteps the issue entirely by revaluing under actual past moves. Worth noting that even delta-gamma is only a second-order Taylor expansion: it is a local approximation and still fails for very large moves or for discontinuous payoffs like digitals and barriers, where nothing short of full revaluation is honest.",
+      "technique": "Why a quadratic form in normals is not normal",
+      "difficultyRationale": "Hard: recognising the distributional break, and knowing Cornish-Fisher, is well beyond the basic answer."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In cash-flow mapping, a bond's cash flow falls between two standard tenors. What must the split onto the two adjacent vertices preserve?",
+      "options": [
+        "Both the present value and the variance of the cash flow",
+        "Only the present value",
+        "Only the maturity",
+        "The notional amount"
+      ],
+      "correctOption": 0,
+      "explanation": "Both present value and variance. Mapping a cash flow onto adjacent standard vertices needs two conditions to pin down the two weights, and RiskMetrics chose PV and variance. Preserving PV alone would leave the split underdetermined and, worse, would misstate the risk: the two vertices have different volatilities and are imperfectly correlated, so an arbitrary split that gets the value right can get the variance badly wrong. The variance condition requires the correlation between the two vertices, which is why the mapping depends on the covariance matrix and not just on the interpolation. Preserving notional would be wrong outright, since the whole point is to work in present-value terms. This is a favourite detail question because it separates people who have implemented a VaR system from people who have read about one.",
+      "technique": "The two conditions that determine a cash-flow mapping",
+      "difficultyRationale": "Medium: a specific implementation detail that is easy to half-remember."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What are the main changes FRTB made to market risk capital, and why was each made?",
+      "canonicalAnswer": "ES at 97.5% replaces VaR at 99% (subadditivity and tail-sensitivity); risk-factor-specific liquidity horizons replace the blanket 10-day assumption; a hard trading/banking book boundary stops regulatory arbitrage; and desk-level model approval with a P&L attribution test plus a non-modellable risk factor charge.",
+      "explanation": "FOUR CHANGES, each answering a specific pre-crisis failure. (1) ES AT 97.5% REPLACES VaR AT 99%. VaR is not subadditive, so it can penalise diversification and desk-level limits can be met while the aggregate breaches. More importantly VaR is blind beyond the quantile, so selling deep out-of-the-money options lowered measured risk while raising actual risk. ES averages the losses beyond the threshold and charges for exactly that trade. 97.5% is chosen so that under normality it roughly matches a 99% VaR, keeping the calibration familiar. (2) LIQUIDITY HORIZONS of 10 to 120 days by risk factor, replacing a blanket 10-day assumption scaled by sqrt(t). The crisis showed that positions in illiquid credit could not be exited in two weeks at anything like marked prices, so the horizon now reflects the factor. (3) A HARD TRADING/BANKING BOOK BOUNDARY. Banks had been parking positions on whichever side carried cheaper capital, and moving them when it changed. The boundary is now presumptive by instrument type and reassignment is very difficult. (4) DESK-LEVEL MODEL APPROVAL. Approval is granted per trading desk rather than firm-wide, and a desk must pass BACKTESTING and the P&L ATTRIBUTION TEST — its risk-model P&L must track actual daily P&L closely — or it drops to the standardised approach for that desk. Plus NON-MODELLABLE RISK FACTORS: factors without enough real observed transaction prices get a punitive stressed capital add-on instead of model treatment, which removes the incentive to model things you cannot observe. The P&L attribution test is the one that actually bites desks, so it is the most commonly asked detail.",
+      "technique": "The four FRTB changes and their motivations",
+      "difficultyRationale": "Medium: listing them is recall; explaining what each fixed is what a risk interview wants."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What was 'stressed VaR', introduced under Basel II.5, and how did it interact with ordinary VaR?",
+      "options": [
+        "The same VaR calculation calibrated to a 12-month stressed period, ADDED to ordinary VaR",
+        "A replacement for ordinary VaR during crisis periods",
+        "VaR computed at a higher confidence level",
+        "VaR with correlations set to 1"
+      ],
+      "correctOption": 0,
+      "explanation": "Stressed VaR runs the identical model but calibrated to a continuous 12-month period of significant stress for the bank's portfolio — typically 2008 for most banks. Crucially it is ADDED to ordinary VaR, not substituted, so the capital charge became roughly the sum of the two and trading-book capital roughly tripled. The motivation was that pre-crisis VaR was procyclical: calibrated on the preceding calm period, it produced small numbers right before the crisis and then spiked afterwards, so capital was lowest exactly when risk was highest. Anchoring half the charge to a fixed stressed window breaks that procyclicality. Basel II.5 also added the incremental risk charge for default and migration risk in the trading book, which VaR at a 10-day horizon systematically missed.",
+      "technique": "Stressed VaR and procyclicality",
+      "difficultyRationale": "Medium: the 'added, not replaced' detail and the procyclicality motive are the substance."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Under the Basel backtesting traffic-light system, how many exceptions in 250 days put a bank in the red zone?",
+      "options": [
+        "10 or more",
+        "5 or more",
+        "3 or more",
+        "20 or more"
+      ],
+      "correctOption": 0,
+      "explanation": "10 or more. The zones are green for 0-4 exceptions, yellow for 5-9 with a capital multiplier escalating from 3.0 up to 3.65, and red at 10+, where the multiplier hits 4 and the supervisor will likely question the model outright. At 99% confidence over 250 days you expect 2.5 exceptions, so the binomial standard deviation is about 1.57 and 10 is roughly 4.8 standard deviations out — genuinely strong evidence the model understates risk rather than bad luck. The design intent is worth noting: the yellow zone is deliberately a graduated penalty rather than a cliff, because with only 250 observations the test has limited power and a hard threshold would produce too many false accusations.",
+      "technique": "The Basel traffic-light zones",
+      "difficultyRationale": "Easy: recall, but the expected-count anchor makes it stick."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the P&L attribution test under FRTB, and why does it matter more than backtesting?",
+      "canonicalAnswer": "It compares the P&L predicted by the desk's risk model with the actual (hypothetical) P&L, and requires them to track closely. It matters because backtesting only counts tail exceptions — a handful of data points a year — whereas P&L attribution tests the model EVERY day against the full distribution.",
+      "explanation": "MECHANICS. Each day, compute two P&Ls: the RISK-THEORETICAL P&L, produced by the risk model using only the risk factors it includes, and the HYPOTHETICAL P&L, the actual revaluation of yesterday's positions at today's prices with no intraday trading or fees. If the risk model captures all the material risk factors, these should track closely. FRTB tests the relationship using statistical measures of the difference — originally a mean-ratio and variance-ratio test, later the Spearman correlation and Kolmogorov-Smirnov test — and a desk that fails is pushed onto the standardised approach, which is materially more expensive. WHY IT BITES HARDER THAN BACKTESTING. Backtesting counts exceptions: at 99% over 250 days you expect 2.5, so the test is built on a handful of observations a year and has very low statistical power — a badly wrong model can pass for years by luck. P&L attribution uses EVERY day and the whole distribution, not just the tail, so it detects a missing risk factor quickly. A desk trading an instrument whose risk model omits, say, a basis or a skew dimension will show a persistent unexplained residual, and the test catches it long before the tail exceptions accumulate. THE DEEPER POINT, which is worth making: unexplained P&L is the single best diagnostic of model risk generally, regulation aside. If you cannot attribute your daily P&L to your Greeks, you are running a risk you are not measuring. FRTB simply made a good internal practice mandatory.",
+      "technique": "P&L attribution as a high-power model test",
+      "difficultyRationale": "Hard: the mechanics are detailed and the comparison with backtesting's low power is the insight."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the difference between initial margin and variation margin?",
+      "canonicalAnswer": "Variation margin settles the CURRENT mark-to-market, usually daily, so it clears accumulated exposure. Initial margin covers POTENTIAL FUTURE exposure over the close-out period — how much the position could move between the counterparty's last payment and your liquidation of the position.",
+      "explanation": "VARIATION MARGIN is backward-looking: the position has moved, so the losing side pays the gain to the winning side, typically daily and often intraday for cleared products. After VM is paid, current exposure is reset to zero. It is a settlement of what has already happened. INITIAL MARGIN is forward-looking: if the counterparty defaults, there is a gap between their last VM payment and the moment you have liquidated or replaced the position — the close-out period, typically 2-5 days cleared and 10 days for bilateral uncleared. IM is sized to cover the plausible adverse move over that gap, at a high confidence level. Unlike VM it is posted up front, held throughout, and returned only when the trade terminates. Two consequences worth adding. IM is a LIQUIDITY cost, not a P&L cost — you still own the collateral, but it is encumbered, which is why IM requirements have a real funding cost (MVA). And IM is PROCYCLICAL: it is calibrated on volatility, so requirements jump exactly when markets are stressed and funding is hardest, which can turn a market shock into a funding crisis. That is the central criticism of mandatory clearing and the reason anti-procyclicality floors and buffers exist.",
+      "technique": "Current versus potential future exposure",
+      "difficultyRationale": "Easy: definitional, but the procyclicality point makes it a strong answer."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does a CCP actually do, and does it eliminate counterparty risk?",
+      "canonicalAnswer": "It novates each trade so it becomes buyer to every seller and seller to every buyer, then manages the resulting risk with margin and a default fund. It does NOT eliminate counterparty risk — it concentrates and mutualises it.",
+      "explanation": "WHAT IT DOES. After novation the CCP stands between the original parties, so each faces only the CCP. That delivers multilateral netting (your exposures across all members net down to one number), standardised margining, a pre-agreed default management process, and transparency for regulators. BENEFITS: netting efficiency can cut gross exposure by an order of magnitude; the default of a member is handled by an established auction process rather than a scramble; and everyone faces a single highly-collateralised counterparty rather than a web of bilateral ones. WHAT IT DOES NOT DO. It does not make the risk disappear — it moves it. The CCP is now systemically critical, and its failure would be catastrophic, which is why CCPs are among the most closely supervised institutions there are. And the risk is MUTUALISED: if a defaulter's margin is insufficient, surviving members absorb the loss through the default fund. THE WATERFALL, in order, is the thing to be able to recite: (1) the defaulter's initial margin, (2) the defaulter's default fund contribution, (3) the CCP's own capital contribution — 'skin in the game', deliberately placed ahead of surviving members so the CCP's incentives are aligned, (4) surviving members' default fund contributions, (5) assessment rights, i.e. further calls on surviving members. Beyond that lie recovery tools such as variation margin gains haircutting and, ultimately, resolution. The costs are worth naming too: mandatory clearing consumes liquidity through IM, and the standardisation that makes clearing possible pushes bespoke hedges into the more expensive uncleared regime.",
+      "technique": "Novation, mutualisation, and the default waterfall",
+      "difficultyRationale": "Medium: the waterfall order is the detail that distinguishes a real answer."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is wrong-way risk?",
+      "options": [
+        "Exposure to a counterparty is positively correlated with their probability of default",
+        "The counterparty defaults on the wrong leg of a trade",
+        "Collateral is posted in the wrong currency",
+        "The trade was booked with the wrong sign"
+      ],
+      "correctOption": 0,
+      "explanation": "Wrong-way risk is adverse correlation between your exposure and the counterparty's credit quality: you are owed the most precisely when they are least able to pay. The textbook case is buying credit protection on a sovereign from a bank domiciled in that sovereign — the protection is worth most when the country is in trouble, which is exactly when the bank is too. Others: a commodity producer hedging by selling forward, whose ability to pay collapses when the commodity price rises and the hedge is against them; and taking the counterparty's own equity as collateral. RIGHT-WAY risk is the benign opposite. Why it matters for CVA: the standard CVA integral assumes exposure and default are INDEPENDENT, which lets you multiply expected exposure by default probability. Under wrong-way risk that factorisation understates the charge, sometimes badly, and you need a model coupling the two — which is why regulators impose an alpha multiplier on exposure to crudely account for it.",
+      "technique": "Adverse correlation between exposure and default",
+      "difficultyRationale": "Medium: definitional, and the CVA-independence consequence is the extension."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is CVA, and why do banks have a whole desk for it?",
+      "canonicalAnswer": "CVA is the market value of counterparty default risk — the expected loss from a counterparty defaulting, computed over the exposure profile. It has a desk because it is a market-risk position: it moves with credit spreads, rates and the underlying, so it must be hedged and its own volatility is a capital charge.",
+      "explanation": "DEFINITION. CVA is the difference between the risk-free value of a derivatives portfolio and its value accounting for counterparty default. In the standard form, CVA = LGD * integral over time of EE(t) * dPD(t), discounted — expected exposure at each future time, weighted by the probability of default in that interval, times loss given default. It is booked as a REDUCTION in the value of the derivative, so it hits P&L directly. WHY A DESK. Because CVA is not a static credit reserve, it is a market-risk position with Greeks. It has credit delta (widen the counterparty's spread and CVA jumps), interest rate and FX sensitivity (through the exposure profile), and even vega (exposure depends on volatility). A large uncollateralised book generates CVA P&L swings comparable to trading desks. So banks centralise it: the CVA desk charges each trading desk an upfront CVA fee at inception, then manages and hedges the aggregate — buying CDS protection on counterparties where it can, and using index proxies where it cannot. That hedging is itself imperfect, which was a live issue in 2008-11 when CVA losses exceeded actual default losses by a wide margin. THE FAMILY. DVA is the mirror image, your OWN default risk, which produces the uncomfortable result that your P&L improves when your credit deteriorates. FVA is the funding cost of uncollateralised positions. MVA is the cost of funding initial margin. Collectively XVA. Basel III added a specific CVA capital charge for the VOLATILITY of CVA, on the grounds that the crisis losses were mark-to-market, not default.",
+      "technique": "CVA as a hedgeable market-risk position",
+      "difficultyRationale": "Medium: the formula is recall; explaining why it needs a desk is what shows understanding."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A bilateral uncleared derivatives portfolio has a 10-day margin period of risk, while an equivalent cleared position uses 5 days. What is the approximate ratio of initial margin, all else equal?",
+      "options": [
+        "About 1.4x — margin scales with the square root of the horizon",
+        "Exactly 2x — margin scales linearly with the horizon",
+        "About 1.2x",
+        "They are the same; the horizon does not affect IM"
+      ],
+      "correctOption": 0,
+      "explanation": "About sqrt(10/5) = sqrt(2) = 1.41x. Initial margin is a quantile of the loss distribution over the close-out period, and under iid returns the standard deviation scales with the square root of time — so doubling the horizon multiplies margin by about 1.41, not 2. This square-root-of-time scaling is why regulators set uncleared bilateral margin at a 10-day horizon against 5 days for most cleared rates products: it makes uncleared trading roughly 40% more margin-expensive, a deliberate incentive to clear. Two caveats worth adding: the scaling assumes iid returns, and volatility clustering means the true multiple usually exceeds sqrt(2) in stressed conditions; and real IM models (SIMM bilaterally, VaR or ES models at CCPs) differ in more than just the horizon, so 1.41 is the first-order answer rather than the whole story.",
+      "technique": "Square-root-of-time scaling applied to margin horizons",
+      "difficultyRationale": "Medium: the scaling rule applied in an unfamiliar context, with a regulatory motive attached."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How is stress testing different from VaR, and why do you need both?",
+      "canonicalAnswer": "VaR is a probabilistic statement calibrated to historical data; stress testing asks what happens under a specified scenario with no probability attached. You need both because VaR's assumptions — the distribution, the correlations, the sample window — are exactly what fail in a crisis.",
+      "explanation": "THE DIFFERENCE. VaR says 'losses exceed X on 1% of days', derived from a model calibrated to a historical window. Stress testing says 'if equities fell 30% and credit spreads doubled, we would lose Y' — no probability, no distributional assumption, and no dependence on whether anything like it appeared in your sample. WHY BOTH. Every VaR model rests on assumptions that hold in normal markets and break in crises: that the recent window represents the future, that estimated correlations are stable, that positions can be exited within the horizon, and that the tail behaves as the model says. Stress testing is the deliberate check on exactly those assumptions. It can also reach events that have never occurred, which a data-driven model cannot by construction. Two further practical differences. Stress testing handles NONLINEARITY naturally, because you fully revalue under the scenario rather than relying on a local approximation — so it catches option cliffs and barrier effects that a variance-covariance VaR misses entirely. And it is INTERPRETABLE to senior management: 'we lose £400m in a 2008 repeat' lands very differently from 'our 99% VaR is £40m'. HOW TO COMBINE THEM. Hull's suggestion is to assign subjective probabilities to the stress scenarios and splice them onto the VaR loss distribution, giving one coherent distribution rather than two numbers nobody knows how to reconcile. That is a good answer to the follow-up 'so which number do you actually use'.",
+      "technique": "Probabilistic versus conditional risk measurement",
+      "difficultyRationale": "Medium: the distinction is easy; explaining how to reconcile the two numbers is the strong part."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is reverse stress testing?",
+      "options": [
+        "Start from a failure outcome and work backwards to find scenarios that cause it",
+        "Run a stress scenario with the signs reversed",
+        "Stress test the hedges rather than the positions",
+        "Apply historical scenarios in reverse chronological order"
+      ],
+      "correctOption": 0,
+      "explanation": "You fix the outcome — the firm becomes unviable, or breaches a capital ratio — and work backwards to identify the scenarios that would produce it. The value is that ordinary stress testing only tests scenarios someone thought of, so it systematically misses the exposures nobody considered. Reverse stress testing inverts the search and surfaces vulnerabilities directly: it might reveal that the firm is unexpectedly fragile to a single counterparty, a particular basis, or a correlation assumption that nobody had flagged. Regulators now require it precisely because the 2008 failures were mostly in scenarios that were not on anyone's list. Practically it is harder than forward stress testing — the map from scenarios to outcomes is many-to-one and not analytically invertible — so it is usually done by searching over a scenario space or by working backwards from the largest concentrations in the book.",
+      "technique": "Inverting the scenario search",
+      "difficultyRationale": "Medium: the definition is short, and the 'tests what nobody thought of' rationale is the point."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are asked to design a stress scenario for a multi-asset trading book. What makes a good one, and what would you do with the result?",
+      "canonicalAnswer": "Severe, plausible and internally CONSISTENT across asset classes. Then link it to action: limits on stressed loss, capital planning, identifying which scenario dominates, and pre-agreed contingency plans.",
+      "explanation": "WHAT MAKES A GOOD SCENARIO. (1) SEVERE — comparable to or worse than historical crises, or it tells you nothing. (2) PLAUSIBLE — a scenario nobody believes will be dismissed and will not drive decisions. (3) INTERNALLY CONSISTENT. This is where most scenarios fail. Shocking equities down 30% while leaving credit spreads, volatility and rates unchanged is not a scenario, it is an arithmetic exercise — in any real equity crash, vol spikes, credit widens, correlations converge and there is usually a flight to quality in rates. Either derive the co-moves from a stressed covariance matrix (conditional expectation given the shocked factor) or have a committee specify them coherently. (4) It should include the SECOND-ORDER effects that actually hurt: margin calls, funding costs, liquidity evaporating, and hedges that cannot be executed at the assumed prices. WHAT TO DO WITH IT. This is where most candidates are weak, and it is what a risk manager is actually paid for. Set LIMITS on stressed losses, not just on VaR — many desks run within VaR limits while carrying enormous scenario exposure. Feed it into CAPITAL PLANNING: does the firm remain above its minimum ratios? Identify CONCENTRATIONS: if one scenario dominates the loss, that is your real exposure regardless of what the diversified VaR says. And write CONTINGENCY PLANS — which positions get cut, in what order, and are they liquid enough to cut at all in that scenario. A stress number with no linked management action is a reporting exercise, not risk management.",
+      "technique": "Scenario coherence and linking results to action",
+      "difficultyRationale": "Medium: open-ended, and the 'what do you do with it' half is what separates answers."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the difference between trading liquidity risk and funding liquidity risk?",
+      "options": [
+        "Trading liquidity is being unable to exit a position at the marked price; funding liquidity is being unable to meet cash obligations",
+        "They are two names for the same risk",
+        "Trading liquidity applies to equities, funding liquidity to bonds",
+        "Trading liquidity is short-term, funding liquidity is long-term"
+      ],
+      "correctOption": 0,
+      "explanation": "Two genuinely distinct risks. TRADING (or market) liquidity risk is about the asset: you hold something whose marked price assumes a liquid market, and in stress the bid-ask widens or the bid disappears, so realising the position costs far more than the mark. LTCM is the canonical failure. FUNDING liquidity risk is about the balance sheet: obligations come due — deposit withdrawals, maturing wholesale funding, margin calls — and you cannot meet them, regardless of whether you are solvent on paper. Northern Rock and Lehman are the canonical failures. The connection is what makes both dangerous: a funding shortfall forces asset sales, which in an illiquid market realises losses, which worsens solvency and tightens funding further. That spiral is the liquidity black hole, and it is why firms that were solvent by every accounting measure still failed within days.",
+      "technique": "Asset-side versus liability-side liquidity",
+      "difficultyRationale": "Easy: definitional, and naming the historical examples anchors it."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you adjust VaR for liquidity, and what does that fail to capture?",
+      "canonicalAnswer": "Add the cost of unwinding: roughly half the proportional bid-ask spread times position value, summed across positions, and use a stressed spread rather than an average one. It fails to capture that the exit horizon itself lengthens in stress — which is what FRTB's liquidity horizons address.",
+      "explanation": "THE ADJUSTMENT. The cost of liquidating position i is about half the proportional bid-ask spread times its value: cost = (1/2) * sum over i of s_i * alpha_i. Liquidity-adjusted VaR is ordinary VaR plus that cost. Because spreads WIDEN in stress and you care about the stressed case, a better version replaces s_i with mu_i + lambda*sigma_i, where mu and sigma are the mean and standard deviation of the spread and lambda is a confidence multiplier — so the adjustment is itself a quantile rather than an average. WHAT IT MISSES, which is the more important half of the answer. (1) The HORIZON assumption. Ordinary VaR says you can exit within 10 days at marked prices. In stress you cannot, and no spread adjustment fixes a horizon that is simply wrong. FRTB's response was risk-factor-specific liquidity horizons of 10 to 120 days, replacing the blanket assumption. (2) POSITION SIZE relative to average daily volume. A position representing 20 days of ADV cannot be exited in 10 days at anything like screen prices, and the spread on a normal-sized trade tells you nothing about the price of exiting size. (3) ENDOGENEITY. Your own selling moves the price, and if others hold the same position and are forced out at the same time, the market impact is far larger than any historical spread suggests. Crowded trades are the real risk, and by construction the historical data does not contain the event. (4) Spreads are not additive across a portfolio in the way the formula assumes if you would liquidate strategically rather than proportionally.",
+      "technique": "Spread-based liquidity adjustment and its limits",
+      "difficultyRationale": "Medium: the formula is quick; the list of what it misses is what makes it a risk-manager's answer."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a liquidity black hole, and why do markets sometimes become one-way?",
+      "canonicalAnswer": "A self-reinforcing spiral: falling prices trigger margin calls and risk limits, which force selling, which pushes prices lower. It happens because in stress the market is dominated by positive-feedback traders — stop-losses, dynamic hedgers, and leveraged funds facing margin calls — who all sell into declines by construction.",
+      "explanation": "THE MECHANISM. Normal markets are stabilised by NEGATIVE-feedback traders: value investors who buy when prices fall. A black hole occurs when POSITIVE-feedback traders dominate — participants who are compelled to sell as prices fall: stop-loss orders; dynamic hedgers replicating a short put position (delta hedging a short option requires selling as the market falls); leveraged funds hit by margin calls; risk systems where a VaR limit breach mandates position reduction; and portfolio insurers. Each is behaving rationally, and several are behaving as mandated by their own risk framework — which is the uncomfortable part. But collectively their selling is a function of the price fall itself, so the fall feeds on itself and liquidity vanishes exactly when it is needed. HISTORICAL EXAMPLES worth citing: October 1987, where portfolio insurance mechanically sold into the decline; LTCM in 1998, where the market knew the positions and front-ran the unwind; 2008; and the 2022 gilt/LDI episode, where collateral calls on leveraged liability-driven investment funds forced gilt sales that raised yields that triggered more collateral calls. THE IMPLICATIONS FOR RISK MANAGEMENT. (1) Correlations converge to 1 because the selling is funding-driven, not fundamental — it hits everything the seller owns. (2) CROWDED TRADES are dangerous even when each participant is individually well hedged, because everyone's exit is the same door. Knowing who else holds your position, and how leveraged they are, is genuine risk information. (3) A risk limit that mandates selling in a falling market makes you part of the mechanism, which is an argument for limits that are graduated rather than binary.",
+      "technique": "Positive-feedback dynamics and endogenous liquidity",
+      "difficultyRationale": "Medium: the mechanism is the content, and naming the participant types is what makes it concrete."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Black–Scholes rests on assumptions that are all demonstrably false. Why is it still used?",
+      "canonicalAnswer": "Because for standard options it is not being used as a model of reality — it is a QUOTING CONVENTION. It provides a smooth, monotonic, invertible map between price and implied volatility, so traders can quote and compare options in vol terms. The market prices the option; the formula just translates.",
+      "explanation": "THE KEY DISTINCTION is what the model is being used FOR. For LIQUID STANDARD options, the market determines the price. Black-Scholes is used to convert that price into an implied volatility, which is a far more useful coordinate: it is comparable across strikes and maturities, it changes slowly, and it makes relative value visible. Everyone knows the assumptions are false, and the volatility SMILE is the visible evidence — if the model were true the plot would be flat. So the model is a communication device, and the smile is where the real information lives. Nobody is fooled. For EXOTIC or ILLIQUID products the situation is completely different: there is no market price to invert, so the model genuinely determines the value, and model risk is severe. Two desks can hold the same barrier option at materially different marks depending on their vol model, and the P&L is whatever the model says. That is where validation effort should concentrate. THE GENERAL PRINCIPLE, worth stating: model risk is not proportional to a model's complexity, it is proportional to how much the model is DECIDING rather than translating. Linear products (swaps, forwards) are priced by no-arbitrage from observables and carry little model risk. Standard options carry little because the market sets the price. Exotics carry a lot. A related caution is that the model can change the market it describes — the pronounced equity skew appeared only after 1987, once everyone had adopted Black-Scholes and learned what it missed.",
+      "technique": "Models as quoting conventions versus models as price-setters",
+      "difficultyRationale": "Medium: the insight is that model risk depends on the use, not the model."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is the single most useful daily diagnostic for detecting that a pricing model is missing a risk factor?",
+      "options": [
+        "P&L attribution — explaining daily P&L by the Greeks and examining the unexplained residual",
+        "Recalibrating the model to today's market prices",
+        "Comparing the model's price to a competitor's quote",
+        "Checking that the code compiles without warnings"
+      ],
+      "correctOption": 0,
+      "explanation": "P&L attribution. Each day, predict the P&L from the position's Greeks and the observed market moves, then compare with the actual P&L. If the model captures all material risk factors the residual should be small and unbiased. A large or persistently-signed unexplained residual is the clearest evidence that something is moving your book that your model does not see — a missing basis, a skew dimension, a correlation, or a stale curve. It works because it uses EVERY day and the whole distribution, unlike backtesting which only counts tail exceptions and so has very low statistical power. This is precisely why FRTB made P&L attribution a formal desk-level test. Note the trap in the second option: recalibrating to today's prices always improves fit and tells you nothing about whether the model is right — a model with enough parameters can fit anything, including the noise, and a perfect calibration is not validation.",
+      "technique": "Unexplained P&L as the primary model-failure signal",
+      "difficultyRationale": "Medium: the answer is clear once stated, and the calibration-is-not-validation trap is real."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you quantify model risk for an exotic derivatives book?",
+      "canonicalAnswer": "Reprice under plausible alternative models and calibrations. The spread of values IS your model risk, and it is what a model reserve should be sized against. Supplement with parameter stress, benchmarking against an independently-built model, and limits on how much of the book is marked to model.",
+      "explanation": "THE CORE TECHNIQUE. Take the same trade and price it under several defensible alternatives — a local vol model, a stochastic vol model, a jump-diffusion, and the same model calibrated to different but equally reasonable instrument sets. The DISPERSION of the resulting values is a direct, quantitative measure of model risk, and it is the natural basis for a model reserve or a prudent valuation adjustment. If a barrier option prices at 100 under one model and 115 under another, and both calibrate equally well to the liquid market, then 15 is the honest measure of what you do not know. SUPPLEMENTS. (1) PARAMETER STRESS — hold the model fixed and vary the inputs across their plausible range, especially correlation, which is usually the weakest input and moves most in stress. (2) INDEPENDENT BENCHMARK — a second implementation built by a different team using a different method; agreement is meaningful, disagreement locates the problem. (3) HEDGE SIMULATION — run the model's own hedging strategy through historical or simulated paths and see what P&L variance it leaves. A model that prices well but hedges badly is still a problem, and this catches it. (4) GOVERNANCE limits — cap the fraction of the book that is marked to model rather than to market, and tier models by materiality so validation effort goes where the exposure is. WHAT TO SAY LAST: model risk cannot be eliminated, so the goal is to size it, reserve against it, and know which trades are driving it. And validation is not verification — checking the code is correct is necessary but says nothing about whether the model is fit for the purpose it is actually being used for, which is the point of SR 11-7.",
+      "technique": "Sizing model risk by dispersion across defensible alternatives",
+      "difficultyRationale": "Medium: the reprice-under-alternatives idea is the core, and hedge simulation is the sophisticated extra."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What are marginal, incremental and component VaR, and how does Euler's theorem relate them?",
+      "canonicalAnswer": "Marginal VaR is the derivative of VaR with respect to a position size. Incremental VaR is the change in VaR from removing a position entirely. Component VaR is position size times marginal VaR, and by Euler's theorem the component VaRs sum exactly to total VaR — which is what makes risk attribution possible.",
+      "explanation": "DEFINITIONS. MARGINAL VaR is dVaR/dx_i, the sensitivity of portfolio VaR to a small increase in position i. INCREMENTAL VaR is the actual change in VaR if you removed position i completely — a discrete change, so it is not simply marginal VaR times the position, and for a large position the two differ materially. COMPONENT VaR is x_i * (dVaR/dx_i), the position's attributed share. EULER'S THEOREM is what makes this work. VaR is homogeneous of degree 1 in the position sizes — double every position and VaR doubles — and Euler's theorem says that for such a function, the sum of x_i times the partial derivatives equals the function itself. So the component VaRs sum EXACTLY to total VaR, with no residual and no arbitrary allocation. That is a genuinely useful property: it lets you decompose a single portfolio number into per-desk or per-asset contributions that add up, which is the basis of internal capital allocation and of risk-adjusted performance measurement. PRACTICAL NOTES. Component VaR can be NEGATIVE, for a position that hedges the rest of the book — and that is the correct signal, since adding more of it reduces portfolio risk. Under the variance-covariance approach marginal VaR has a clean closed form, proportional to the covariance of the position with the portfolio, which is why banks use the model-building approach for ATTRIBUTION even when the headline number comes from historical simulation. And note component VaR tells you about MARGINAL changes; it does not tell you what happens if you liquidate a large position, which is incremental VaR's job.",
+      "technique": "Euler allocation of a homogeneous risk measure",
+      "difficultyRationale": "Hard: the homogeneity argument is the crux, and the three measures are easy to conflate."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Two desks each have a 99% VaR of £10m. What is the VaR of the combined book?",
+      "options": [
+        "Between 0 and £20m, depending on the correlation — and it can occasionally exceed £20m",
+        "Exactly £20m",
+        "At most £20m, always",
+        "£14.1m, since variances add"
+      ],
+      "correctOption": 0,
+      "explanation": "Usually between 0 and £20m, driven by the correlation — perfectly correlated gives £20m, uncorrelated gives about £14.1m if returns are normal, and a perfect hedge gives 0. But 'at most £20m, always' is WRONG, and that is the point of the question: VaR is not subadditive, so the combined VaR can exceed the sum of the parts. The standard counterexample is two independent defaultable bonds each defaulting with probability 4% and losing £100: individually the 95% VaR of each is 0, but together the chance of at least one default is 7.84% > 5%, so the portfolio's 95% VaR is £100 > 0 + 0. That failure is why VaR is not a coherent risk measure and why desk-level limits can all be satisfied while the aggregate breaches — and it is the main reason FRTB moved to Expected Shortfall, which IS subadditive. The £14.1m figure assumes zero correlation AND normality; both would need stating.",
+      "technique": "Non-subadditivity of VaR",
+      "difficultyRationale": "Medium: the range is easy, and knowing the 'at most the sum' claim is false is the discriminator."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Hull's power law says P(v > x) = K*x^(-alpha) for large x. For daily equity index returns, roughly what is alpha, and what does it imply?",
+      "options": [
+        "About 3 — so the fourth moment does not exist and kurtosis estimates are unstable",
+        "About 1 — so the mean does not exist",
+        "About 10 — so the distribution is effectively normal",
+        "About 0.5 — so the variance is infinite"
+      ],
+      "correctOption": 0,
+      "explanation": "Around 3 for daily equity index returns. Since moments of order alpha and above do not exist for a power-law tail, alpha ≈ 3 means the third moment barely exists and the FOURTH does not — so sample kurtosis is not estimating anything stable, and adding more data makes it wander rather than converge. That is a concrete reason to distrust reported kurtosis from financial data. It also means the variance DOES exist (alpha > 2), so the central limit theorem still applies and VaR aggregation is not hopeless — but convergence is slow in the tails, which is exactly where you need it. Contrast alpha < 2, which would mean infinite variance and would break most of standard risk modelling. The practical use of the power law is extrapolation: fit alpha from the observable tail and use it to estimate quantiles beyond your data, which is the same job EVT does with xi = 1/alpha.",
+      "technique": "The power law exponent and which moments exist",
+      "difficultyRationale": "Medium: the number is recall, and the moment-existence consequence is the substance."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you estimate GARCH(1,1) parameters, and how do you use the fitted model to forecast volatility 10 days ahead?",
+      "canonicalAnswer": "Fit by maximum likelihood, maximising the sum of -ln(v_i) - u_i^2/v_i over the sample. To forecast, use E[sigma^2_(n+k)] = V_L + (alpha+beta)^k * (sigma^2_n - V_L), where V_L = omega/(1-alpha-beta) is the long-run variance.",
+      "explanation": "ESTIMATION. Assume the standardised residuals are normal. The log-likelihood for observation i is proportional to -ln(v_i) - u_i^2/v_i, where v_i is the variance predicted by the model for day i and u_i is the observed return. Sum over the sample and maximise over omega, alpha and beta numerically — the recursion makes v_i depend on all previous observations, so there is no closed form. Constraints: omega > 0, alpha and beta >= 0 for positivity, and alpha + beta < 1 for stationarity. Typical daily equity estimates are alpha ≈ 0.05-0.10, beta ≈ 0.85-0.90. FORECASTING. The long-run variance is V_L = omega/(1 - alpha - beta). The k-step-ahead expected variance is E[sigma^2_(n+k)] = V_L + (alpha + beta)^k * (sigma^2_n - V_L). Read it as exponential decay from today's variance toward the long-run level, at rate (alpha+beta) per day. With alpha + beta = 0.95 the half-life is ln(2)/ln(1/0.95) ≈ 13.5 days, so volatility shocks persist for weeks but do eventually fade. For a 10-day VaR you want the variance of the 10-day RETURN, which is the SUM of the daily forecast variances over the next 10 days — not 10 times today's variance, and not today's variance times sqrt(10). That distinction is the practical payoff of fitting GARCH: after a shock, naive sqrt(t) scaling overstates the 10-day risk because it ignores mean reversion, and in calm periods it understates it. Contrast EWMA, which has no V_L and so forecasts today's variance forever at every horizon.",
+      "technique": "Maximum likelihood fitting and the mean-reverting variance forecast",
+      "difficultyRationale": "Hard: the forecast formula and the summing-not-scaling point are both easy to get wrong."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A stress scenario shocks equities down 30% but leaves implied volatility and credit spreads unchanged. What is wrong with it?",
+      "options": [
+        "It is not internally consistent — in any real equity crash vol spikes and credit widens",
+        "The shock is not severe enough",
+        "It should use a historical scenario instead",
+        "Nothing — holding other factors fixed isolates the equity risk"
+      ],
+      "correctOption": 0,
+      "explanation": "It is internally inconsistent, and that makes the loss number meaningless for a multi-asset book. In every historical equity crash, implied volatility has spiked (VIX above 40 in 2008 and 2020), credit spreads have widened sharply, correlations have converged toward 1, and there has typically been a flight to quality in government bonds. A scenario that moves one factor and freezes the rest is a SENSITIVITY, not a scenario — useful for understanding one exposure, useless for estimating what you would actually lose. The fix is to derive the co-movements from a stressed covariance matrix (the conditional expectation of the other factors given the equity shock) or to have a risk committee specify a coherent set. Note the trap in the last option: isolating one factor is a legitimate exercise, it just should not be called a stress test or used for capital planning.",
+      "technique": "Internal consistency of a multi-asset scenario",
+      "difficultyRationale": "Easy: the flaw is clear once you ask what else moves in a crash."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your VaR is £40m and a 2008-repeat scenario loses £400m. Management asks which number to believe. What do you say?",
+      "canonicalAnswer": "Both, because they answer different questions. VaR describes ordinary days under recent conditions; the scenario describes a specific bad day with no probability attached. The reconciliation is to assign a subjective probability to the scenario and splice it onto the VaR loss distribution so you have one coherent distribution.",
+      "explanation": "Start by refusing the framing: they are not competing estimates of the same quantity. VaR says 'on 1% of ORDINARY days, calibrated to the last two years, we lose more than £40m'. The scenario says 'IF 2008 repeated, we lose £400m' — conditional, with no probability. A tenfold gap is not evidence that one is wrong; it is the expected relationship between a body-of-distribution measure and a tail scenario. WHAT TO DO. (1) Assign a subjective probability to the scenario — say 1 in 25 years, roughly 0.016% of days — and splice it onto the VaR distribution. That gives a single loss distribution and lets you compute a coherent 99.9% number, which is what capital planning needs. (2) Set limits on BOTH: a VaR limit governs day-to-day risk-taking, a stressed-loss limit governs survival. Many desks sit comfortably within VaR while carrying scenario exposure that would be fatal. (3) Ask the operational question the numbers are proxies for: at £400m, do we remain above our capital minimum, and could we actually exit these positions in that market? If the answer to either is no, the scenario is the number that matters and the VaR is a distraction. THE HONEST SUMMARY for management: VaR is for managing the business, stress is for surviving it.",
+      "technique": "Reconciling probabilistic and conditional risk measures",
+      "difficultyRationale": "Medium: the reconciliation and the two-limit structure are what make it useful."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In CCAR-style regulatory stress tests, what makes them consequential rather than a reporting exercise?",
+      "options": [
+        "Results constrain capital distributions — a weak result can block dividends and buybacks",
+        "They replace the bank's internal VaR model",
+        "They are published in full including position detail",
+        "Failure results in immediate loss of the banking licence"
+      ],
+      "correctOption": 0,
+      "explanation": "The capital-distribution link is what gives them teeth. Under CCAR the Federal Reserve projects a bank's capital ratios through supervisor-defined macro scenarios, and a bank whose projected ratios fall below minimums cannot make the capital distributions it planned — dividends and buybacks get cut. That turns the exercise into a binding constraint on business decisions, so banks manage their portfolios with the stress scenarios in mind all year rather than only at submission. It also means the scenarios shape behaviour: a supervisor emphasising commercial real estate will see banks reduce that exposure. The other options overstate it — internal models continue for other purposes, only summary results are published, and failure is a capital-planning restriction rather than licence revocation.",
+      "technique": "Why regulatory stress tests change behaviour",
+      "difficultyRationale": "Medium: the capital-distribution mechanism is the specific answer."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Basel III's LCR requires high-quality liquid assets to cover what?",
+      "options": [
+        "Net cash outflows over a 30-day stress period",
+        "All liabilities maturing within one year",
+        "The bank's total deposit base",
+        "Expected losses over a 12-month horizon"
+      ],
+      "correctOption": 0,
+      "explanation": "30 days of stressed net cash outflows. The LCR asks: if funding markets shut and depositors ran, could the bank survive a month on its own liquid assets while a resolution is arranged? HQLA is tiered — Level 1 (cash, central bank reserves, high-grade sovereigns) counts at full value, Level 2 assets take haircuts and are capped as a share of the buffer. The outflow side applies assumed run-off rates by funding type: retail deposits run slowly, uninsured wholesale funding runs fast. Its companion is the NSFR, which works over a ONE-YEAR horizon and requires available stable funding to cover required stable funding — LCR is about surviving an acute shock, NSFR about not being structurally dependent on short-term funding in the first place. Both came directly from 2008, where firms with adequate capital failed on liquidity within days.",
+      "technique": "The LCR's horizon and purpose",
+      "difficultyRationale": "Medium: the 30-day horizon and the LCR/NSFR contrast are the content."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A fund holds a position equal to 20 days of average daily volume and reports a 10-day VaR. What is wrong?",
+      "canonicalAnswer": "The VaR assumes the position can be exited within 10 days at marked prices, which is impossible — liquidating 20 days of ADV inside 10 days would move the price substantially. The reported VaR understates the true risk, and the error grows in stress when volume dries up.",
+      "explanation": "VaR is defined over a holding period during which you are assumed able to exit. If the position is 20 days of ADV, then exiting inside 10 days means taking roughly 200% of normal daily volume every day — which no market absorbs without significant price impact. So the 10-day VaR is measuring a liquidation that cannot happen. THE ERROR COMPOUNDS in stress: volume typically FALLS in a crisis while spreads widen, so a position that is 20 days of ADV in normal conditions may be 60 days in stressed conditions. And if the position is crowded — other funds hold it and face the same constraint — everyone exits through the same door and the realised impact far exceeds anything in the historical spread data. WHAT TO DO. (1) Set the horizon by the position's actual liquidation profile, not by convention. FRTB does exactly this with risk-factor-specific liquidity horizons of 10 to 120 days. (2) Add a liquidation cost to the VaR, using a STRESSED bid-ask spread rather than an average one. (3) Monitor days-of-ADV as a limit in its own right — it is a more honest constraint than VaR for illiquid books, and it is the metric that would have flagged LTCM and Amaranth. (4) Recognise that a market-impact model built on normal-market data will understate stressed impact, so treat any such adjustment as a floor.",
+      "technique": "Position size versus liquidation horizon",
+      "difficultyRationale": "Medium: the ADV-versus-horizon mismatch is the core, and the crowding point is the depth."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What is the difference between model validation and model verification?",
+      "options": [
+        "Validation asks whether it is the right model for the purpose; verification asks whether the code implements it correctly",
+        "They are the same activity under different regulatory names",
+        "Validation is done annually, verification daily",
+        "Validation applies to pricing models, verification to risk models"
+      ],
+      "correctOption": 0,
+      "explanation": "Verification is 'did we build the model right' — does the code correctly implement the intended mathematics, are the numerics stable, does it reproduce known analytic cases. Validation is 'did we build the right model' — is this specification appropriate for the products and market conditions it is actually used for, are its assumptions defensible, and what are its limitations. A model can pass verification perfectly and still be badly wrong: flawless code implementing an inappropriate model is the more dangerous failure, because it produces confident, self-consistent, incorrect numbers. Validation is the harder and more valuable activity, and it is the emphasis of the Fed's SR 11-7 — which also insists validation must be performed independently of the model's developers, and repeated when the model is applied to new products or new regimes.",
+      "technique": "Building the right model versus building the model right",
+      "difficultyRationale": "Medium: the distinction is crisp and commonly muddled."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A trading desk consistently reports profits above what its risk profile suggests, with no obvious explanation. What would you investigate?",
+      "canonicalAnswer": "Most likely a marking or model problem rather than skill: marks that drift from realisable prices, day-one P&L recognition on illiquid trades, an unhedged risk being harvested without being measured, or a model that systematically values one side of a trade favourably.",
+      "explanation": "Sustained unexplained profit is a risk signal, not a good-news story. WHAT TO CHECK, roughly in order. (1) MARKING. Are positions marked to market or to model? For illiquid products the P&L is whatever the model says, so a model biased high produces steady phantom profit until the position is closed. Compare marks against any observable third-party quotes, recent trades, and collateral disputes with counterparties — a persistent pattern of disputes in one direction is a strong tell. (2) DAY-ONE P&L. Is the desk recognising profit at inception on trades where the model price differs from the traded price? That is booking the model's opinion as revenue. (3) UNMEASURED RISK. The most common benign-looking explanation: the desk is genuinely earning a premium for bearing a risk the risk system does not capture — selling deep out-of-the-money options, a basis, a liquidity premium, or gap risk. The returns look like alpha until the risk materialises. P&L attribution is the direct test: if the Greeks do not explain the P&L, something unmeasured is generating it. (4) RESERVES. Are bid-offer, model and liquidity reserves being taken and released appropriately, or is reserve release flattering the numbers? (5) The structural point: profit should be explainable by exposures taken. 'We do not know where it comes from' is the same statement as 'we do not know what risk we are running'. Historically this pattern preceded a large share of trading blow-ups, which is why independent price verification exists as a separate function from the desk.",
+      "technique": "Unexplained profit as a model and marking red flag",
+      "difficultyRationale": "Medium: open-ended, and the ranking of causes is what shows judgement."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Why did FRTB choose Expected Shortfall at 97.5% rather than 99%?",
+      "options": [
+        "So that under a normal distribution it roughly matches the familiar 99% VaR calibration",
+        "Because 97.5% is easier to backtest",
+        "To reduce capital requirements",
+        "Because ES is undefined above 97.5%"
+      ],
+      "correctOption": 0,
+      "explanation": "Calibration continuity. For a normal distribution, the 97.5% Expected Shortfall is approximately equal to the 99% VaR — so the switch changes the PROPERTY being measured (subadditive, tail-sensitive) without a discontinuous jump in the level of capital. That let the industry adopt ES without recalibrating everything from scratch. Note the equivalence only holds under normality; for a fat-tailed distribution, 97.5% ES exceeds 99% VaR, which is the intended effect — books with genuine tail risk are charged more, while books whose returns really are near-normal see little change. The second option is backwards: ES is HARDER to backtest than VaR, since it is a conditional expectation over rare events rather than a simple exception count, and that difficulty was the main argument against the change.",
+      "technique": "Why 97.5% ES was the chosen level",
+      "difficultyRationale": "Medium: the normality equivalence is the specific reason."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What are non-modellable risk factors under FRTB, and why were they introduced?",
+      "canonicalAnswer": "Risk factors without enough real, observable transaction prices to calibrate a model — fewer than 24 observations a year, or a gap over a month. They get a punitive stressed capital add-on instead of internal-model treatment, which removes the incentive to model things you cannot actually observe.",
+      "explanation": "THE TEST. A risk factor is modellable only if it passes a real-price observability test: at least 24 observable transactions or committed quotes in the past year, with no 90-day gap containing fewer than 4. Fail it and the factor is non-modellable (an NMRF) and attracts a separate stressed capital add-on, calibrated to a stress period, that is NOT diversifiable against the rest of the book in the way modelled risks are. WHY. Pre-FRTB, banks could include almost any risk factor in an internal model, calibrating illiquid or interpolated factors from proxy data or from the model's own output. That produced capital numbers with a spurious precision — the model appeared to measure a risk whose behaviour nobody had actually observed, and diversification benefit was being claimed against factors that were essentially made up. The NMRF regime says: if you cannot observe it, you do not get to model it, and you will hold capital as if it were stressed. THE CONSEQUENCE, which is the interesting part and worth volunteering: NMRFs turned out to be a large share of total FRTB capital for exotic and structured desks, often dominating the modelled component. That has driven real business decisions — desks simplifying products, pooling data through industry utilities to establish observability, or exiting where the capital cannot be justified. It is a good example of a capital rule reshaping what banks trade rather than just how they measure it.",
+      "technique": "The observability test and its business consequences",
+      "difficultyRationale": "Medium: the test is technical, and the effect on product choice is the depth."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Under the variance-covariance approach, marginal VaR for position i is proportional to which quantity?",
+      "options": [
+        "The covariance of position i's returns with the portfolio's returns",
+        "The variance of position i's returns",
+        "Position i's weight in the portfolio",
+        "The correlation between position i and the largest position"
+      ],
+      "correctOption": 0,
+      "explanation": "The COVARIANCE with the portfolio, not the position's own variance. Differentiating VaR = z*sqrt(a'*Sigma*a) with respect to a_i gives z*(Sigma*a)_i / sigma_P, and (Sigma*a)_i is exactly the covariance of asset i with the portfolio. The consequence is the important part: a highly volatile position that is uncorrelated with the rest of the book has SMALL marginal VaR, while a modest position correlated with everything else can have large marginal VaR. Risk contribution is about how a position interacts with what you already hold, not about how volatile it is standalone — which is the same logic as beta in CAPM. Marginal VaR can also be NEGATIVE for a genuine hedge, correctly signalling that adding more reduces portfolio risk. This closed form is why banks use the model-building approach for attribution even when the headline VaR comes from historical simulation.",
+      "technique": "Marginal VaR as a covariance",
+      "difficultyRationale": "Medium: the natural guess is own-variance, and the covariance answer is the insight."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your model-building VaR assumes normally distributed returns, but daily equity returns have kurtosis around 6. What does this do to your 99% VaR, and how would you fix it?",
+      "canonicalAnswer": "It understates it — a fat-tailed distribution puts more mass beyond 2.33 standard deviations than the normal does, so the true 1% quantile sits further out. Fix it by using a t-distribution, a Cornish-Fisher adjustment for the higher moments, a mixture of normals, or by switching to historical simulation.",
+      "explanation": "THE EFFECT. The normal's 99% one-tailed point is 2.33 standard deviations. For a distribution with kurtosis 6 against the normal's 3, more probability sits in the tails, so the true 1% quantile is further out — commonly 2.6 to 3.0 standard deviations for daily equity returns. Your VaR is therefore understated, typically by 10-25%, and the understatement GROWS as you move further into the tail: a 99.9% VaR under a normal assumption can be wrong by a factor approaching two. That is the wrong direction to be wrong in. THE FIXES, in increasing order of effort. (1) STUDENT-T with the degrees of freedom fitted to the observed kurtosis — cheap, keeps the analytic tractability, and captures most of the effect. (2) CORNISH-FISHER expansion, which adjusts the normal quantile using the sample skewness and kurtosis directly: q ≈ z + (z^2-1)*S/6 + (z^3-3z)*(K-3)/24. Works well for moderate departures and degrades for extreme ones. (3) A MIXTURE OF NORMALS — a calm regime and a stressed regime with different variances — which produces excess kurtosis naturally and has an appealing interpretation. (4) Abandon the parametric route for HISTORICAL SIMULATION, which captures whatever fat tails occurred, or EVT for the far tail specifically. THE DEEPER POINT worth making: much of the observed kurtosis comes from volatility CLUSTERING rather than from fat conditional tails. Standardise returns by a GARCH volatility estimate and the residuals are much closer to normal. So modelling the volatility dynamics properly fixes a large part of the fat-tail problem without changing the distributional assumption at all.",
+      "technique": "Fat tails and the parametric VaR understatement",
+      "difficultyRationale": "Medium: the direction is easy; the GARCH-standardisation point is what distinguishes it."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A book is hedged against the first three principal components of the yield curve. What risk remains?",
+      "options": [
+        "Residual higher-order curve moves, plus basis, convexity and volatility risk",
+        "None — three factors explain 100% of curve variation",
+        "Only credit risk",
+        "Only the risk of a parallel shift"
+      ],
+      "correctOption": 0,
+      "explanation": "Three factors typically explain 90-99% of yield-curve variance, not all of it, so higher-order shape changes remain — and they can matter for a book deliberately positioned in the belly or wings. Beyond that: BASIS risk between the curve you hedged and the instruments you actually hold (swap versus government, or one tenor basis versus another); CONVEXITY, since PCA hedging is a first-order construction that leaves gamma unhedged; VEGA, if the book contains caps, floors, swaptions or embedded optionality; and the fact that the PCA loadings are ESTIMATED from a historical window, so they shift over time and can change materially in a regime break. The last is the subtle one: your hedge is calibrated to a covariance structure that stress can invalidate, so a PCA hedge is at its weakest exactly when you most need it.",
+      "technique": "Residual risk after a factor hedge",
+      "difficultyRationale": "Medium: 'none' is tempting given how much variance the three factors explain."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Why is initial margin described as procyclical, and what is done about it?",
+      "options": [
+        "It rises when volatility spikes, draining liquidity exactly when funding is hardest; mitigated by floors, buffers and stressed-period calibration",
+        "It falls in a crisis, leaving CCPs undercollateralised",
+        "It is fixed by regulation and does not vary",
+        "It only applies during business cycle expansions"
+      ],
+      "correctOption": 0,
+      "explanation": "IM models are calibrated on recent volatility, so a market shock raises margin requirements sharply — and the call arrives precisely when members are already losing money, facing variation margin outflows, and finding funding markets tight. That turns a market shock into a funding shock and can force liquidation, which moves prices further. The 2020 COVID margin spike and the 2022 gilt/LDI episode are the recent illustrations. MITIGANTS, all of which trade responsiveness against stability: floors on margin rates so they cannot fall too far in calm periods; explicit anti-procyclicality buffers that are built up in calm times and released in stress; calibrating on a lookback window that always includes a stressed period, so the model does not forget 2008; and capping the speed at which requirements can rise. The tension is genuine and unresolved — a margin model that responds slowly is undercollateralised in a fast-moving crisis, and one that responds quickly amplifies it.",
+      "technique": "Margin procyclicality and its mitigants",
+      "difficultyRationale": "Medium: the mechanism is the answer, and naming the mitigants shows practical familiarity."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Sklar's theorem says any joint distribution can be written as a copula applied to its marginals. Why does that matter practically?",
+      "options": [
+        "It guarantees you lose nothing by modelling marginals and dependence separately",
+        "It proves all copulas are Gaussian",
+        "It means correlation fully determines the joint distribution",
+        "It only applies when the marginals are normal"
+      ],
+      "correctOption": 0,
+      "explanation": "Sklar's theorem guarantees the decomposition is fully general: for any joint distribution there exists a copula reproducing it exactly from the marginals, and if the marginals are continuous that copula is unique. So splitting the modelling problem in two — fit each marginal however you like, then choose a dependence structure — costs you no generality at all. That is the licence to fit fat-tailed or empirical marginals and still use a tractable dependence model, which is the whole practical appeal. It also makes clear what a correlation number does NOT do: many different copulas are consistent with the same correlation and behave completely differently in the tails, so correlation alone never determines the joint distribution unless you have separately assumed joint normality.",
+      "technique": "Sklar's theorem as the licence to separate the two problems",
+      "difficultyRationale": "Medium: the theorem is recall, and the 'no generality lost' reading is the point."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your risk model uses a correlation matrix estimated over the last two years. What happens to it in a crisis, and how would you handle that?",
+      "canonicalAnswer": "Correlations converge toward 1, so measured diversification disappears exactly when it was supposed to protect you. Handle it by stressing the correlation matrix directly, using a tail-dependent copula, or calibrating a second matrix to a stressed period.",
+      "explanation": "WHY IT HAPPENS. In normal markets, asset prices are driven largely by idiosyncratic news, so correlations are moderate. In a crisis the dominant driver becomes a single common factor — deleveraging, funding stress, a flight to quality — so everything moves together regardless of fundamentals. Selling is driven by margin calls and risk limits, not by views on individual assets, so it hits the whole portfolio at once. Empirically, equity cross-correlations that sit around 0.3 in calm periods routinely exceed 0.8 in stress. THE CONSEQUENCE for the model: portfolio variance is a'*Sigma*a, and raising the off-diagonals raises it sharply for a long-only book. A model calibrated on calm data understates portfolio risk by the most precisely when the loss occurs — the diversification benefit it credited you with evaporates. HOW TO HANDLE IT. (1) STRESS THE MATRIX explicitly: recompute VaR with correlations shifted toward 1, or with a matrix estimated from a stressed window, and treat the difference as correlation risk. (2) Use a copula with TAIL DEPENDENCE (t-copula), which builds crisis co-movement into the model rather than bolting it on. (3) Keep a permanent STRESSED VaR calibrated to a crisis period — which is exactly what Basel II.5 mandated for this reason. (4) Recognise the limit of any of these: the correlation matrix is the least stable input in the model, so a risk framework that depends heavily on estimated diversification benefit is fragile by construction. Position limits and stress scenarios are more robust than a correlation-adjusted VaR.",
+      "technique": "Correlation instability across regimes",
+      "difficultyRationale": "Medium: the mechanism is well known; the ranked set of responses is what adds value."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In fitting a generalised Pareto distribution, what is the trade-off in choosing the threshold u?",
+      "options": [
+        "Too low and the GPD approximation is poor; too high and too few exceedances remain to fit",
+        "Too low and the fit is unstable; too high and the approximation is poor",
+        "There is no trade-off — always use the 99th percentile",
+        "The threshold only affects computation time"
+      ],
+      "correctOption": 0,
+      "explanation": "A bias-variance trade-off. The GPD limit theorem is asymptotic in the threshold, so a LOW threshold means the approximation has not kicked in and the fitted tail is biased. A HIGH threshold means few exceedances, so the two parameters are estimated from a handful of points and the estimates have large variance. Around the 95th percentile is a common starting point, giving perhaps 25 exceedances from 500 days — already uncomfortably few. The practical discipline is to fit across a RANGE of thresholds and check the parameter estimates are stable: if xi swings materially as you move the threshold, the choice is driving your answer and you should say so rather than report a single number. A mean-excess plot, which should be roughly linear above a valid threshold, is the standard diagnostic.",
+      "technique": "Bias-variance in threshold selection",
+      "difficultyRationale": "Medium: the direction of each error is what's being tested."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why should EVT be applied to volatility-standardised returns rather than raw returns?",
+      "canonicalAnswer": "Because EVT assumes the exceedances are independent, and volatility clustering violates that badly — extreme returns arrive in bursts. Standardising by a GARCH or EWMA volatility estimate removes most of the clustering, leaving residuals much closer to iid.",
+      "explanation": "THE ASSUMPTION. The GPD limit theorem, and the maximum-likelihood fit built on it, assume the threshold exceedances are independent draws. Raw financial returns badly violate this: volatility clusters, so extreme moves arrive in bursts. Fit EVT to raw returns and you effectively have far fewer independent observations than your exceedance count suggests, so the parameter standard errors are understated and the fit is dominated by whichever crisis happens to sit in your window. THE FIX, which is the standard two-stage approach. First fit a volatility model — GARCH(1,1) or EWMA — and compute standardised residuals r_t/sigma_t. Those residuals are much closer to iid: the clustering has been absorbed into sigma_t. Then fit the GPD to the residuals' tail. To get a VaR, take the fitted residual quantile and multiply back by TODAY's volatility forecast. THE PAYOFF is twofold. The EVT fit is statistically sound. And the resulting VaR is CONDITIONAL — it responds to the current volatility regime rather than reporting an unconditional long-run tail, which is what you want for a one-day risk number. This is McNeil and Frey's conditional EVT, and it is the standard implementation. Worth adding the honest caveat that the residuals are only approximately iid — GARCH does not remove all the dependence, and any remaining clustering still inflates your effective confidence.",
+      "technique": "Conditional EVT via volatility standardisation",
+      "difficultyRationale": "Hard: requires knowing EVT's independence assumption and the two-stage remedy."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Roughly what is the cost of unwinding a position, expressed via the bid-ask spread?",
+      "options": [
+        "Half the proportional spread times the position value",
+        "The full proportional spread times the position value",
+        "Twice the spread times the position value",
+        "The spread divided by the position value"
+      ],
+      "correctOption": 0,
+      "explanation": "About half the proportional spread times position value. You mark at mid but sell at the bid, so the cost of exiting is the distance from mid to bid, which is half the quoted spread. Summing across a portfolio gives cost = (1/2) * sum of s_i * alpha_i. Two refinements that matter for risk. Spreads WIDEN in stress, so for a liquidity-adjusted VaR you should use a high quantile of the spread — mu + lambda*sigma — rather than its average. And this formula prices exiting a NORMAL-SIZED trade: a position representing many days of average volume will move the market well beyond the quoted spread, so treat the number as a floor rather than an estimate for large positions.",
+      "technique": "The half-spread unwind cost",
+      "difficultyRationale": "Easy: one formula, with the stressed-spread refinement attached."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which type of product carries the most model risk?",
+      "options": [
+        "Illiquid exotics, where no market price exists so the model determines the value",
+        "Liquid vanilla options, because Black-Scholes assumptions are false",
+        "Interest rate swaps, because the curve construction is complex",
+        "Futures, because they are marked to market daily"
+      ],
+      "correctOption": 0,
+      "explanation": "Illiquid exotics. Model risk scales with how much the model is DECIDING rather than translating. Futures and swaps are priced by no-arbitrage from observable instruments, so the model is essentially bookkeeping — real curve-construction choices exist but the price is pinned by the market. Liquid vanilla options are priced BY the market, and Black-Scholes just converts that price into an implied vol; everyone knows the assumptions are false and the smile is the visible proof, so nobody is misled. For an illiquid exotic there is no observable price to anchor to, so the model output IS the value, it IS the P&L, and two desks can hold identical trades at materially different marks. That is where validation effort and model reserves belong.",
+      "technique": "Model risk scales with the model's decision-making role",
+      "difficultyRationale": "Easy: the ranking follows once you ask what sets the price."
     }
   ]
 }

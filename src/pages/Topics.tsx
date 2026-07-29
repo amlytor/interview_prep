@@ -31,6 +31,7 @@ const TIER_NAMES = [
   "Specialised",
   "Applied theory",
   "Frontier",
+  "Desk practice",
 ];
 
 interface TopicsProps {
