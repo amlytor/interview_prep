@@ -4,7 +4,7 @@
 // were added in v2 and have no v1 counterpart.
 //
 // TopicId is `KnownTopicId | (string & {})` rather than a closed union: the
-// union half keeps editor autocomplete for the 43 seeded ids, the `string`
+// union half keeps editor autocomplete for the 45 seeded ids, the `string`
 // half lets user-created topics carry runtime-generated slugs. Custom ids are
 // registered at load time so topicLabel() can render them.
 export type KnownTopicId =
@@ -50,7 +50,9 @@ export type KnownTopicId =
   | "stress-testing"
   | "liquidity-risk"
   | "model-risk"
-  | "risk-neutral-valuation";
+  | "risk-neutral-valuation"
+  | "black-scholes"
+  | "implied-volatility";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type TopicId = KnownTopicId | (string & {});
@@ -104,6 +106,8 @@ export const TOPICS: TopicInfo[] = [
   { id: "liquidity-risk", label: "Liquidity risk" },
   { id: "model-risk", label: "Model risk" },
   { id: "risk-neutral-valuation", label: "Risk-neutral vs real-world valuation" },
+  { id: "black-scholes", label: "Black-Scholes: derivation & assumptions" },
+  { id: "implied-volatility", label: "Implied volatility & the vol surface" },
 ];
 
 const SEED_LABEL_BY_ID = new Map<string, string>(TOPICS.map((t) => [t.id, t.label]));
@@ -122,7 +126,7 @@ export function registerCustomTopics(topics: TopicInfo[]): void {
   for (const t of topics) labelById.set(t.id, t.label);
 }
 
-/** The 43 seeded topics plus whatever the user has added, for pickers. */
+/** The 45 seeded topics plus whatever the user has added, for pickers. */
 export function allTopics(): TopicInfo[] {
   return [...TOPICS, ...customTopics];
 }
@@ -132,7 +136,7 @@ export function topicLabel(id: string): string {
   return labelById.get(id) ?? id;
 }
 
-/** True for one of the 43 seeded ids (not user-created ones). */
+/** True for one of the 45 seeded ids (not user-created ones). */
 export function isKnownTopicId(value: string): value is KnownTopicId {
   return SEED_LABEL_BY_ID.has(value);
 }

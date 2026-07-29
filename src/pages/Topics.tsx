@@ -29,9 +29,10 @@ const TIER_NAMES = [
   "Composite techniques",
   "Advanced",
   "Specialised",
-  "Applied theory",
-  "Frontier",
-  "Desk practice",
+  "Continuous-time theory", // risk-neutral valuation, Ito calculus
+  "Pricing models", // Black-Scholes
+  "Derivatives & the surface", // Greeks, implied vol
+  "Desk practice", // counterparty risk, margin, CCPs
 ];
 
 interface TopicsProps {

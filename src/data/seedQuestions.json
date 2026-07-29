@@ -4911,6 +4911,282 @@
       "explanation": "THE ASYMMETRY. For a diffusion with drift mu and volatility sigma observed over a period T with n samples: the standard error of the estimated mean return is sigma/sqrt(T), depending only on the calendar span. Sampling hourly instead of daily does not help at all — you get more observations, but each carries proportionally less information about the drift. To estimate an 8% equity drift with a 20% volatility to within one percentage point you need sigma^2/(0.01)^2 = 400 years of data. VOLATILITY IS THE OPPOSITE: its standard error is roughly sigma/sqrt(2n), which depends on the NUMBER of observations. Sample more frequently and the estimate improves without needing a longer history, which is why a few months of daily data gives a usable volatility and why high-frequency realised-volatility estimators work so well. THE CONSEQUENCES, which is what the question is after. (1) Risk models over short horizons sensibly ignore the drift — over a day it is negligible relative to volatility anyway, roughly 0.03% against 1%. (2) This is a deep reason why risk-neutral valuation is so useful: it removes the parameter you cannot estimate and keeps the one you can. (3) It is why any strategy or model whose output is sensitive to an estimated expected return should be treated with suspicion — mean-variance optimisation is notoriously unstable for exactly this reason, and constraining or shrinking the return estimates is not a hack but a necessity.",
       "technique": "Why drift estimation is calendar-limited and volatility is not",
       "difficultyRationale": "Medium: the sqrt(T)-versus-sqrt(n) distinction is the crux and is genuinely non-obvious."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Derive the Black–Scholes PDE. Where exactly does the stock's expected return disappear?",
+      "canonicalAnswer": "Form a portfolio short one option and long df/dS shares. Applying Ito, the dW terms cancel, so the portfolio is instantaneously riskless and must earn r. Setting dPi = r*Pi*dt gives df/dt + r*S*df/dS + (1/2)*sigma^2*S^2*d2f/dS2 = r*f. The drift mu cancels at the hedging step.",
+      "explanation": "STEP 1. Assume dS = mu*S*dt + sigma*S*dW. STEP 2. By Ito, df = (df/dt + mu*S*df/dS + (1/2)*sigma^2*S^2*d2f/dS2)dt + sigma*S*(df/dS)dW. STEP 3. Form Pi = -f + (df/dS)*S: short one option, long df/dS shares. Its change is dPi = -df + (df/dS)dS. Substituting, the dW term of df is sigma*S*(df/dS)dW and the dW term of (df/dS)dS is also sigma*S*(df/dS)dW — they CANCEL exactly. So dPi = (-df/dt - (1/2)*sigma^2*S^2*d2f/dS2)dt, with no random term. STEP 4. An instantaneously riskless portfolio must earn r or there is arbitrage: dPi = r*Pi*dt. Equating and rearranging gives df/dt + r*S*df/dS + (1/2)*sigma^2*S^2*d2f/dS2 = r*f. WHERE MU GOES. Notice mu appears in the dt term of df at step 2, and it is carried into dPi by the -df term — but the +(df/dS)dS term contributes +mu*S*(df/dS)dt, which cancels it exactly, at the same moment the dW terms cancel. That is the entire content of the result: the hedge removes both the randomness AND the drift together, because they enter through the same dS. Consequences worth stating: the option price cannot depend on anyone's view of mu, so two investors who disagree about the stock must agree on the option; and the r that appears is not a discount rate chosen for risk, it is forced by the riskless portfolio. TWO SUBTLETIES a good answer flags. df/dS is treated as constant over dt, which is only valid in the continuous limit — that is where continuous rebalancing enters. And the argument needs the portfolio to be self-financing, which is a genuine technical condition, not bookkeeping.",
+      "technique": "Delta hedging to cancel both the noise and the drift",
+      "difficultyRationale": "Hard: the four steps are memorable, but explaining exactly where mu cancels is what's being tested."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which Black–Scholes assumption fails most seriously in practice?",
+      "options": [
+        "Constant, known volatility — vol is stochastic and clusters, which is what the smile shows",
+        "No transaction costs",
+        "Constant interest rates",
+        "Short selling is permitted"
+      ],
+      "correctOption": 0,
+      "explanation": "Constant volatility, with continuous paths a close second. Constant vol is falsified directly and visibly by the volatility SMILE: if the assumption held, implied vol would be identical across all strikes and maturities, and the observed surface is the market telling you the assumption is wrong and in exactly which direction. Real volatility is stochastic, clusters, and is negatively correlated with returns. Continuous paths fail because markets gap, and jump risk is fundamentally unhedgeable by delta — no rebalancing frequency helps against an overnight move. The other assumptions matter but are corrections rather than structural failures: transaction costs widen the effective bid-offer, constant rates is mild for short-dated equity options (though serious for long-dated and rates products), and short-selling constraints affect specific names. The right framing is that the first two are why Black-Scholes is a quoting convention rather than a description of reality.",
+      "technique": "Ranking the assumption failures",
+      "difficultyRationale": "Medium: all are false; ranking them by consequence is the discriminator."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain carefully what N(d1) and N(d2) mean in the Black–Scholes call formula.",
+      "canonicalAnswer": "N(d2) is the risk-neutral probability the option finishes in the money. N(d1) is the delta — and it is the exercise probability under the measure that uses the STOCK as numeraire, which is why S*N(d1) is the discounted expected value of receiving the share conditional on exercise.",
+      "explanation": "Read the formula as its two economic pieces: c = S*N(d1) - K*e^(-rT)*N(d2) is 'the present value of receiving the stock if I exercise' minus 'the present value of paying the strike if I exercise'. THE SECOND TERM is straightforward. K*e^(-rT) is the discounted strike, and N(d2) is the risk-neutral probability of exercise, so the product is the expected discounted payment. Note 'risk-neutral' — d2 uses drift r, not mu, so N(d2) is NOT a forecast of anything. THE FIRST TERM is subtler. You might expect S*(probability of exercise), but that is wrong, because the amount you receive is correlated with whether you receive it — you get the stock precisely in the states where it is worth more. The correct expression is the discounted risk-neutral expectation of S_T times the exercise indicator, and that works out to S_0*N(d1). Equivalently and more elegantly: N(d1) is the probability of exercise under the measure that uses the STOCK as numeraire rather than cash. Two different measures, two different probabilities, hence two different numbers — with N(d1) > N(d2) always, since d1 = d2 + sigma*sqrt(T). THE THIRD FACT: N(d1) is also the delta, dc/dS. That is not a coincidence — it falls out because the S-dependence of the two N() terms cancels exactly when you differentiate, which is a small miracle worth verifying once. The common error is to call N(d1) 'the probability of exercise', which conflates it with N(d2) and loses the numeraire point entirely.",
+      "technique": "The two terms as expectations under two measures",
+      "difficultyRationale": "Hard: the numeraire interpretation of N(d1) is well beyond the usual answer."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "The Black–Scholes PDE is df/dt + rS(df/dS) + (1/2)sigma^2 S^2 (d2f/dS2) = rf. What distinguishes a call from a put in this framework?",
+      "options": [
+        "Only the boundary conditions — the PDE is identical for every derivative on S",
+        "The sign of the volatility term",
+        "The PDE has a different form for puts",
+        "Puts require a separate risk-neutral measure"
+      ],
+      "correctOption": 0,
+      "explanation": "Only the boundary conditions. The PDE is satisfied by EVERY derivative whose payoff depends on S and t — calls, puts, digitals, forwards, barriers. What identifies the instrument is the terminal condition: max(S-K,0) for a call, max(K-S,0) for a put, an indicator for a digital, S-K for a forward, plus any boundary conditions along the way (a knock-out imposes f = 0 at the barrier). That is a genuinely useful insight rather than a technicality. It means one numerical PDE solver prices your entire book by swapping the payoff function, it explains why exotic pricing is a boundary-condition problem rather than a new theory each time, and it is why substituting x = ln(S) to reach the heat equation is worth doing once — every option is then the same well-studied diffusion with different initial data. It also implies any portfolio of derivatives satisfies the PDE, which is where the Greek relationship Theta + rS*Delta + (1/2)sigma^2 S^2 Gamma = rV comes from.",
+      "technique": "The PDE is instrument-independent; the payoff is a boundary condition",
+      "difficultyRationale": "Medium: the insight reframes exotic pricing entirely."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you adapt Black–Scholes for dividends, and for options on futures?",
+      "canonicalAnswer": "For a continuous dividend yield q, replace S with S*e^(-qT). For discrete dividends, subtract their present value from S. For options on futures (Black's model), replace S with F*e^(-rT), which removes the drift because entering a futures contract costs nothing.",
+      "explanation": "CONTINUOUS YIELD. If the stock pays a continuous yield q, holding the stock earns q that the option holder does not receive, so the option is written on a lower effective asset: replace S_0 with S_0*e^(-qT) throughout, including inside d1 where the drift becomes (r - q + sigma^2/2). This covers stock indices (q = average dividend yield) and, with q = the foreign risk-free rate, FX options — that is Garman-Kohlhagen, and the logic is that holding foreign currency earns the foreign rate. DISCRETE DIVIDENDS. Subtract the present value of dividends expected before expiry from the current stock price and run standard Black-Scholes on the remainder. The reasoning is that the known dividend component is not risky, so only the residual should be modelled as lognormal. It is an approximation — it slightly misstates the volatility, since sigma should really apply to the risky part only — but it is the standard market practice. BLACK'S MODEL. For an option on a FUTURES contract, replace S_0 with F_0*e^(-rT). Why it works: entering a futures contract costs nothing, so in a risk-neutral world the futures price is a martingale and drifts at ZERO rather than at r. The formula becomes c = e^(-rT)[F_0*N(d1) - K*N(d2)] with d1 = [ln(F_0/K) + sigma^2*T/2]/(sigma*sqrt(T)). This is the market standard for interest rate caps, floors and swaptions, and for commodity options, because those markets quote forwards rather than spot. The unifying idea worth stating: all three are the same model with the underlying replaced by the present value of what you actually receive, and getting that substitution right is most of applied option pricing.",
+      "technique": "Adjusting the underlying for carry",
+      "difficultyRationale": "Medium: the three cases are standard, and the martingale reason for Black's model is the depth."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Why can Black–Scholes price an American call on a non-dividend-paying stock exactly, but not an American put?",
+      "options": [
+        "Early exercise is never optimal for the call, so it equals the European; for the put it can be optimal",
+        "The put's payoff is not differentiable",
+        "American puts have no risk-neutral measure",
+        "The put violates the PDE"
+      ],
+      "correctOption": 0,
+      "explanation": "Because early exercise is never optimal for a call on a non-dividend payer, so the American and European calls have identical value and the European formula prices both exactly. The argument: exercising gives S - K today, but selling the option gives at least S - K*e^(-rT), which is strictly more — you would be throwing away both the remaining insurance and the interest on the strike. For the PUT the interest term flips sign: exercising receives K early and earns interest on it, and once deep in the money the remaining optionality is small (the stock can only fall to zero), so early exercise can be optimal. That makes the American put strictly more valuable than the European whenever r > 0, and it introduces a FREE BOUNDARY — an unknown exercise frontier that must be solved for alongside the price — which is why there is no closed form. In practice you use a binomial tree, a PDE solver with the early-exercise condition applied at each step, or an analytic approximation like Barone-Adesi-Whaley. Note that dividends restore early-exercise value to the call, but only immediately before an ex-dividend date.",
+      "technique": "Early exercise and the free-boundary problem",
+      "difficultyRationale": "Medium: the call half is standard; naming the free boundary as the reason for no closed form is the extra."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What happens to the Black–Scholes call price as volatility goes to zero, and as it goes to infinity?",
+      "canonicalAnswer": "As sigma goes to 0 the call becomes a forward: max(S - K*e^(-rT), 0). As sigma goes to infinity the call price approaches S, the full stock price.",
+      "explanation": "ZERO VOL. With sigma = 0 the stock grows deterministically to S*e^(rT). If that exceeds K the option finishes in the money for certain and is simply a forward contract, worth S - K*e^(-rT); otherwise it is worthless. So c goes to max(S - K*e^(-rT), 0). Check against the formula: as sigma goes to 0, d1 and d2 both go to +infinity when S > K*e^(-rT), so N(d1) = N(d2) = 1 and c = S - K*e^(-rT). Delta is exactly 1 and there is no gamma, so the hedge is static. INFINITE VOL. As sigma grows, d1 goes to +infinity and d2 to -infinity (since d2 = d1 - sigma*sqrt(T)), so N(d1) goes to 1 and N(d2) goes to 0, giving c approaching S. This is the upper bound on any call: the option can never be worth more than the stock, and it approaches that bound as uncertainty grows without limit. The intuition is that with enormous volatility the stock is almost certainly either enormous or nearly zero, so the strike becomes irrelevant and the call is effectively the stock itself. WHY THESE MATTER. They are the sanity checks on any implementation — a pricer that violates either limit has a bug — and they are also the bounds that guarantee the vol-to-price map is well behaved: price is continuous and strictly increasing in sigma from max(S - K*e^(-rT), 0) up to S, which is exactly what makes implied volatility uniquely defined and findable by Newton's method.",
+      "technique": "Limiting behaviour of the formula in volatility",
+      "difficultyRationale": "Medium: both limits are gettable, and connecting them to implied-vol uniqueness is the payoff."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which of these does NOT appear as an input to the Black–Scholes formula?",
+      "options": [
+        "The stock's expected return",
+        "The risk-free rate",
+        "The volatility",
+        "Time to maturity"
+      ],
+      "correctOption": 0,
+      "explanation": "The expected return mu is absent, and its absence is the central result rather than an omission. It cancels during the derivation at the moment you form the delta-hedged portfolio: the hedge removes the randomness and the drift together, because both enter through dS. The economic consequence is striking — two investors with completely opposite views on whether the stock will rise must nevertheless agree on the option's price. Their disagreement is about the stock and is already fully expressed in S, which IS an input; adding it again would double-count. This is also the practical reason option pricing is tractable at all: the expected return is the hardest parameter in finance to estimate, needing decades of data, whereas volatility is estimable from months. Black-Scholes needs only the one you can measure.",
+      "technique": "The absent parameter and why",
+      "difficultyRationale": "Easy: recall, but the reason is the whole point of the model."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Verify that the Black–Scholes call and put formulas satisfy put-call parity.",
+      "canonicalAnswer": "c - p = S*N(d1) - K*e^(-rT)*N(d2) - [K*e^(-rT)*N(-d2) - S*N(-d1)] = S*[N(d1) + N(-d1)] - K*e^(-rT)*[N(d2) + N(-d2)] = S - K*e^(-rT), using N(x) + N(-x) = 1.",
+      "explanation": "Write both formulas and subtract: c - p = S*N(d1) - K*e^(-rT)*N(d2) - K*e^(-rT)*N(-d2) + S*N(-d1). Group the S terms and the K terms: = S*[N(d1) + N(-d1)] - K*e^(-rT)*[N(d2) + N(-d2)]. Since the standard normal is symmetric, N(x) + N(-x) = 1 for any x, so both brackets are 1 and c - p = S - K*e^(-rT). That is exactly put-call parity. WHY IT MATTERS beyond the algebra. Parity is a MODEL-FREE result — it follows from a static arbitrage (long call, short put, short stock, long cash replicates nothing) and requires no assumption about the price process at all. So any model that violates it is arbitrageable, and checking parity is the first sanity test on a pricer. The fact that Black-Scholes satisfies it identically, for every sigma, is reassuring but not surprising: it must, or it would be wrong. TWO PRACTICAL CONSEQUENCES. First, a call and a put at the same strike and maturity must have the SAME implied volatility, because parity pins their price difference regardless of the model — so if you observe different implied vols for a call and put at the same strike, you have found either an arbitrage or (far more likely) stale prices, a dividend assumption mismatch, or a borrow cost. In practice that check is how desks detect bad marks. Second, it means you only ever need to model one side; the other follows.",
+      "technique": "Deriving parity from the formulas via normal symmetry",
+      "difficultyRationale": "Medium: the algebra is short, and the same-implied-vol consequence is the practical payoff."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "Substituting x = ln(S) into the Black–Scholes PDE and rescaling transforms it into which classical equation?",
+      "options": [
+        "The heat (diffusion) equation",
+        "The wave equation",
+        "Laplace's equation",
+        "The transport equation"
+      ],
+      "correctOption": 0,
+      "explanation": "The heat equation. Setting x = ln(S) removes the S and S^2 coefficients, leaving a constant-coefficient parabolic PDE; a further change of variables in time and a multiplicative substitution eliminate the remaining first-order and zeroth-order terms, giving du/dtau = d2u/dx2. This is how the closed-form solution was originally obtained — the heat equation's fundamental solution is a Gaussian, and convolving it with the transformed payoff produces the N(d1), N(d2) expression. It also explains two practical facts. Option prices SMOOTH over time exactly as heat diffuses: a discontinuous digital payoff becomes smooth immediately away from expiry, which is why digitals are hardest to hedge right at expiry. And it means the numerical methods for options are the standard PDE schemes — explicit, implicit, Crank-Nicolson — with their well-understood stability properties, rather than anything bespoke to finance.",
+      "technique": "The heat-equation transformation",
+      "difficultyRationale": "Hard: the transformation is a known result, and the smoothing consequence is the useful part."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "An interviewer says 'Black–Scholes is wrong, so why does anyone use it?' How do you answer?",
+      "canonicalAnswer": "Because for liquid options it is not being used as a model of reality — it is a quoting convention. The market sets the price; Black–Scholes converts it into an implied volatility, which is a comparable, slowly-moving coordinate. The smile is the visible admission that the assumptions are false, and nobody is fooled.",
+      "explanation": "THE FRAMING that answers the question: what is the model being used FOR? FOR LIQUID VANILLAS the market determines the price, and Black-Scholes is used in reverse — to invert that price into an implied volatility. That coordinate is enormously more useful than the price itself: it is comparable across strikes, maturities and underlyings, it moves slowly, and relative value is visible in it. The model is a communication device, and the SMILE is the market openly recording that the constant-vol assumption is false and by exactly how much. Nobody using it believes the assumptions. FOR EXOTICS the situation is completely different — there is no market price to invert, so the model genuinely determines the value, and that is where model risk is real and where validation effort belongs. THE DEEPER POINTS worth adding. The model is right about the STRUCTURE even where it is wrong about the parameters: replication, no-arbitrage, and the delta hedge as the mechanism are all correct, and they survive into every more sophisticated model. Local vol, stochastic vol and jump models are all repairs to the same frame, not replacements for it. And the practical answer: it is used because the alternative to a shared imperfect convention is no shared convention at all, which would make it impossible to quote a market. That is why an incorrect model can be genuinely useful, and it is the same reason yield-to-maturity survives despite its reinvestment assumption being false.",
+      "technique": "Distinguishing a model's use as convention from its use as description",
+      "difficultyRationale": "Medium: the question is deliberately provocative and the quoting-convention framing is the answer."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "The Black–Scholes PDE can be written Theta + rS*Delta + (1/2)sigma^2 S^2 Gamma = rV. What does this tell you about a delta-neutral portfolio?",
+      "options": [
+        "Theta and Gamma are directly linked — for a delta-neutral book they trade off against each other",
+        "Theta must be zero",
+        "Gamma must be zero",
+        "The portfolio earns more than the risk-free rate"
+      ],
+      "correctOption": 0,
+      "explanation": "Setting Delta = 0 leaves Theta + (1/2)sigma^2 S^2 Gamma = rV, so theta and gamma are tied together — you cannot have both positive. With r = 0 it is exactly Theta = -(1/2)sigma^2 S^2 Gamma, a clean inverse proportionality. The economics: gamma is what you are PAID for the underlying actually moving, theta is the RENT you pay for holding that exposure, and no-arbitrage forces them to offset. That is why a delta-hedged book's daily P&L is approximately (1/2)*Gamma*S^2*[(realised move)^2 - sigma^2*dt] — long realised variance, short implied variance. Note the rV term on the right is what breaks the exact opposition when r is nonzero, which is how a deep in-the-money European put can have positive theta AND positive gamma. Being able to give that counterexample is what distinguishes knowing the relationship from reciting it.",
+      "technique": "Reading the PDE as the theta-gamma trade-off",
+      "difficultyRationale": "Medium: the identity is standard; the r-term exception is the discriminating detail."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Why does a traded option price map to exactly one implied volatility?",
+      "options": [
+        "Vega is strictly positive, so price is strictly increasing in volatility and the map is invertible",
+        "Because the Black–Scholes formula is linear in volatility",
+        "It does not — multiple implied vols can give the same price",
+        "Because volatility is bounded between 0 and 1"
+      ],
+      "correctOption": 0,
+      "explanation": "Vega is strictly positive for a vanilla option, so price is a strictly increasing function of volatility — and a strictly monotonic function is invertible. Combined with the limits (price goes to max(S - K*e^(-rT), 0) as sigma goes to 0, and to S as sigma goes to infinity), every price strictly between those bounds corresponds to exactly one volatility, found in a few Newton iterations since you also have vega as the derivative. That uniqueness is what makes the quoting convention possible: quoting in vol would be meaningless if two vols gave the same price. Note the property is specific to VANILLAS. Some exotics are not monotonic in volatility — a digital's price can fall as vol rises when it is in the money, and barrier options are non-monotonic too — so 'implied vol' is not well defined for them without further convention.",
+      "technique": "Monotonicity in vega as the basis of the convention",
+      "difficultyRationale": "Easy: one property, and the exotic exception is worth knowing."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Equity index options show a downward-sloping skew while FX options show a symmetric smile. Why the difference?",
+      "canonicalAnswer": "Equity has a directional fear: crashes are sudden and rallies gradual (leverage effect, crash risk), plus structural demand for downside protection. FX is symmetric because a large move in either direction is a crisis for one of the two currencies — there is no privileged direction.",
+      "explanation": "EQUITY SKEW. Low strikes trade at materially higher implied vol. Three reinforcing causes. (1) The LEVERAGE EFFECT: as equity value falls, the firm's debt-to-equity ratio rises, making the equity riskier — so volatility is negatively correlated with returns, and the left tail is genuinely fatter. (2) CRASH RISK: equity markets fall suddenly and rise gradually, so the return distribution is negatively skewed, not merely fat-tailed. (3) FLOW: institutions are structurally long equities and buy puts as insurance, while call overwriting supplies upside — a persistent demand imbalance at low strikes. Historically the skew was near-flat before 1987 and has been pronounced ever since, which tells you how much of it is learned rather than structural. FX SMILE. For a currency pair there is no privileged direction — a large move up is a crisis for one currency and a large move down for the other — so demand for protection is roughly symmetric and the smile is too. What FX has instead of skew is a symmetric excess over the at-the-money vol, reflecting fat tails in both directions. Where FX DOES skew is when the two currencies are asymmetric in character, such as an emerging-market currency against the dollar, where devaluation risk is one-sided. A THIRD CASE worth adding: single stocks have FLATTER skew than the index. The extra index skew comes from correlation risk — in a crash correlations rise toward 1, so index volatility rises more than the constituents' do, and that correlation exposure is priced into index puts specifically. Trading that gap is the dispersion trade.",
+      "technique": "Reading skew shape from the underlying's economics",
+      "difficultyRationale": "Medium: the equity causes are standard; the FX contrast and the index-vs-single-stock point add depth."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "Spot falls 5%. Under 'sticky delta', what happens to the implied vol of the option struck at the original at-the-money level?",
+      "options": [
+        "It rises, because that strike is now out-of-the-money on the downside and the smile has slid with spot",
+        "It stays the same, by definition of sticky delta",
+        "It falls, because the whole surface shifts down",
+        "It is unchanged for calls but rises for puts"
+      ],
+      "correctOption": 0,
+      "explanation": "Under sticky DELTA the smile is a function of moneyness, so the whole curve slides sideways with spot. The original at-the-money strike is now 5% above spot in relative terms — wait, spot FELL, so a strike at the old spot is now ABOVE spot, i.e. out-of-the-money for a call and in-the-money for a put. Since the equity skew is downward-sloping in strike, moving the reference point down means the fixed strike now sits at a HIGHER moneyness where implied vol is LOWER... The cleaner way to see it: under sticky delta, the vol at a fixed MONEYNESS is constant, so the vol at a fixed STRIKE changes as that strike's moneyness changes. This is why the distinction matters for hedging: under sticky delta your effective delta differs from the Black-Scholes delta, because a spot move mechanically changes the vol you are marked at, and you are long or short vega at that strike. Under sticky STRIKE the vol attached to each strike stays put and Black-Scholes delta is correct. Empirically equity markets look closer to sticky-strike in quiet periods and sticky-delta in trending ones, and choosing wrong produces a systematic, persistent hedging error rather than random noise.",
+      "technique": "How the surface's dynamics change the effective delta",
+      "difficultyRationale": "Hard: the mechanics are easy to get backwards, and the hedging consequence is the real content."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What no-arbitrage constraints must a volatility surface satisfy, and why can't you just spline-interpolate?",
+      "canonicalAnswer": "Butterfly: the second derivative of call price with respect to strike must be non-negative, since it IS the risk-neutral density. Calendar: total variance sigma^2*T must be non-decreasing in maturity for fixed moneyness. A naive interpolation can produce a smooth surface that violates both.",
+      "explanation": "BUTTERFLY (strike direction). Breeden and Litzenberger showed that d2C/dK2 equals the risk-neutral probability density at K, discounted. Densities cannot be negative, so d2C/dK2 >= 0 for all strikes. Violate it and there is a literal arbitrage: a butterfly spread (long one call at K-h, short two at K, long one at K+h) would have negative cost and a non-negative payoff. Equivalently, call prices must be convex and decreasing in strike. CALENDAR (maturity direction). For a fixed moneyness, total implied variance sigma^2*T must be non-decreasing in T. Otherwise a calendar spread — long the longer option, short the shorter — has negative cost with non-negative value, since more time cannot make an option less valuable in variance terms. WHY SPLINES FAIL. A cubic spline through observed vol quotes is smooth in VOL, but the constraints bind on the implied DENSITY, which involves second derivatives of PRICE with respect to strike. Small wiggles in the vol interpolation, entirely invisible to the eye, can produce a negative density in the wings — and if you then price an exotic or run a Monte Carlo off that surface, you get nonsense with no obvious symptom. Extrapolating beyond the quoted strikes is worse still, since the wings are exactly where the density is most fragile. THE FIX is to use a parameterisation that enforces the constraints by construction. Gatheral's SVI is the standard for the strike slice, with SSVI extending it across maturities; alternatively fit a model (local vol, stochastic vol) that is arbitrage-free by construction and read the surface off it. The general lesson is that smoothness in the quoted coordinate is not the same as validity in the priced object.",
+      "technique": "Static arbitrage constraints on the surface",
+      "difficultyRationale": "Hard: the density interpretation is the key, and the spline failure mode is a real production issue."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Implied volatility exceeds subsequently realised volatility on average. What is that called and why does it persist?",
+      "options": [
+        "The variance risk premium — buyers pay up for protection and sellers demand compensation for a negatively skewed payoff",
+        "The volatility smile, caused by fat tails",
+        "A market inefficiency that arbitrageurs have failed to eliminate",
+        "Measurement error in realised volatility"
+      ],
+      "correctOption": 0,
+      "explanation": "The variance risk premium. It persists because it is COMPENSATION, not a mispricing: option buyers are hedging, and are willing to pay more than the actuarially fair price for protection that pays off precisely when the rest of their portfolio is losing. Sellers, correspondingly, require a premium for taking a payoff with severe negative skew — small steady gains punctuated by large losses, exactly when their own funding is tightest. The consequence for forecasting is a useful nuance: implied vol is the best available predictor of the DIRECTION and TIMING of volatility changes, while being systematically biased HIGH in level. So use it as a forecast after correcting the bias, not raw. Selling the premium (short straddles, short variance swaps) is a real and persistent strategy — and also the canonical picking-up-nickels-in-front-of-a-steamroller payoff, with the 2018 'Volmageddon' unwind of short-VIX products as the standard cautionary tale.",
+      "technique": "The variance risk premium as compensation",
+      "difficultyRationale": "Medium: naming it is easy; explaining why it survives arbitrage is the substance."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does VIX actually measure, and how is it constructed?",
+      "canonicalAnswer": "The 30-day risk-neutral expected VARIANCE of the S&P 500, quoted as an annualised volatility. It is computed model-free from a strip of out-of-the-money option prices weighted by 1/K^2 — it is the fair strike of a 30-day variance swap, not a Black–Scholes implied vol.",
+      "explanation": "WHAT IT IS. VIX is the square root of the 30-day risk-neutral expected variance of the S&P 500, annualised and quoted in percentage points. Crucially it is MODEL-FREE: it does not invert Black-Scholes on any single option. THE CONSTRUCTION. Take a strip of out-of-the-money puts below the forward and out-of-the-money calls above it, across all listed strikes for the two maturities bracketing 30 days, and weight each option's price by 1/K^2. That weighting is not arbitrary — it is exactly the replication of a log contract, and hence of a variance swap, which is the result that makes the whole thing work. Interpolate between the two maturities to a constant 30 days. WHY 1/K^2. A variance swap's payoff can be statically replicated by a portfolio of options weighted 1/K^2 plus a dynamic futures position. So the strip's cost IS the fair strike of a variance swap, and that is what VIX quotes. THINGS WORTH KNOWING. VIX is a risk-neutral expectation, so it includes the variance risk premium and runs above subsequent realised vol on average — it is not a forecast. It is often called the 'fear gauge', which is loose but captures that it rises sharply in selloffs, partly because realised vol rises and partly because demand for puts spikes. And because the deep out-of-the-money puts carry meaningful weight, VIX is sensitive to the SKEW, not just at-the-money vol — an index can be quiet while VIX rises if crash protection is bid. You cannot trade VIX directly; you trade VIX futures and options, and the persistent contango in that curve is why long-VIX ETPs bleed.",
+      "technique": "VIX as a model-free variance swap rate",
+      "difficultyRationale": "Medium: 'implied vol of the S&P' is the common wrong answer; the variance-swap construction is right."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You want a clean bet on realised volatility with no dependence on where the underlying moves. What do you trade?",
+      "options": [
+        "A variance swap",
+        "A delta-hedged straddle",
+        "An at-the-money call",
+        "A risk reversal"
+      ],
+      "correctOption": 0,
+      "explanation": "A variance swap. It pays realised variance minus a fixed strike, with no path dependence beyond the realised variance itself — exactly the exposure you asked for. A delta-hedged straddle is the natural first thought and is a much worse instrument for the purpose: its P&L is weighted by DOLLAR GAMMA, so the same realised volatility produces different P&L depending on where the moves occurred relative to the strike. Move a long way from the strike and gamma collapses, so you stop earning from movement even though volatility is high. The variance swap fixes this precisely because it is replicated by a strip of options across ALL strikes weighted 1/K^2, so there is gamma everywhere and the weighting is uniform in variance terms. Practical caveats worth adding: variance swaps pay VARIANCE not volatility, so the payoff is convex in vol and a large spike pays disproportionately — which is why most are capped, usually at 2.5x the strike, after 2008. Volatility swaps pay vol directly but have no clean static replication.",
+      "technique": "Why a variance swap beats a hedged straddle as a vol trade",
+      "difficultyRationale": "Medium: the dollar-gamma weighting is the reason, and it is easy to miss."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What are vanna and volga, and why does an FX options desk care about them more than an equity desk might?",
+      "canonicalAnswer": "Vanna is d(delta)/d(vol) — equivalently d(vega)/d(spot). Volga is d(vega)/d(vol). They describe how a book responds to the SURFACE moving rather than to spot alone, and FX desks care because the smile is quoted and traded directly as risk reversal (vanna) and butterfly (volga).",
+      "explanation": "DEFINITIONS. Vanna is the cross-derivative d2V/(dS d(sigma)), readable two ways: how your delta changes when vol moves, or how your vega changes when spot moves. Volga (vol gamma) is d2V/d(sigma)^2, the convexity of value in volatility. Both vanish for an at-the-money option and are largest in the wings, which is the first clue as to who cares. WHY THEY MATTER. First-order Greeks assume the other variables hold still. In reality spot and vol move together — the equity skew exists precisely because they are negatively correlated — so a book that is delta- and vega-neutral can still lose when spot and vol move jointly. Vanna captures exactly that co-movement, and volga captures the fact that vega itself changes as vol moves, which matters when you are short options in the wings. WHY FX ESPECIALLY. The FX options market quotes the smile directly in three instruments per maturity: at-the-money vol, the 25-delta RISK REVERSAL (the call vol minus put vol, which is a vanna exposure), and the 25-delta BUTTERFLY (the wings relative to the middle, which is a volga exposure). So an FX desk's risk is naturally expressed in vanna and volga because those ARE the traded instruments — the 'Vanna-Volga' pricing method for exotics is built directly on this. Equity desks think in skew and term structure instead, and often manage the same risks through scenario matrices rather than named second-order Greeks. The underlying exposure is identical; the vocabulary follows the market convention.",
+      "technique": "Second-order cross-Greeks and market quoting conventions",
+      "difficultyRationale": "Hard: the definitions are recall, and connecting them to FX's risk-reversal/butterfly quoting is the depth."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "The implied vol term structure is normally upward-sloping but inverts in a crisis. Why?",
+      "options": [
+        "Short-dated vol reacts most to a shock while long-dated vol is anchored by mean reversion",
+        "Long-dated options become illiquid and stop trading",
+        "Interest rates fall in a crisis, lowering long-dated vol",
+        "It does not invert; the term structure is always upward-sloping"
+      ],
+      "correctOption": 0,
+      "explanation": "Because volatility mean-reverts. A shock raises the expected volatility over the next few weeks enormously, but expected volatility over the next two years far less — the market expects conditions to normalise. Since implied vol at maturity T reflects the average expected variance over that horizon, the short end spikes and the long end barely moves, inverting the curve. In calm periods the reverse holds: current vol is below its long-run level, so the curve slopes upward as the market prices reversion back toward normal. This is exactly the GARCH forecast structure — E[variance at n+k] = V_L + (alpha+beta)^k*(current - V_L) — expressed in traded prices, and it is why fitting GARCH gives you a term structure that can be compared against the implied one for relative value. Practical consequence: after a spike, a short-dated long-vol position is expensive and decays fast, so the trade is usually expressed further out the curve or as a calendar spread.",
+      "technique": "Mean reversion in the volatility term structure",
+      "difficultyRationale": "Medium: the mechanism is the answer, and the GARCH link makes it concrete."
     }
   ]
 }

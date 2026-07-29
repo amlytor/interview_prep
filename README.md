@@ -67,7 +67,7 @@ nothing leaves your machine at all.
 - **Mock Interview** — a timed, mixed-topic session (default 5 questions, configurable).
   No feedback is shown until you finish; the debrief screen grades everything at once
   and gives you a per-question breakdown plus session-level weak topics.
-- **Your own topics** — the 43 seeded topics aren't a fixed set. "+ New topic" on
+- **Your own topics** — the 45 seeded topics aren't a fixed set. "+ New topic" on
   the Topics page lets you add your own: give it a title, pick its prerequisites,
   write the note. It then behaves exactly like a seeded topic — mastery ring,
   unlock rules, Learn mode, quiz generation, trickle-down credit. Or paste raw,
@@ -82,9 +82,9 @@ nothing leaves your machine at all.
 - **Settings** — AI provider and model, per-provider API keys, a personal
   spend-awareness note, backup, and JSON export/import of all your data.
 
-Seed content lives in `src/data/studyNotes.json` (43 authored notes, whose
+Seed content lives in `src/data/studyNotes.json` (45 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
-(405 authored questions), merged with the original starter bank for ~420 seeded
+(426 authored questions), merged with the original starter bank for ~440 seeded
 questions across the taxonomy. Every topic has at least six questions and a
 note of 1,900–4,700 characters. Topics you add yourself live in your browser
 alongside your progress, not in these files.
@@ -100,14 +100,17 @@ risk side goes deeper still — interest rate risk and yield-curve PCA,
 correlations and copulas, historical simulation and extreme value theory,
 model-building VaR, Basel and FRTB, counterparty risk and margin, stress
 testing, liquidity risk, model risk, and risk-neutral versus real-world
-valuation. Derivatives and the Greeks is the largest topic at 67 questions,
-covering both the puzzle angle and the desk-practice angle. The questions
+valuation. Black-Scholes and implied volatility each have their own topic —
+the derivation, the PDE, the assumptions and which fail, the smile and skew,
+surface arbitrage constraints, VIX. Derivatives and the Greeks is the largest
+topic at 67 questions, covering both the puzzle angle and the desk-practice one. The questions
 are written for this app — each carries its own worked explanation, the
 technique it tests, and why it sits at its stated difficulty.
 
-The prerequisite graph is eight tiers deep and is meant to be load-bearing:
-Ito calculus sits under derivatives, martingales under Ito, Markov chains under
-martingales, and so on down to basic probability. That is what lets the
+The prerequisite graph is nine tiers deep and is meant to be load-bearing:
+Black-Scholes sits under the Greeks, Ito calculus and risk-neutral valuation
+under Black-Scholes, martingales under those, Markov chains under martingales,
+and so on down to basic probability. That is what lets the
 diagnostic chat say *which* upstream topic is actually missing rather than
 gesturing at the topic you just failed.
 
@@ -269,8 +272,8 @@ original v1 schema is migrated automatically on first load, and the old
 src/
   types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
   data/
-    studyNotes.json      43 authored study notes + the prerequisite graph (source of truth)
-    seedQuestions.json   405 authored seed questions (source of truth)
+    studyNotes.json      45 authored study notes + the prerequisite graph (source of truth)
+    seedQuestions.json   426 authored seed questions (source of truth)
   lib/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files
