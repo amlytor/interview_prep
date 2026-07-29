@@ -40,14 +40,33 @@ function stubPicker(permission = "granted") {
   `;
 }
 
-/** Read back whatever the app wrote to the backup file. */
-function readBackup(page) {
-  return page.evaluate(async (name) => {
-    const root = await navigator.storage.getDirectory();
-    const file = await (await root.getFileHandle(name)).getFile();
-    const text = await file.text();
-    return text ? JSON.parse(text) : null;
-  }, BACKUP_FILE);
+/**
+ * Read back whatever the app wrote to the backup file.
+ *
+ * Retries while a write is still in flight. The `writes` counter increments
+ * when createWritable() is *called*, not when the stream closes, so a caller
+ * that waits on the counter can reach here mid-write — and a partially written
+ * OPFS file throws NotReadableError/NotFoundError, or yields truncated JSON.
+ * That race is timing-dependent on payload size, so it stayed invisible until
+ * the seed bank grew past a megabyte.
+ */
+async function readBackup(page, timeout = 8000) {
+  const deadline = Date.now() + timeout;
+  let lastErr;
+  for (;;) {
+    try {
+      return await page.evaluate(async (name) => {
+        const root = await navigator.storage.getDirectory();
+        const file = await (await root.getFileHandle(name)).getFile();
+        const text = await file.text();
+        return text ? JSON.parse(text) : null;
+      }, BACKUP_FILE);
+    } catch (err) {
+      lastErr = err;
+      if (Date.now() > deadline) throw lastErr;
+      await page.waitForTimeout(100);
+    }
+  }
 }
 
 const browser = await launch();

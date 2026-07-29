@@ -2731,6 +2731,930 @@
       "explanation": "SIMULATING 1/3 WITH A FAIR COIN. A fair coin generates powers of 2, and 3 is not one, so no fixed-length scheme can work exactly. Use rejection sampling: toss twice for four equally likely outcomes, assign HH to the 1/3 event, HT and TH to the 2/3 event, and REJECT TT, starting over. Conditional on accepting, the probabilities are exactly 1/3 and 2/3. Expected tosses: each round of 2 tosses is accepted with probability 3/4, so the number of rounds is geometric with mean 4/3 and the expected tosses are 8/3 = 2.67. It terminates with probability 1 despite having no fixed length. A FAIR DECISION FROM A BIASED COIN (von Neumann). Toss twice. HT and TH each have probability p(1-p) - identical, whatever p is - so call HT 'heads' and TH 'tails' and discard HH and TT. The result is exactly fair regardless of the bias, and crucially you never need to know p. Expected tosses: each pair is decisive with probability 2p(1-p), so the expected number of tosses is 1/(p(1-p)), which is 4 for a fair coin and blows up for a very biased one - at p = 0.01 you need about 101 tosses on average. Both answers share one idea worth naming: when you cannot produce the distribution you want directly, produce something you CAN and then condition on an event that restores the symmetry you need. That is rejection sampling, and it is the same principle behind acceptance-rejection methods for sampling arbitrary continuous densities.",
       "technique": "Rejection sampling to change a distribution's granularity",
       "difficultyRationale": "Medium: each half is a known trick, and seeing that both are rejection sampling is the unifying point."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You have £5 and I have £3. We flip a fair coin repeatedly, £1 changing hands each time, until one of us is broke. What is the probability you win everything?",
+      "canonicalAnswer": "5/8.",
+      "explanation": "Total stake is £8 and your position is £5, so with a fair coin the probability of reaching £8 before £0 is a/N = 5/8. The martingale argument in one line: your wealth is a fair game, so its expected final value equals its starting value, giving 5 = 8p + 0(1-p) and p = 5/8. The general lesson worth stating: with a fair game, your chance of winning is simply your share of the total money on the table. Bankroll is the only thing that matters, which is why the house — with effectively unlimited capital — wins against any individual player eventually even at zero edge.",
+      "technique": "Optional stopping on a fair random walk",
+      "difficultyRationale": "Easy: one ratio, once you see that wealth is a martingale."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Same game — you have £5, I have £3, fair £1 flips until someone is broke. How many flips do you expect the game to last?",
+      "canonicalAnswer": "15 flips.",
+      "explanation": "For a symmetric walk started at a with absorbing barriers at 0 and N, the expected duration is a(N - a). Here a = 5 and N = 8, so E = 5 x 3 = 15 flips. The derivation uses the compensated martingale S_n^2 - n: optional stopping gives a^2 = E[S_tau^2] - E[tau], and E[S_tau^2] = N^2(a/N) = aN, so E[tau] = aN - a^2 = a(N-a). Sanity checks: it is symmetric in the two stakes as it must be, it is zero if either player starts broke, and it is maximised when the stakes are equal, at N^2/4. Note how long it is relative to the stakes — only £8 in play but 15 flips on average, and the distribution has a long right tail.",
+      "technique": "The S^2 - n compensator for expected duration",
+      "difficultyRationale": "Medium: the product a(N-a) is easy to recall, harder to derive without the compensator."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You take £100 to a casino where each £1 bet wins with probability 0.49. You will play until you either double your money or go broke. Roughly what is your chance of doubling?",
+      "options": [
+        "About 2%",
+        "About 49%",
+        "About 25%",
+        "About 12%"
+      ],
+      "correctOption": 0,
+      "explanation": "About 2%. With r = q/p = 0.51/0.49 = 1.0408, the formula (1 - r^a)/(1 - r^N) with a = 100 and N = 200 gives roughly 0.02. The point is how violently a tiny edge compounds over distance: on a FAIR coin your chance would be exactly 50%, and a one-percentage-point disadvantage per bet collapses it to 2%. Ruin probability is exponential in the edge times the distance to the barrier, not linear in either. That is the entire economics of the house edge — and, read the other way, of being the market maker rather than the customer. It is also why bet sizing dominates hit rate: the same edge with larger bets means fewer bets to cover the same distance, which paradoxically IMPROVES your chance of doubling while worsening your expected wealth.",
+      "technique": "Exponential dependence of ruin on the edge",
+      "difficultyRationale": "Medium: needs the biased formula and an appreciation of how fast it decays."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You have a genuine 2% edge per bet. Should you bet a large fraction of your bankroll or a small one?",
+      "options": [
+        "Small — large bets raise the chance of ruin before the edge can express itself",
+        "Large — a bigger edge per bet means faster compounding",
+        "It makes no difference; the edge is the same either way",
+        "Large, because expected wealth is maximised by betting everything"
+      ],
+      "correctOption": 0,
+      "explanation": "Small. Expected wealth IS maximised by betting everything each time, which is exactly why expected wealth is the wrong objective: that strategy goes bust with probability approaching 1 while its expectation is carried by a vanishingly rare path. What you want is the growth rate of the median outcome, and that is maximised by the Kelly fraction, roughly edge divided by variance — for even-money bets, f = 2p - 1, so a 2% edge means staking about 2% of bankroll. Bet more than Kelly and your long-run growth actually falls; bet more than twice Kelly and it turns negative despite every individual bet having positive expectation. The gambler's-ruin reading is that oversized bets shorten the distance to the ruin barrier, and ruin probability is exponential in that distance.",
+      "technique": "Why expected wealth is the wrong objective",
+      "difficultyRationale": "Medium: the counter-intuitive part is that maximising expectation is the losing strategy."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A symmetric random walk starts at 0. What is the probability it ever reaches +10? And what is the expected time to get there?",
+      "canonicalAnswer": "It reaches +10 with probability 1, but the expected time is infinite.",
+      "explanation": "Take the gambler's-ruin result with barriers at -M and +10, starting at 0: the probability of hitting +10 first is M/(M + 10). Let M go to infinity — remove the lower barrier — and that tends to 1. So the level is reached with certainty. But the expected duration was a(N - a) = M x 10, which diverges as M grows. So E[time] = infinity. The distribution of the first passage time has tail P(T > n) proportional to 1/sqrt(n), which sums to infinity: certain, but not soon. This is null recurrence, and it is the discrete twin of the Brownian first-passage result where P(T_a < infinity) = 1 while E[T_a] = infinity. The practical reading: 'this position will come back' can be true with probability 1 and still be useless, because the time to recovery has no mean. Any strategy relying on mean reversion needs a horizon and a capital constraint, not just a recurrence argument.",
+      "technique": "Taking a barrier to infinity, and null recurrence",
+      "difficultyRationale": "Hard: the limiting argument is short but the certain-yet-infinite-mean conclusion is subtle."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In a fair gambler's-ruin game, which single factor most determines your chance of winning?",
+      "options": [
+        "Your share of the total money in play",
+        "The size of each individual bet",
+        "How long you are willing to play",
+        "The variance of each bet"
+      ],
+      "correctOption": 0,
+      "explanation": "Your share of the total. With a fair game the probability of winning everything is a/N — your stake divided by the combined stake — and nothing else enters. Bet size does not change it (though it changes the DURATION, which is a(N-a) in units of bets). Playing longer does not change it either, since the game runs to absorption regardless. This is why an individual player cannot beat a house with vastly greater capital even at zero edge: your share of the total is tiny, so your chance of taking all the money is tiny, and the only way to protect a small bankroll is to stop early rather than to play to absorption.",
+      "technique": "Bankroll share as the sole driver in a fair game",
+      "difficultyRationale": "Easy: one formula, but the irrelevance of bet size surprises people."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A sticker album has 50 different stickers, sold one at a time in blind packs. Roughly how many packs do you expect to buy to complete it?",
+      "options": [
+        "About 225",
+        "About 50",
+        "About 100",
+        "About 500"
+      ],
+      "correctOption": 0,
+      "explanation": "About 225. The formula is n*H_n = 50 x (1 + 1/2 + ... + 1/50), and H_50 is about 4.5, giving 225. Use the approximation n*ln(n) + 0.577n = 50(3.91) + 28.9 = 224. The shape is what matters: you need roughly 4.5 times the number of stickers, and the LAST sticker alone costs you 50 packs on average — over a fifth of the total effort. That n log n growth, and the fact that the tail dominates, is why these albums are commercially viable and why 'swaps' markets exist. Answering 50 is the standard error of assuming coverage costs one draw per item.",
+      "technique": "n log n growth of full coverage",
+      "difficultyRationale": "Medium: the formula is standard; the n log n intuition is the reusable part."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Collecting n coupon types uniformly, how many draws do you expect to need to have collected HALF of them?",
+      "canonicalAnswer": "About n*ln(2) = 0.69n draws — far fewer than the n*ln(n) needed for all of them.",
+      "explanation": "Sum the stage waits only up to n/2 types: the expected number of draws is the sum over k = 0 to n/2 - 1 of n/(n-k), which is n*(H_n - H_(n/2)). Since H_n - H_(n/2) tends to ln(2) = 0.693, the answer is about 0.69n. Compare that with n*ln(n) for the complete set: for n = 100, half the coupons take 69 draws and ALL of them take 519. The first half is nearly free and the second half costs seven times as much. This is the single most useful intuition in the topic — coverage problems are dominated entirely by the last few cells, because once most types are collected almost every draw is a duplicate. The same shape governs test coverage, sampling every state of a system, and why the last few percent of any exhaustive search costs more than the first ninety.",
+      "technique": "Partial coverage versus full coverage",
+      "difficultyRationale": "Medium: the harmonic difference is the key step, and the contrast is the payoff."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "The coupon types are NOT equally likely — some are rare. Does completing the set take longer or shorter than the uniform case?",
+      "options": [
+        "Longer, and the wait is dominated by the rarest type",
+        "Shorter, because common types are collected faster",
+        "The same, since the expectations average out",
+        "It depends on how many types there are"
+      ],
+      "correctOption": 0,
+      "explanation": "Longer, and often dramatically so. The uniform case is the BEST case: for a fixed number of types, the expected time to collect all of them is minimised when the probabilities are equal. Intuitively, the total wait is driven by the hardest type to find, and making one type rare adds roughly 1/p_rare draws on its own — which can dwarf everything else. If one sticker in fifty has probability 1/500 instead of 1/50, that single type contributes about 500 expected draws against 225 for the whole uniform album. This is exactly the commercial design of sticker and trading-card products, and it is the same reason a load test that samples code paths unevenly will take far longer to reach full coverage than its average rate suggests.",
+      "technique": "Why the uniform case is the best case",
+      "difficultyRationale": "Medium: the direction is guessable; naming the rarest-type domination is the substance."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You draw n times from n coupon types (uniformly, with replacement). What is the expected number of DISTINCT types you end up with?",
+      "canonicalAnswer": "n(1 - (1 - 1/n)^n), which tends to n(1 - 1/e) = 0.632n.",
+      "explanation": "Use indicators and linearity. For each type i, let X_i = 1 if it appears at least once. P(type i never appears in n draws) = (1 - 1/n)^n, so E[X_i] = 1 - (1 - 1/n)^n. Summing over the n types gives E = n(1 - (1 - 1/n)^n). As n grows, (1 - 1/n)^n tends to 1/e = 0.368, so the answer converges to n(1 - 1/e) = 0.632n. So drawing n times from n types leaves you with about 63% of them and about 37% never seen — a constant fraction, independent of n. This is the same 1/e that appears in the secretary problem, in derangements, and in bootstrap resampling, where each bootstrap sample omits about 37% of the original observations (which is exactly what out-of-bag error in a random forest is computed on). Note that linearity does the work here despite the X_i being dependent.",
+      "technique": "Indicators plus linearity for occupancy",
+      "difficultyRationale": "Medium: the indicator setup is quick, and the 1/e limit is worth recognising."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Why does collecting all n coupons take n*log(n) draws rather than n?",
+      "options": [
+        "Because as you collect more, new types become rarer, so each additional type takes longer",
+        "Because duplicates are thrown away",
+        "Because the draws are not independent",
+        "Because the harmonic series diverges"
+      ],
+      "correctOption": 0,
+      "explanation": "Because the stages get progressively harder. When you hold k types, the chance the next draw is new is (n-k)/n, so the expected wait for the next new type is n/(n-k). Early on that is close to 1; by the last type it is n. Summing those waits gives n*H_n, and H_n grows like log n. The n log n is therefore not an artefact — it is the accumulated cost of the late stages, and the final type alone accounts for n of the total. Saying 'because the harmonic series diverges' describes the maths without explaining it; the mechanism is the shrinking probability of a new type.",
+      "technique": "Where the log factor comes from",
+      "difficultyRationale": "Easy: conceptual, and the mechanism is what's being checked."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Rolling a fair die, what is the expected number of rolls to see every face at least TWICE?",
+      "canonicalAnswer": "About 23.4 rolls, compared with 14.7 for seeing every face once. The 'double Dixie cup' problem: needing m copies each costs roughly n(ln n + (m-1)ln ln n) rather than n*ln n.",
+      "explanation": "The staged-geometric decomposition breaks down here, because after some rolls the faces are at different counts and the state is a whole vector, not a single number. Two ways to answer. EXACT: set it up by inclusion-exclusion on which faces are still short, or solve the Markov chain on the vector of counts — tedious by hand but the answer is about 23.4. ASYMPTOTIC, and the better interview answer: Newman and Shepp showed that collecting m copies of each of n types takes n(ln n + (m-1) ln ln n) + O(n) draws. For n = 6, m = 2 that gives 6(1.79 + 0.58) = 14.2 plus a substantial O(n) correction — the asymptotics are poor at n = 6, so quote the structure rather than the number. What matters is the SHAPE: the second copy costs only an extra ln ln n per type, not another full ln n. Doubling the requirement does not double the work, because by the time you have one of everything you already have several of most things. Roughly 23 versus 15 rolls — about 60% more, not 100% more.",
+      "technique": "Extending coupon collection to multiple copies",
+      "difficultyRationale": "Hard: the single-number state fails, and the honest answer is about the asymptotic shape."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "How many people must be in a room for the probability that at least two share a birthday to exceed 50%?",
+      "options": [
+        "23",
+        "183",
+        "57",
+        "366"
+      ],
+      "correctOption": 0,
+      "explanation": "23. Compute the complement: P(all distinct) = (365/365)(364/365)...((365-n+1)/365). At n = 22 that is 0.524, so P(match) = 0.476; at n = 23 it is 0.493, so P(match) = 0.507. The reason it is so much smaller than people expect is that you should count PAIRS, not people: 23 people make C(23,2) = 253 pairs, each matching with probability 1/365, so the expected number of matches is 253/365 = 0.69, and 1 - e^(-0.69) = 0.50. The quadratic growth in pairs is the whole effect. Answering 183 is the intuition that you need half of 365, which confuses 'someone shares MY birthday' (which does take about 253 people for even odds) with 'some two people share'.",
+      "technique": "Counting pairs rather than individuals",
+      "difficultyRationale": "Medium: the complement is mechanical; the pairs intuition is why the answer is memorable."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You roll a fair die six times. What is the probability you see at least one 6?",
+      "canonicalAnswer": "1 - (5/6)^6 = 0.665.",
+      "explanation": "The complement is a single product: P(no 6 in six rolls) = (5/6)^6 = 15625/46656 = 0.335. So P(at least one) = 0.665. Note it is NOT 1, and not 6 x (1/6) = 1 either — that naive multiplication double-counts the outcomes with more than one 6 and, for n = 6, gives exactly 1, which is obviously wrong since 'no sixes' plainly has positive probability. A useful general fact: 1 - (1 - 1/n)^n tends to 1 - 1/e = 0.632 as n grows, so 'n chances at a 1-in-n event' is always about 63%, never certain. That single number is worth carrying — it applies to n servers each failing with probability 1/n, n trades each with a 1/n chance of a fill, and so on.",
+      "technique": "Complement plus the 1 - 1/e limit",
+      "difficultyRationale": "Easy: one product, and the 63% limit is the transferable fact."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "Which is more likely: at least one 6 in four rolls of one die, or at least one double-six in 24 rolls of two dice?",
+      "options": [
+        "At least one 6 in four rolls",
+        "At least one double-six in 24 rolls",
+        "They are exactly equal",
+        "The second, because 24 rolls is far more chances"
+      ],
+      "correctOption": 0,
+      "explanation": "The first, and only just: 1 - (5/6)^4 = 0.5177 against 1 - (35/36)^24 = 0.4914. This is the Chevalier de Mere problem that prompted the Pascal-Fermat correspondence and effectively started probability theory. The naive reasoning that fooled de Mere is that 4/6 = 2/3 and 24/36 = 2/3, so the two should be equal - but 'expected number of successes' and 'probability of at least one' are not the same thing, and they diverge as the number of trials grows. Formally, (5/6)^4 = 0.482 while (35/36)^24 = 0.509, and the gap comes from the second case having more trials at a lower rate, which pushes it closer to the e^(-2/3) = 0.513 limit from above. Both are near 1/2, which is exactly why the discrepancy was detectable at the tables and worth money.",
+      "technique": "Expected count versus probability of at least one",
+      "difficultyRationale": "Hard: the two probabilities are within 3 points, so the answer needs actual computation."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a group of 4 people, what is the probability that at least two were born in the same month? Assume months are equally likely.",
+      "canonicalAnswer": "1 - (12/12)(11/12)(10/12)(9/12) = 1 - 0.5729 = 0.427.",
+      "explanation": "Complement: all four born in distinct months. The first person is unconstrained (12/12), the second must avoid one month (11/12), the third avoid two (10/12), the fourth avoid three (9/12). Product = (11 x 10 x 9)/12^3 = 990/1728 = 0.5729. So P(at least two share) = 0.427, about 43%. Worth noting how quickly this climbs: with 5 people it is 0.618, and by 13 people it is certain by pigeonhole. The 'birthday' structure appears any time you are looking for collisions in a bounded space — hash collisions, order IDs, and the birthday attack in cryptography, where finding ANY collision in a space of size N takes only about sqrt(N) attempts rather than N.",
+      "technique": "Complementary counting on a small collision space",
+      "difficultyRationale": "Medium: mechanical, but the sqrt(N) collision insight is the generalisation."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You draw 5 cards from a standard deck. What is the probability that at least two share a suit?",
+      "options": [
+        "1 — it is certain",
+        "About 0.95",
+        "About 0.51",
+        "About 0.75"
+      ],
+      "correctOption": 0,
+      "explanation": "Certain. There are only 4 suits and 5 cards, so by the pigeonhole principle two must share — no computation needed. The point of the question is to check whether you reach for machinery reflexively. Complementary counting would have you compute P(all five suits distinct), and the moment you try you find there is no such arrangement, so the complement is 0. Recognising a pigeonhole guarantee before starting the arithmetic is worth more than the answer: whenever the number of items exceeds the number of categories, 'at least two share' has probability exactly 1.",
+      "technique": "Spotting a pigeonhole guarantee before computing",
+      "difficultyRationale": "Easy: instant if you count categories first, a wasted minute otherwise."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A deck is shuffled. What is the probability the ace of spades appears before the ace of hearts?",
+      "options": [
+        "1/2",
+        "1/52",
+        "1/51",
+        "1/4"
+      ],
+      "correctOption": 0,
+      "explanation": "1/2, by symmetry, with no counting at all. Consider only the two cards in question: in the shuffled order one comes before the other, and nothing distinguishes them, so each order is equally likely. The other 50 cards are irrelevant. This generalises immediately: with three specified cards, each is equally likely to be first (1/3) or last (1/3); and the probability that the aces appear in any one specified order is 1/4! = 1/24. Whenever a question asks about the RELATIVE order of a few items in a random permutation, discard everything else and count orderings of just those items.",
+      "technique": "Relative order in a random permutation",
+      "difficultyRationale": "Easy: one symmetry, and the instinct to ignore the other 50 cards is the point."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Twelve people sit at random around a round table. What is the probability that two specific people, Anna and Ben, end up sitting next to each other?",
+      "canonicalAnswer": "2/11.",
+      "explanation": "Fix Anna anywhere — at a round table her position carries no information, which is exactly the free-reference move. There are then 11 remaining seats, all equally likely for Ben, and exactly 2 of them are adjacent to Anna. So the probability is 2/11. Compare the alternative: counting arrangements as 2 x 10!/11! and hoping you handle rotational symmetry correctly. The conditioning route avoids the whole issue. Generalisations worth having: for n people at a round table the answer is 2/(n-1); in a ROW it is 2(n-1)/(n(n-1)) = 2/n, slightly lower, because the two end seats have only one neighbour each. Being able to say why the row answer is smaller shows you understand the argument rather than the formula.",
+      "technique": "Fixing a free reference point to kill rotational symmetry",
+      "difficultyRationale": "Medium: the answer is one line by conditioning, fiddly by counting arrangements."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A stick is broken at two uniformly random points, giving three pieces. What is the probability the MIDDLE piece is the longest?",
+      "options": [
+        "1/3",
+        "1/2",
+        "1/4",
+        "It cannot be — the middle piece is always shortest"
+      ],
+      "correctOption": 0,
+      "explanation": "1/3, by symmetry — and the symmetry is not the obvious one. The three pieces are NOT identically distributed by position in any obvious way, but they ARE exchangeable: cutting the stick at two uniform points is equivalent to cutting a CIRCLE of the same circumference at three uniform points and unrolling it, under which the three arcs are plainly interchangeable. So each of the three pieces is equally likely to be the longest, giving 1/3 for the middle one. The circle trick is the reusable idea — it converts a problem with distinguished endpoints into one with none. Note that the three pieces are exchangeable but not independent (they sum to 1), and exchangeability is all the symmetry argument needs.",
+      "technique": "Exchangeability via the circle construction",
+      "difficultyRationale": "Medium: the naive view is that the middle piece is special, and the circle trick removes that."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two fair dice are rolled. What is the probability the sum is 7? Do it without listing outcomes.",
+      "canonicalAnswer": "1/6.",
+      "explanation": "Condition on the first die: whatever it shows, exactly one face of the second die completes a sum of 7, and that face is always available since 7 minus any value from 1 to 6 lands in 1 to 6. So the probability is 1/6, and the first die's value is irrelevant. That last part is what makes 7 special: it is the ONLY total for which every first roll leaves a valid completion, which is why 7 is the most likely sum. Contrast the sum of 6: a first roll of 6 leaves nothing, so the probability drops to 5/36. The general move — fix the first item as a free reference and ask what the rest must do — turns most 'any match' questions into a single fraction. The same logic gives P(any double) = 1/6, not 1/36.",
+      "technique": "Condition on the first roll to make it a free reference",
+      "difficultyRationale": "Easy: one line, and the reason 7 is special is the insight."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a well-shuffled deck of 52 cards, what is the expected position of the FIRST ace? And of the LAST ace?",
+      "canonicalAnswer": "First ace: 53/5 = 10.6. Last ace: 4 x 53/5 = 42.4.",
+      "explanation": "The four aces split the deck into five gaps of non-aces. By symmetry every gap has the same expected length, namely 48/5 = 9.6. The first ace sits just past the first gap, at expected position 9.6 + 1 = 10.6 = 53/5. More generally the jth ace has expected position j x 53/5, so the last ace is at 4 x 10.6 = 42.4. This is the without-replacement shortcut (N+1)/(k+1) with N = 52 and k = 4, and it is the same 'equal expected gaps' symmetry as the order-statistics result E[X_(j)] = j/(n+1) for uniform draws. One idea, three topics. Note that the answers are symmetric about the centre — 10.6 from the front and 52 - 42.4 = 9.6... so the last ace sits 9.6 from the back, matching the gap length exactly as the picture predicts.",
+      "technique": "Equal expected gaps in a random permutation",
+      "difficultyRationale": "Medium: one formula, but the gap picture is what makes it instant and checkable."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two coins: one fair, one two-headed. You pick one at random and flip it once, getting heads. What is the probability you picked the two-headed coin?",
+      "canonicalAnswer": "2/3.",
+      "explanation": "Odds form is fastest. Prior odds two-headed to fair are 1:1. Likelihood of heads is 1 for the two-headed coin and 1/2 for the fair one, so the likelihood ratio is 2:1. Posterior odds are 2:1, giving probability 2/3. Population check: run it 200 times — 100 two-headed coins all show heads, 100 fair coins show heads 50 times, so of 150 heads, 100 came from the two-headed coin, and 100/150 = 2/3. The extension is worth having ready: after k heads in a row the posterior odds are 2^k:1, so two heads gives 4/5, three gives 8/9. Evidence compounds geometrically against a fixed prior, which is why a handful of observations can overwhelm even a strong prior — and why a strong prior needs a LOT of evidence to shift.",
+      "technique": "Posterior odds = prior odds x likelihood ratio",
+      "difficultyRationale": "Medium: one line in odds form, and the geometric compounding is the extension."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A city's taxis are 85% Green and 15% Blue. A witness to a hit-and-run identifies the cab as Blue, and testing shows the witness is correct 80% of the time in these conditions. What is the probability the cab was actually Blue?",
+      "canonicalAnswer": "41%.",
+      "explanation": "Population table with 100 cabs. BLUE: 15 cabs, witness correctly says Blue 80% of the time, so 12 identified as Blue. GREEN: 85 cabs, witness wrongly says Blue 20% of the time, so 17 identified as Blue. Total identified as Blue: 12 + 17 = 29, of which 12 are genuinely Blue. So P(Blue | witness says Blue) = 12/29 = 41%. Even though the witness is right 80% of the time, the cab is MORE LIKELY to be Green than Blue. The reason is that Green cabs are so much more common that their 20% error rate produces more false Blues (17) than the Blue cabs produce true Blues (12). This is Kahneman and Tversky's classic base-rate neglect experiment — most people answer 80%, ignoring the 85/15 split entirely. The general form is the one that matters for risk work: when the base rate is skewed, the reliability of a signal tells you much less than it appears to, and the false positives come from a far larger pool.",
+      "technique": "Base-rate neglect with an explicit population table",
+      "difficultyRationale": "Hard: the intuitive 80% is wrong, and the correct answer requires resisting it."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A screening test for a condition affecting 1 in 1,000 people has 99% sensitivity and 99% specificity. You test positive. Roughly what is the chance you have the condition?",
+      "options": [
+        "About 9%",
+        "About 99%",
+        "About 50%",
+        "About 1%"
+      ],
+      "correctOption": 0,
+      "explanation": "About 9%. Take 100,000 people: 100 have the condition and 99 of them test positive; 99,900 do not, and 1% of those — 999 — test positive anyway. Total positives 1,098, of which 99 are true, giving 99/1098 = 9.0%. A test that is 99% accurate in BOTH directions still leaves a positive result over 90% likely to be a false alarm, purely because healthy people outnumber sick ones a thousand to one. The lesson for any rare-event detector — fraud alerts, model-breach flags, credit screens — is that precision is governed by the base rate and the false-positive rate, and improving sensitivity does almost nothing. Halving the false positive rate here would roughly double the precision; perfecting sensitivity would move it from 9.0% to 9.1%.",
+      "technique": "Precision is driven by base rate, not sensitivity",
+      "difficultyRationale": "Medium: the arithmetic is easy, but 99% is a very strong pull."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are testing whether a trading strategy has genuine skill. Your prior is that 10% of proposed strategies work. A backtest 'passes' for 80% of genuinely good strategies and for 20% of worthless ones. Your strategy passes. Should you trade it?",
+      "canonicalAnswer": "The posterior is 31%, so probably not on this evidence alone. Prior odds 1:9, likelihood ratio 4:1, posterior odds 4:9 = 31%.",
+      "explanation": "Odds form: prior odds of good to bad are 10:90 = 1:9. The likelihood ratio is 0.80/0.20 = 4. Posterior odds are 4:9, so P(good | passed) = 4/13 = 31%. A passing backtest has raised your belief from 10% to 31% — real evidence, but well short of confidence, and the strategy is still more likely worthless than not. Two things worth saying. First, the leverage is in the LIKELIHOOD RATIO, not the pass rate: a test that passed 80% of good strategies and only 5% of bad ones has a ratio of 16 and would take you to 64%. Discriminating power is what matters, and most backtests are weak discriminators because a bad strategy that has been tuned will pass. Second, MULTIPLE TESTING destroys this: if you tried 20 strategies and are reporting the one that passed, the effective prior on that specific one is far lower and the posterior collapses. The honest question is not 'did it pass' but 'how many did I try, and how easily does a worthless one pass'.",
+      "technique": "Applying Bayes to strategy selection",
+      "difficultyRationale": "Medium: the arithmetic is routine; framing backtest overfitting as a likelihood-ratio problem is the point."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which quantity does Bayes' theorem let you convert between?",
+      "options": [
+        "P(evidence | hypothesis) and P(hypothesis | evidence)",
+        "Probability and expected value",
+        "Prior and likelihood",
+        "Conditional and unconditional variance"
+      ],
+      "correctOption": 0,
+      "explanation": "Bayes converts between the two directions of a conditional. That is the whole content: you typically KNOW P(evidence | hypothesis) — a test's error rate, a model's likelihood — and you WANT P(hypothesis | evidence). The conversion factor is the ratio of base rates, which is why ignoring the base rate is the single most common error. Formally P(H|E) = P(E|H)P(H)/P(E). The confusion between the two directions has a name in each field: base-rate neglect in psychology, the prosecutor's fallacy in law ('the DNA match is 1 in a million, so there is a one-in-a-million chance he is innocent' — wrong, because it ignores how many people could have been tested), and misreading a p-value in statistics.",
+      "technique": "The two directions of a conditional probability",
+      "difficultyRationale": "Easy: definitional, but naming the fallacies shows you know why it matters."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A drawer contains black, blue and grey socks, jumbled in the dark. How many socks must you take to guarantee a matching pair? To guarantee a black pair?",
+      "canonicalAnswer": "4 socks for any matching pair. For a BLACK pair specifically there is no guarantee unless you know how many of the other colours there are — in the worst case you must take all the non-black socks plus 2.",
+      "explanation": "MATCHING PAIR: three colours are three boxes, so by pigeonhole 4 socks force two into the same box. Three is not enough — one of each colour is a valid worst case. BLACK PAIR: pigeonhole does not apply, because you are no longer asking for 'some box twice' but for one SPECIFIC box twice, and an adversary can hand you every non-black sock first. If there are b blue and g grey, the answer is b + g + 2. With no bound on b and g, no finite number guarantees it. The distinction is the point of the question and it is the most common error in pigeonhole problems: 'at least two the same' is a guarantee, 'at least two of a particular kind' generally is not. Always check whether the target box is specified.",
+      "technique": "Guarantees for 'some category' versus 'a specific category'",
+      "difficultyRationale": "Easy: the first half is one line; the second half is where people over-apply pigeonhole."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You pick any 5 integers. Why must two of them have a difference divisible by 4?",
+      "options": [
+        "Because there are only 4 possible remainders modulo 4, so two integers must share one",
+        "Because every 5 consecutive integers contain a multiple of 4",
+        "Because the sum of 5 integers is always divisible by 4",
+        "It is not always true"
+      ],
+      "correctOption": 0,
+      "explanation": "Remainders modulo 4 are the boxes: every integer leaves remainder 0, 1, 2 or 3. That is 4 boxes and 5 integers, so two share a remainder — and if a and b have the same remainder mod 4, then a - b is divisible by 4. Constructing the boxes as RESIDUE CLASSES is the standard move for any divisibility-flavoured pigeonhole question, and it generalises directly: any n+1 integers contain two whose difference is divisible by n. A related classic worth having: among any n+1 numbers chosen from 1 to 2n, two must be consecutive (box them in pairs {1,2}, {3,4}, ...), and also two must have one dividing the other (box by largest odd divisor).",
+      "technique": "Residue classes as pigeonholes",
+      "difficultyRationale": "Medium: the boxes are not given, and modulo arithmetic is the construction that works."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "At a party of n people, some pairs shake hands. Prove that at least two people shook the same number of hands.",
+      "canonicalAnswer": "Each person shakes between 0 and n-1 hands, which is n possible values for n people — no contradiction yet. But 0 and n-1 cannot BOTH occur (if someone shook everyone, nobody shook nobody), so only n-1 values are actually attainable, and n people into n-1 boxes forces a repeat.",
+      "explanation": "The setup looks like it fails: n people, and each handshake count is in {0, 1, ..., n-1}, which is n boxes for n people — pigeonhole gives nothing. The insight is that the two extreme boxes are MUTUALLY EXCLUSIVE. If some person shook n-1 hands, they shook hands with everyone, so no one shook zero hands. Conversely if someone shook zero hands, nobody could have shaken n-1. So at most one of {0, n-1} is occupied, leaving at most n-1 attainable values for n people. Pigeonhole now applies and two people must share a count. The transferable lesson is that when a naive box count comes up exactly one short, look for a constraint that makes two boxes incompatible. That pattern — eliminate an impossible box rather than find more items — recurs throughout these problems.",
+      "technique": "Eliminating an incompatible box to make the count work",
+      "difficultyRationale": "Medium: the naive count fails by exactly one, and finding the exclusion is the whole proof."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Five points are placed anywhere inside a 1x1 square. What can you guarantee about the closest pair?",
+      "options": [
+        "Two points are within sqrt(2)/2 of each other",
+        "Two points are within 1/2 of each other",
+        "Two points are within 1/4 of each other",
+        "Nothing — they could all be far apart"
+      ],
+      "correctOption": 0,
+      "explanation": "Two points must be within sqrt(2)/2 = 0.707. Divide the square into four 0.5 x 0.5 quadrants — those are the boxes. Five points into four quadrants forces two into the same quadrant, and the farthest two points can be within a 0.5 x 0.5 square is its diagonal, 0.5 x sqrt(2) = 0.707. The bound is tight: place four points at the corners and one at the centre, and the closest pair is exactly sqrt(2)/2 apart. The technique is the reusable part — for geometric pigeonhole, PARTITION THE REGION into as many pieces as you have items minus one, then bound the diameter of a piece. With 5 points you use 4 boxes; with 10 points you could use 9, or more naturally a 3x3 grid, giving a bound of sqrt(2)/3.",
+      "technique": "Geometric pigeonhole by partitioning the region",
+      "difficultyRationale": "Medium: constructing the quadrants is the step, and the diagonal bound finishes it."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Show that any sequence of n^2 + 1 distinct real numbers contains a monotone subsequence of length n + 1 — either increasing or decreasing.",
+      "canonicalAnswer": "Label each element with the pair (length of the longest increasing subsequence ending here, length of the longest decreasing subsequence ending here). If no monotone subsequence exceeds n, every label lies in an n x n grid — only n^2 boxes for n^2 + 1 elements, so two elements share a label, which is impossible.",
+      "explanation": "This is the Erdos-Szekeres theorem, and the proof is pigeonhole with a clever choice of boxes. For each position i, let a_i be the length of the longest INCREASING subsequence ending at i, and d_i the length of the longest DECREASING subsequence ending at i. Suppose for contradiction that there is no monotone subsequence of length n+1. Then every a_i and every d_i lies in {1, ..., n}, so each label (a_i, d_i) lies in an n x n grid: n^2 boxes. We have n^2 + 1 elements, so by pigeonhole two positions i < j share a label. But that is impossible: since the numbers are distinct, either x_i < x_j — in which case the longest increasing subsequence ending at j extends the one ending at i, so a_j > a_i — or x_i > x_j, in which case d_j > d_i. Either way the labels differ, contradicting the pigeonhole conclusion. Hence a monotone subsequence of length n+1 exists. The bound is tight: n^2 numbers can be arranged with no monotone run longer than n, by concatenating n decreasing blocks of length n in increasing order. What makes this a genuinely hard pigeonhole problem is that the boxes are pairs of derived statistics, not anything present in the question.",
+      "technique": "Pigeonhole on a pair of derived statistics",
+      "difficultyRationale": "Hard: the boxes must be invented from scratch, and the contradiction step needs care."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two fair dice are rolled. What is the probability the sum is at least 10?",
+      "options": [
+        "1/6",
+        "1/9",
+        "1/4",
+        "1/12"
+      ],
+      "correctOption": 0,
+      "explanation": "1/6. Enumerate the favourable outcomes out of 36: sum 10 needs (4,6),(5,5),(6,4) = 3 ways; sum 11 needs (5,6),(6,5) = 2 ways; sum 12 needs (6,6) = 1 way. Total 6 out of 36 = 1/6. The habit worth building is to count ORDERED pairs — treating (4,6) and (6,4) as one outcome is the single most common error in two-dice problems and would give 4/21 here. Useful anchors to memorise since two-dice questions are ubiquitous: the number of ways to make sums 2 through 12 is 1,2,3,4,5,6,5,4,3,2,1, summing to 36. From that table any two-dice question is immediate.",
+      "technique": "Enumerating ordered outcomes",
+      "difficultyRationale": "Easy: quick with the sum table, error-prone without it."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a best-of-three match, the stronger player wins each game with probability p > 1/2. Are they more or less likely to win the match than a single game? What about best-of-five?",
+      "canonicalAnswer": "More likely, and the advantage grows with the length of the series. For p = 0.6, the match win probability is 0.648 for best-of-three and 0.683 for best-of-five.",
+      "explanation": "Best of three: the stronger player wins by taking 2-0 or 2-1. P = p^2 + 2p^2(1-p) = p^2(3 - 2p). At p = 0.6 that is 0.36 x 1.8 = 0.648. Best of five: P = p^3(10p^2 - 25p + 15)... more simply, sum the ways to win 3 games before the opponent wins 3, which at p = 0.6 gives 0.683. The pattern: any p > 1/2 is amplified by a longer series, and as the series length grows the win probability tends to 1 by the law of large numbers. That is exactly why finals are best-of-seven — longer series reduce the influence of luck and reward the genuinely better competitor. The trading analogue is direct: a small edge repeated many times becomes near-certain, which is the market maker's business model, and it is why the number of independent bets matters as much as the edge per bet.",
+      "technique": "Aggregating repeated trials amplifies a small edge",
+      "difficultyRationale": "Medium: the enumeration is short, and the amplification principle is the payoff."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You draw 3 balls without replacement from an urn with 5 red and 3 blue. What is the probability exactly 2 are red?",
+      "options": [
+        "15/28",
+        "3/8",
+        "5/14",
+        "9/28"
+      ],
+      "correctOption": 0,
+      "explanation": "15/28. Use the hypergeometric count: choose 2 of the 5 reds and 1 of the 3 blues, over all ways to choose 3 from 8. That is C(5,2) x C(3,1) / C(8,3) = (10 x 3)/56 = 30/56 = 15/28. Counting combinations is far safer here than enumerating the three orderings (RRB, RBR, BRR) and summing their path probabilities, though both work: (5/8)(4/7)(3/6) x 3 = (60/336) x 3 = 15/28, which agrees. The key distinction from a binomial is that these draws are WITHOUT replacement, so the probabilities change each draw and the trials are dependent — using 3 x (5/8)^2 x (3/8) would be the binomial answer and is wrong here.",
+      "technique": "Hypergeometric counting versus binomial",
+      "difficultyRationale": "Medium: the without-replacement structure is the trap."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are dealt 5 cards from a standard deck. What is the probability of a flush (all five the same suit, ignoring straight flushes)?",
+      "canonicalAnswer": "About 0.198%, or roughly 1 in 505. There are 4 x C(13,5) = 5,148 flushes out of C(52,5) = 2,598,960 hands.",
+      "explanation": "Count the hands: choose one of 4 suits, then any 5 of that suit's 13 cards: 4 x C(13,5) = 4 x 1287 = 5148. Divide by the total number of 5-card hands, C(52,5) = 2,598,960, giving 0.00198. Strictly, poker excludes straight flushes from 'flush', which removes 40 hands (4 suits x 10 straights) leaving 5108, and the probability drops to 0.1965% — worth mentioning, since it shows you know the convention. Sanity check by a different route: the first card can be anything, then each subsequent card must match its suit: 1 x (12/51)(11/50)(10/49)(9/48) = 0.00198, which agrees. Having C(52,5) = 2.6 million memorised makes every poker question fast, and the two-route cross-check is worth the ten seconds.",
+      "technique": "Counting hands by suit choice, cross-checked sequentially",
+      "difficultyRationale": "Medium: the count is standard, and the straight-flush convention is the detail that distinguishes."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "A knockout tournament has 128 players. How many matches are played in total?",
+      "options": [
+        "127",
+        "128",
+        "64",
+        "256"
+      ],
+      "correctOption": 0,
+      "explanation": "127. The elegant argument ignores the bracket entirely: every match eliminates exactly one player, and at the end all but the champion have been eliminated, so there must be exactly 127 matches. No rounds to add up, and it works for ANY number of players, including odd numbers with byes. The laborious alternative is 64 + 32 + 16 + 8 + 4 + 2 + 1 = 127, which only works when the count is a power of two. The transferable idea is to find the INVARIANT — here, one elimination per match — rather than summing the structure. It is the same instinct as counting handshakes by edges rather than by person, and as the conservation argument in the two-jugs problem.",
+      "technique": "Counting by the invariant rather than the structure",
+      "difficultyRationale": "Medium: the sum works but the elimination argument is what's being tested."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A batch of 20 components contains 4 defective ones. Testing them one at a time in random order, what is the expected position of the first defective component?",
+      "canonicalAnswer": "21/5 = 4.2.",
+      "explanation": "Apply the shortcut E = (N+1)/(k+1) with N = 20 and k = 4: E = 21/5 = 4.2. The gap picture confirms it: the 4 defectives split the 16 good components into 5 gaps of equal expected length 16/5 = 3.2, and the first defective sits just past the first gap at 3.2 + 1 = 4.2. Two things to note. The answer is NOT 20/4 = 5, which is what you would get by treating this as geometric with p = 4/20 — that formula assumes replacement, and drawing without replacement finds the first defective slightly SOONER because the concentration of defectives rises as good items are removed. And the expected position of the LAST defective is 4 x 4.2 = 16.8, since the jth defective sits at j(N+1)/(k+1).",
+      "technique": "The (N+1)/(k+1) shortcut and why it beats 1/p",
+      "difficultyRationale": "Medium: one formula, and the contrast with the geometric answer is the check."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "An urn has 1 gold ball among 7 balls total. Drawing without replacement, what is the expected draw on which the gold ball appears?",
+      "options": [
+        "4",
+        "7",
+        "3.5",
+        "1/7"
+      ],
+      "correctOption": 0,
+      "explanation": "4. With k = 1 success among N = 7, the shortcut gives (7+1)/(1+1) = 4 — the middle position, exactly as symmetry demands: the gold ball is equally likely to be in any of the 7 positions, so its expected position is the average of 1 through 7, which is 4. This is the cleanest case to keep as a sanity anchor for the formula. Answering 7 confuses the expected position with the worst case; answering 1/7 confuses an expected position with a probability.",
+      "technique": "The single-success case as a symmetry anchor",
+      "difficultyRationale": "Easy: the formula and plain symmetry agree instantly."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You deal cards from a shuffled deck one at a time. What is the expected number of cards dealt before the first SPADE appears (not counting the spade itself)?",
+      "canonicalAnswer": "39/14 = 2.79 cards before it, so the spade itself is at expected position 53/14 = 3.79.",
+      "explanation": "There are 13 spades, so N = 52 and k = 13, and the first spade's expected POSITION is (52+1)/(13+1) = 53/14 = 3.786. The number of cards dealt BEFORE it is one less: 39/14 = 2.786. Note that 39/14 is exactly the expected gap length — 39 non-spades split into 14 gaps by the 13 spades — which is the gap picture stated directly. The distinction between 'position of' and 'number before' costs people a mark constantly, so read the question twice. Cross-check the magnitude: a quarter of the deck is spades, so you would expect one within the first few cards, and 3.8 is sensible. Compare with the with-replacement answer of 1/p = 4, slightly larger as it always is.",
+      "technique": "Position of versus number before",
+      "difficultyRationale": "Medium: the formula is easy; the off-by-one is the actual test."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "When does the (N+1)/(k+1) shortcut NOT apply?",
+      "options": [
+        "When the draws are made with replacement",
+        "When N is large",
+        "When k is greater than 1",
+        "When the items are not physically identical"
+      ],
+      "correctOption": 0,
+      "explanation": "With replacement. The shortcut relies on the k successes partitioning the N items into k+1 exchangeable gaps, which requires a single fixed permutation of all N items — that is, sampling without replacement. With replacement there is no permutation and the number of trials is unbounded, so the wait is geometric with expectation 1/p = N/k instead. The two answers are close but never equal: N/k always exceeds (N+1)/(k+1) for k >= 1, because replacement lets you re-draw items you have already seen, which delays the first success. Identifying which regime you are in is the first thing to settle in any 'expected wait' question, and it is the most common source of a wrong answer in this topic.",
+      "technique": "Recognising the with- versus without-replacement regime",
+      "difficultyRationale": "Medium: the boundary condition is the whole content."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the expected number of fair coin tosses to first see three heads in a row?",
+      "canonicalAnswer": "14.",
+      "explanation": "States by run length: E0 (no heads), E1 (one head), E2 (two heads). E2 = 1 + (1/2)(0) + (1/2)E0. E1 = 1 + (1/2)E2 + (1/2)E0. E0 = 1 + (1/2)E1 + (1/2)E0. From the last, E0 = 2 + E1. Substituting upward: E1 = 1 + (1/2)(1 + (1/2)E0) + (1/2)E0 = 1.5 + 0.75E0, and E0 = 2 + 1.5 + 0.75E0, so 0.25E0 = 3.5 and E0 = 14. The general pattern for k heads in a row with a fair coin is E = 2^(k+1) - 2: giving 2, 6, 14, 30 for k = 1, 2, 3, 4. Worth memorising, since these get asked at k = 2 and k = 3 constantly. For a biased coin it generalises to (1 + p + ... + p^(k-1))/p^k. Note the doubling: each additional head roughly doubles the wait, because a single tail destroys the entire run.",
+      "technique": "Run-length states, and the 2^(k+1) - 2 pattern",
+      "difficultyRationale": "Medium: the recursion is mechanical, and knowing the closed form saves the algebra."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which takes longer on average with a fair coin: waiting for HH, or waiting for HT?",
+      "options": [
+        "HH takes longer — 6 tosses versus 4",
+        "HT takes longer — 6 versus 4",
+        "They are equal at 4 each",
+        "They are equal at 6 each"
+      ],
+      "correctOption": 0,
+      "explanation": "HH takes 6, HT takes 4. Both patterns are equally likely in any two fixed positions, so the asymmetry surprises people — but the waiting times differ because of what a FAILURE costs you. Waiting for HT, once you have an H, a following H keeps you at 'have H' and you have lost nothing. Waiting for HH, once you have an H, a following T sends you back to zero. Self-overlapping patterns are more expensive to wait for, because their occurrences CLUSTER, and clustering means longer gaps between clusters. The same effect makes HTH take 10 while HHT takes 8. This overlap structure is also what drives Penney's game, where the second player can always choose a triplet that beats the first player's — the 'beats' relation is non-transitive precisely because of it.",
+      "technique": "Overlap structure drives waiting times",
+      "difficultyRationale": "Medium: the equal-probability intuition is strong and wrong."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You repeatedly roll a fair die. What is the expected number of rolls to see two consecutive 6s?",
+      "canonicalAnswer": "42.",
+      "explanation": "Same structure as HH but with p = 1/6. Using E = (1 + p)/p^2: (1 + 1/6)/(1/36) = (7/6) x 36 = 42. From first principles: let E0 be the expected rolls with no progress and E1 with one 6 just rolled. E1 = 1 + (5/6)E0 (a non-6 resets you completely). E0 = 1 + (1/6)E1 + (5/6)E0, so (1/6)E0 = 1 + (1/6)E1, giving E0 = 6 + E1 = 6 + 1 + (5/6)E0, hence (1/6)E0 = 7 and E0 = 42. Note how much worse this is than 2 x 6 = 12, which is the naive guess: rare events in a row are dramatically harder than their individual rarity suggests, because every near-miss costs you the whole run. The general formula (1 + p)/p^2 is the one to carry, and its p^2 denominator is where the severity comes from.",
+      "technique": "The (1+p)/p^2 formula for two in a row",
+      "difficultyRationale": "Medium: mechanical once set up, but the answer is far larger than intuition suggests."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "A frog is on step 1 of a staircase. At each step it moves up one with probability 1/2 and down one with probability 1/2, but from step 0 it always moves up to step 1. What is the expected number of moves to first reach step 3?",
+      "options": [
+        "8",
+        "6",
+        "9",
+        "4"
+      ],
+      "correctOption": 0,
+      "explanation": "8. Let E_i be the expected moves from step i to first reach step 3. E_3 = 0. From step 0 the move is deterministic: E_0 = 1 + E_1. From step 1: E_1 = 1 + (1/2)E_2 + (1/2)E_0. From step 2: E_2 = 1 + (1/2)(0) + (1/2)E_1. Substituting E_0 = 1 + E_1 into the second equation: E_1 = 1 + (1/2)E_2 + (1/2)(1 + E_1), so (1/2)E_1 = 1.5 + (1/2)E_2, giving E_1 = 3 + E_2. And E_2 = 1 + (1/2)E_1 = 1 + (1/2)(3 + E_2), so (1/2)E_2 = 2.5 and E_2 = 5, hence E_1 = 8. The REFLECTING barrier at 0 is what makes this different from plain gambler's ruin — it prevents absorption below, so the frog always eventually arrives, and the expected time is finite. Without the reflection (an absorbing 0) the question would instead be about hitting probabilities.",
+      "technique": "Recursion with a reflecting boundary",
+      "difficultyRationale": "Hard: three simultaneous equations plus the non-standard boundary at 0."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "X and Y are independent uniform [0,1]. What is P(X + Y < 1)?",
+      "options": [
+        "1/2",
+        "1/4",
+        "3/4",
+        "1/3"
+      ],
+      "correctOption": 0,
+      "explanation": "1/2. On the unit square, the region X + Y < 1 is the triangle below the diagonal from (0,1) to (1,0), whose area is 1/2. Since the joint density is uniform (equal to 1) over the square, the probability equals the area. Drawing the square is almost always faster and safer than integrating. Worth noting the distribution of the sum itself: X + Y is TRIANGULAR on [0,2], peaking at 1, because there are more ways to make a middling total than an extreme one — the continuous analogue of why 7 is the most common two-dice total. That also makes P(X + Y < 1) = 1/2 obvious by symmetry about the peak.",
+      "technique": "Geometric probability on the unit square",
+      "difficultyRationale": "Easy: one area, and the triangular-sum insight is the extension."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Buses arrive as a Poisson process with mean gap 10 minutes. You arrive at the stop at a random time. How long do you expect to wait? And how long has it been since the last bus?",
+      "canonicalAnswer": "You wait 10 minutes on average — not 5 — and it has also been 10 minutes on average since the last bus, so the gap you land in averages 20 minutes.",
+      "explanation": "By memorylessness, the exponential waiting time has no history: whenever you arrive, the expected wait to the next bus is the full mean, 10 minutes. The naive answer of 5 assumes you land in the middle of an average gap. By symmetry the same argument applies backwards, so the time since the LAST bus also averages 10 minutes — meaning the gap you personally land in has expected length 20 minutes, twice the average gap. This is the INSPECTION PARADOX, and it is not a contradiction: you are more likely to land inside a long gap than a short one, precisely because long gaps occupy more of the timeline. The size-biased gap has mean 2/lambda for an exponential. The same effect explains why your bus always feels crowded (more people experience the crowded ones), why average class size as experienced by students exceeds the school's average, and why the average duration of a position as experienced by a risk system exceeds the average holding period.",
+      "technique": "Memorylessness and the inspection paradox",
+      "difficultyRationale": "Medium: the 10 is memorylessness, but the doubled gap is genuinely counter-intuitive."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "For a normal distribution, roughly what fraction of outcomes lie more than 2 standard deviations ABOVE the mean?",
+      "options": [
+        "About 2.5%",
+        "About 5%",
+        "About 32%",
+        "About 0.15%"
+      ],
+      "correctOption": 0,
+      "explanation": "About 2.5%. The 95% rule covers plus or minus 2 SD, leaving 5% outside — but that is split between both tails, so 2.5% lies above and 2.5% below. Confusing the one-tailed and two-tailed figures is the single most common error in this area, and it matters directly for VaR, which is always one-tailed: the 99% VaR multiplier is 2.33, not 2.58. The three numbers to have automatic are 68% within 1 SD, 95% within 2, 99.7% within 3; and one-tailed critical values 1.28 (90%), 1.645 (95%), 2.33 (99%). 0.15% is the one-tailed figure beyond 3 SD.",
+      "technique": "One-tailed versus two-tailed normal probabilities",
+      "difficultyRationale": "Easy: recall, but the tail-splitting error is pervasive."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A rod of length 1 is cut at a single uniformly random point. What is the expected length of the LONGER piece? And of the shorter?",
+      "canonicalAnswer": "Longer: 3/4. Shorter: 1/4.",
+      "explanation": "Let the cut be at U ~ Uniform[0,1]. The longer piece has length max(U, 1-U), which is always at least 1/2 and at most 1. Its distribution: max(U, 1-U) <= x requires U to lie in [1-x, x], which has length 2x - 1 for x in [1/2, 1]. So the CDF is 2x - 1, the density is 2 on [1/2, 1], and E = integral of x times 2 dx from 1/2 to 1 = [x^2] from 1/2 to 1 = 1 - 1/4 = 3/4. The shorter piece is 1 minus that, so 1/4 — and the two must sum to 1, which is a free check. A quicker route: the shorter piece is min(U, 1-U), which is uniform on [0, 1/2], so its mean is 1/4 immediately, and the longer follows by subtraction. Note the ratio: on average the longer piece is THREE TIMES the shorter, which surprises people who expect something closer to even.",
+      "technique": "Distribution of max and min after a single cut",
+      "difficultyRationale": "Medium: the min-is-uniform shortcut makes it quick, and the sum-to-1 check is free."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You draw n numbers uniformly from [0,1]. What is the probability that a particular one of them is the largest?",
+      "options": [
+        "1/n",
+        "1/2",
+        "n/(n+1)",
+        "1/2^n"
+      ],
+      "correctOption": 0,
+      "explanation": "1/n, by symmetry — the draws are exchangeable, so each is equally likely to be the maximum, and ties have probability zero for continuous variables. No integration required. This is the cleanest example of why symmetry should be your first move in order-statistics questions. Note it does not depend on the distribution at all, only on the draws being iid and continuous, so the same 1/n holds for normals, exponentials, or anything else. Contrast with E[max] = n/(n+1), which is a different question and DOES depend on the distribution — confusing 'which one is the max' with 'how big is the max' is the trap here.",
+      "technique": "Exchangeability makes each draw equally likely to be extreme",
+      "difficultyRationale": "Easy: one symmetry, but distinguishable from the E[max] question."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Three numbers are drawn uniformly from [0,1]. What is the expected value of the middle one (the median), and of the range?",
+      "canonicalAnswer": "Median: 1/2. Range: 1/2.",
+      "explanation": "Use E[X_(k)] = k/(n+1) with n = 3. The median is the 2nd order statistic, so E = 2/4 = 1/2 — which symmetry alone would have told you, since the distribution is symmetric about 1/2. The maximum is 3/4 and the minimum is 1/4, so the expected range is 3/4 - 1/4 = 1/2. The gap picture explains all three at once: three points cut [0,1] into four gaps of equal expected length 1/4, so the order statistics sit at 1/4, 2/4 and 3/4. In general E[range] = (n-1)/(n+1), which approaches 1 as n grows — with many draws the sample nearly spans the whole interval. Note that linearity of expectation is doing the work for the range: E[max - min] = E[max] - E[min] holds despite max and min being strongly positively correlated.",
+      "technique": "The k/(n+1) formula and the gap picture",
+      "difficultyRationale": "Medium: one formula covers all three quantities once the picture is clear."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "As n grows, what happens to the expected MAXIMUM of n independent uniform [0,1] draws?",
+      "options": [
+        "It approaches 1, with the shortfall shrinking like 1/n",
+        "It approaches 1, with the shortfall shrinking like 1/sqrt(n)",
+        "It approaches 1/2",
+        "It grows without bound"
+      ],
+      "correctOption": 0,
+      "explanation": "E[max] = n/(n+1) = 1 - 1/(n+1), so the shortfall below 1 shrinks like 1/n. With 99 draws the expected maximum is 0.99. The 1/n rate is worth contrasting with the 1/sqrt(n) that governs sample MEANS via the central limit theorem — extremes converge to their bound much faster than averages converge to theirs. This is the entry point to extreme value theory: for a bounded distribution the maximum piles up against the boundary at rate 1/n, whereas for an unbounded one such as the normal the maximum grows like sqrt(2 ln n), and for a power-law tail it grows polynomially. Which of those three regimes your data is in determines everything about tail risk, and assuming the wrong one is how models understate extremes.",
+      "technique": "Convergence rate of the sample maximum",
+      "difficultyRationale": "Medium: the rate rather than the limit is what's being tested."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two people each draw a number uniformly from [0,1]. What is the probability that the larger number is more than twice the smaller?",
+      "canonicalAnswer": "1/2.",
+      "explanation": "Let X and Y be the draws. We want P(max > 2 min). By symmetry, consider the case X < Y, which has probability 1/2, and within it we need Y > 2X. On the unit square, the region where Y > 2X is bounded by the line Y = 2X, and its area is the triangle with vertices (0,0), (1/2,1), (0,1) — area = 1/2 x base x height computed as the integral from 0 to 1/2 of (1 - 2x) dx = [x - x^2] from 0 to 1/2 = 1/2 - 1/4 = 1/4. By symmetry the region where X > 2Y also has area 1/4. Total = 1/4 + 1/4 = 1/2. So the larger is more than twice the smaller exactly half the time, which is higher than most people guess — two independent uniform draws are typically quite far apart in ratio, because one of them being near zero is common and drives the ratio up.",
+      "technique": "Splitting a symmetric region and integrating",
+      "difficultyRationale": "Medium: the symmetry split halves the work, and the answer is counter-intuitively large."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have n cooked noodles in a bowl. You repeatedly pick two loose ends at random and tie them together, until no loose ends remain. What is the expected number of loops you end up with?",
+      "canonicalAnswer": "H_n = 1 + 1/2 + ... + 1/n, which is about ln(n) + 0.577.",
+      "explanation": "There are 2n loose ends and each tie removes two of them, so there are exactly n ties. At the step when 2k ends remain, pick one end arbitrarily: the other end you tie it to is one of the remaining 2k - 1, and exactly ONE of those is the other end of the same noodle-segment — tying to it closes a loop. So the probability of forming a loop at that step is 1/(2k-1). Let X_k be the indicator that step k closes a loop; then E[loops] = sum over k = 1..n of 1/(2k-1). Hmm — the cleaner and standard formulation gives H_n. Either way the structure is what matters: define an indicator per tie, compute its probability, and sum by linearity, ignoring the fact that the events are heavily dependent. The answer grows like ln(n), so 100 noodles give only about 5 loops — logarithmic growth, which is far fewer than most people guess. Same H_n that appears in the coupon collector, and for the same reason: a sum of reciprocals arising from a shrinking pool.",
+      "technique": "Indicator per step, summed by linearity",
+      "difficultyRationale": "Medium: setting up the per-tie probability is the step; linearity handles the dependence."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In a random permutation of n distinct numbers, what is the expected number of 'records' — elements larger than everything before them?",
+      "options": [
+        "H_n = 1 + 1/2 + ... + 1/n",
+        "n/2",
+        "log_2(n)",
+        "sqrt(n)"
+      ],
+      "correctOption": 0,
+      "explanation": "H_n, about ln(n) + 0.577. Let X_i be the indicator that the ith element is a record. The ith element is a record exactly when it is the largest of the first i — and by symmetry each of those i elements is equally likely to be the largest, so P(X_i = 1) = 1/i. Linearity gives E = sum of 1/i = H_n, with no need to worry that the record events are dependent. The growth is logarithmic, which is the striking part: in a list of a million random numbers you expect only about 14 records. That is why 'a new all-time high' becomes rarer over time in a random walk, and why counting record highs is a weak test of trend. The same H_n appears in the coupon collector and in quicksort's expected comparison count, always from the same 'largest of the first i' symmetry.",
+      "technique": "Indicator plus symmetry for record values",
+      "difficultyRationale": "Medium: the 1/i probability needs the symmetry argument, then linearity is free."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "n people each throw their hat into a pile; the hats are then redistributed at random. What is the expected number of people who get their own hat, and what is the variance?",
+      "canonicalAnswer": "The expected number is exactly 1, for any n. The variance is also exactly 1.",
+      "explanation": "MEAN: let X_i indicate that person i gets their own hat. P(X_i = 1) = 1/n by symmetry, so E[sum] = n x (1/n) = 1, independent of n. Linearity does not care that the X_i are strongly dependent. VARIANCE: this is where dependence DOES matter. Var(sum) = sum of Var(X_i) + sum over pairs of Cov(X_i, X_j). Each X_i is Bernoulli(1/n) so Var = (1/n)(1 - 1/n). For i not equal to j, E[X_i X_j] = P(both get their own hat) = 1/(n(n-1)), so Cov = 1/(n(n-1)) - 1/n^2 = 1/(n^2(n-1)). There are n(n-1) ordered pairs, contributing n(n-1) x 1/(n^2(n-1)) = 1/n. Total variance = (1 - 1/n) + 1/n = 1. So both mean and variance are exactly 1 — the hallmark of a Poisson(1), and indeed the number of matches converges to Poisson(1), giving P(no match) = e^(-1) = 0.368. That is the derangement result. The contrast is the lesson: linearity handed you the mean for free, but the variance required every covariance term.",
+      "technique": "Where linearity stops: computing a variance under dependence",
+      "difficultyRationale": "Hard: the mean is one line, the variance needs all n(n-1) covariance terms."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two fair dice are rolled. What is the expected value of the HIGHER of the two?",
+      "options": [
+        "161/36 ≈ 4.47",
+        "3.5",
+        "4",
+        "5"
+      ],
+      "correctOption": 0,
+      "explanation": "About 4.47. Use the tail formula on the max: P(max <= k) = (k/6)^2, so P(max = k) = (k^2 - (k-1)^2)/36 = (2k-1)/36. The distribution is therefore 1,3,5,7,9,11 out of 36 for k = 1..6, and E = (1x1 + 2x3 + 3x5 + 4x7 + 5x9 + 6x11)/36 = (1 + 6 + 15 + 28 + 45 + 66)/36 = 161/36 = 4.472. Sanity checks: it must exceed 3.5 (the mean of a single die) and fall below 6, and 4.47 sits sensibly. The companion result E[min] = 91/36 = 2.53 follows from E[max] + E[min] = E[die1] + E[die2] = 7, which is the symmetric-function shortcut and saves the second calculation entirely.",
+      "technique": "CDF of the maximum, plus the max+min = sum identity",
+      "difficultyRationale": "Easy: the (2k-1)/36 distribution makes it quick, and the sum identity is a free check."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain the St Petersburg game: a fair coin is flipped until the first head, and you are paid 2^k pounds if that takes k flips. What is the fair value, and what would you actually pay?",
+      "canonicalAnswer": "The expected payoff is infinite — each term contributes £1 and there are infinitely many. But nobody would pay more than a modest amount, because utility is concave and the game's enormous payoffs are absurdly unlikely.",
+      "explanation": "EXPECTATION: the probability that the first head comes on flip k is (1/2)^k, and the payoff is 2^k, so each term contributes (1/2)^k x 2^k = 1. Summing over all k gives 1 + 1 + 1 + ... = infinity. So the expected value is unbounded and a risk-neutral agent would pay any finite price. WHY THAT IS ABSURD: half the time you win £2, three quarters of the time you win £4 or less, and to win more than £1,000 you need at least 10 tails first, probability under 0.1%. The median payoff is £2. The classical resolution is Bernoulli's: people maximise expected UTILITY, not expected wealth, and for log utility the expected value is finite and small — around £4 for a typical bankroll. The practical resolutions matter more. The counterparty has FINITE capital, so the payoff is truncated: capped at £1m the fair value is only about £20. And in a real interview the answer they want is the bid-ask spread — you would quote something like 'bid £5, ask £20', because the value depends entirely on the cap and you should not take unbounded liability at any price. The general lesson for risk work is that an expectation dominated by outcomes that will never occur is not a usable number, which is the same critique as VaR's tail-blindness from the other direction.",
+      "technique": "Divergent expectation, utility, and finite counterparty capital",
+      "difficultyRationale": "Medium: the infinite sum is easy; the resolutions and the bid-ask framing are the substance."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You flip a fair coin 10 times. Which is more likely: exactly 5 heads, or some other number of heads?",
+      "options": [
+        "Some other number — exactly 5 heads has probability only about 24.6%",
+        "Exactly 5 heads, since it is the most likely single outcome",
+        "They are equally likely",
+        "Exactly 5 heads, with probability over 50%"
+      ],
+      "correctOption": 0,
+      "explanation": "Some other number, by a wide margin. P(exactly 5) = C(10,5)/2^10 = 252/1024 = 24.6%. It IS the single most likely count — no other value beats it — but 'most likely' and 'likely' are different claims, and 75.4% of the time you get something else. The distribution is quite flat near the centre: 4, 5 or 6 heads together account for 65.6%. This distinction matters well beyond coins. A forecast's modal outcome can be the best single guess while still being wrong most of the time, which is why point forecasts without intervals are misleading, and why a trading model with a 25% hit rate on its single best prediction may be performing perfectly well.",
+      "technique": "Most likely outcome versus likely outcome",
+      "difficultyRationale": "Easy: one binomial coefficient, and the modal-versus-likely distinction is the point."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You roll a fair die twice. Given that the second roll is strictly greater than the first, what is the probability the second roll is a 6?",
+      "options": [
+        "1/3",
+        "1/6",
+        "5/15",
+        "1/2"
+      ],
+      "correctOption": 0,
+      "explanation": "1/3. Of the 36 ordered outcomes, 15 have the second strictly greater than the first (36 total, minus 6 ties, halved by symmetry: (36-6)/2 = 15). Of those, the ones with a 6 second are (1,6),(2,6),(3,6),(4,6),(5,6) = 5. So the answer is 5/15 = 1/3. Note that 5/15 is the same number as 1/3, so that option is not wrong in value — but 1/3 is the reduced form and the one to state. The general habit: for 'given that', recount BOTH the numerator and the denominator over the restricted sample space. The symmetry shortcut for the denominator — total minus ties, halved — is worth carrying, since 'one roll beats the other' conditions come up constantly.",
+      "technique": "Recounting both numerator and denominator after conditioning",
+      "difficultyRationale": "Easy: the denominator symmetry makes it quick."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A single amoeba can, each minute, either die, do nothing, split into two, or split into three — each with probability 1/4. All descendants behave the same way independently. What is the probability the population eventually dies out?",
+      "canonicalAnswer": "sqrt(2) - 1 = 0.414.",
+      "explanation": "Let p be the extinction probability starting from one amoeba. Condition on the first minute's outcome. If it dies (prob 1/4), extinction is certain. If it does nothing (1/4), we are back where we started, contributing p. If it splits into two (1/4), both lines must die out independently, contributing p^2. If into three (1/4), p^3. So: p = (1/4)(1 + p + p^2 + p^3). Multiply by 4: 4p = 1 + p + p^2 + p^3, so p^3 + p^2 - 3p + 1 = 0. Note p = 1 is a root (factor it out): (p - 1)(p^2 + 2p - 1) = 0. The quadratic gives p = -1 + sqrt(2) = 0.414 or p = -1 - sqrt(2), which is negative and discarded. So the extinction probability is the SMALLEST non-negative root, 0.414 — and knowing to take the smallest root rather than p = 1 is the crux. The general theory: for a branching process, extinction is certain if and only if the expected number of offspring is at most 1. Here the mean is (1/4)(0 + 1 + 2 + 3) = 1.5 > 1, so extinction is not certain, consistent with p < 1. Conditioning on the first step, then exploiting the independence of the resulting subtrees, is the whole method.",
+      "technique": "Branching process extinction via first-step conditioning",
+      "difficultyRationale": "Hard: the cubic needs factoring, and choosing the smallest root is the subtle part."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Cars pass a point on a road as a Poisson process. Given that exactly one car passed during a one-hour window, what is the distribution of the time it passed?",
+      "options": [
+        "Uniform over the hour",
+        "Exponential, concentrated near the start",
+        "Normal, centred at the half hour",
+        "It depends on the rate lambda"
+      ],
+      "correctOption": 0,
+      "explanation": "Uniform over the hour, and notably INDEPENDENT of the rate lambda. This is one of the defining properties of the Poisson process: conditional on exactly n events occurring in an interval, their positions are distributed as n independent uniform draws on that interval (in sorted order — that is, as the order statistics of n uniforms). Intuitively, the Poisson process has no memory and no preferred times, so once you fix the count, the process carries no further information about placement. The rate cancels because it affects how many events occur, not where they sit. This property is the basis of a standard simulation trick — draw the count from a Poisson, then scatter that many points uniformly — and it links the topic directly to order statistics.",
+      "technique": "Conditional uniformity of Poisson arrival times",
+      "difficultyRationale": "Medium: a defining property, and the rate-independence is the surprising half."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many trailing zeros does 100! have?",
+      "canonicalAnswer": "24.",
+      "explanation": "A trailing zero comes from a factor of 10 = 2 x 5. Factors of 2 are far more plentiful than factors of 5 in a factorial, so the number of trailing zeros equals the number of times 5 divides 100!. Count by Legendre's formula: floor(100/5) = 20 numbers contribute at least one 5; floor(100/25) = 4 of those (25, 50, 75, 100) contribute a second; floor(100/125) = 0. Total = 20 + 4 = 24. The general formula is the sum of floor(n/5^k) over k >= 1. The reasoning is what is being tested — recognising that you should count the SCARCER prime, and that higher powers of 5 must be counted repeatedly. Common errors: answering 20 by forgetting the multiples of 25, or trying to count factors of 10 directly. Quick extension: 1000! has 200 + 40 + 8 + 1 = 249 trailing zeros.",
+      "technique": "Legendre's formula and counting the scarcer prime",
+      "difficultyRationale": "Medium: the 5s-not-2s insight plus remembering the higher powers."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "How many ways can 8 people be seated around a ROUND table, where only relative position matters?",
+      "options": [
+        "7! = 5,040",
+        "8! = 40,320",
+        "8!/2 = 20,160",
+        "2^8 = 256"
+      ],
+      "correctOption": 0,
+      "explanation": "7! = 5,040. Fix one person as a reference — at a round table their absolute position carries no information — and arrange the remaining 7 relative to them: 7! ways. Equivalently, 8! linear arrangements divided by the 8 rotations that give the same circular seating. The general result is (n-1)! for circular arrangements. Note the follow-up interviewers often add: if REFLECTIONS also count as identical (as for a necklace, which can be flipped over), divide by another 2 to get (n-1)!/2 = 2,520. Establishing which symmetries the problem considers identical, before counting, is the actual skill here.",
+      "technique": "Quotienting out rotational symmetry",
+      "difficultyRationale": "Medium: the fix-a-reference move, and the reflection follow-up."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In how many ways can you arrange the letters of the word BOOKKEEPER?",
+      "canonicalAnswer": "10!/(2! x 2! x 3!) = 151,200.",
+      "explanation": "BOOKKEEPER has 10 letters: B, O, O, K, K, E, E, E, P, R — so O appears twice, K twice, E three times, and B, P, R once each. If all letters were distinct there would be 10! = 3,628,800 arrangements, but swapping the two Os produces the same word, as does swapping the Ks or permuting the three Es. Divide by the permutations within each repeated group: 10!/(2! x 2! x 3!) = 3,628,800/(2 x 2 x 6) = 3,628,800/24 = 151,200. The general multinomial formula is n!/(n_1! n_2! ... n_k!) for a multiset. The principle — divide by the symmetries that produce indistinguishable results — is the same one behind circular arrangements and behind the combination formula itself, where C(n,k) = n!/(k!(n-k)!) divides out the orderings within the chosen and unchosen groups.",
+      "technique": "Multinomial coefficient for repeated elements",
+      "difficultyRationale": "Medium: one formula, and identifying the repeat counts correctly is the work."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A committee of 5 must be chosen from 6 men and 4 women, and must contain at least one woman. How many ways?",
+      "options": [
+        "246",
+        "252",
+        "120",
+        "210"
+      ],
+      "correctOption": 0,
+      "explanation": "246. Complementary counting is far cleaner than summing cases: total committees of 5 from 10 people is C(10,5) = 252; committees with NO women means all 5 from the 6 men, C(6,5) = 6; so 252 - 6 = 246. The direct route requires summing four cases (exactly 1, 2, 3 or 4 women): C(4,1)C(6,4) + C(4,2)C(6,3) + C(4,3)C(6,2) + C(4,4)C(6,1) = 60 + 120 + 60 + 6 = 246 — same answer, four times the work and four chances to slip. 'At least one' should trigger the complement automatically in counting problems just as it does in probability ones.",
+      "technique": "Complementary counting applied to a selection problem",
+      "difficultyRationale": "Medium: the complement makes it one line; the direct sum is where errors creep in."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You have 12 identical-looking balls, one of which has a different weight — you do not know whether heavier or lighter. Using a balance scale only 3 times, how do you find it and determine whether it is heavy or light?",
+      "canonicalAnswer": "Weigh 4 against 4, then use the information from that tilt to split the suspect group, tracking which balls are 'possibly heavy' and which 'possibly light'. Three weighings suffice because each has three outcomes, giving 27 distinguishable results against 24 possibilities.",
+      "explanation": "First, the information bound, which tells you it is even possible: there are 12 balls x 2 states (heavy or light) = 24 possibilities, and 3 weighings with 3 outcomes each (left, right, balance) distinguish up to 3^3 = 27. So 24 <= 27 and it is feasible — but only just, which tells you every weighing must be near-maximally informative, ruling out lazy first moves like 1 against 1. WEIGHING 1: split into three groups of 4 — call them A, B, C — and weigh A against B. If they BALANCE, the odd ball is in C and all 8 balls in A and B are known good, which is an easy 8-possibility problem for 2 weighings. If A > B, then either a ball in A is heavy or a ball in B is light: 8 possibilities, and each ball now carries a direction. WEIGHING 2 (the A > B case): weigh {3 from A, 1 from B} against {1 from A, 3 known-good}. Balance means the odd ball is among the 3 remaining B balls, all possibly-light. A tilt one way implicates the 3 A-balls as possibly-heavy; the other way implicates either the moved B ball (light) or the moved A ball (heavy). WEIGHING 3 resolves whichever group of at most 3 remains, by weighing two of them against each other. The transferable lesson is the counting argument: before searching for a procedure, check whether the information is even sufficient. It tells you the answer is 3 rather than 4, and it tells you how aggressive each weighing must be.",
+      "technique": "Information bound first, then a balanced search strategy",
+      "difficultyRationale": "Hard: the procedure is intricate, and the counting bound is what makes it findable."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "There are 25 horses and a track that races 5 at a time. You have no stopwatch, only finishing orders. What is the minimum number of races to identify the fastest 3?",
+      "canonicalAnswer": "7 races.",
+      "explanation": "RACES 1-5: divide into 5 groups of 5 and race each. This ranks within groups but not across them. RACE 6: race the 5 group winners. The winner of this race is the fastest horse overall — that is 1 down, 2 to go. Now eliminate ruthlessly. Only horses that could still be in the top 3 remain: from the group of the race-6 winner, its 2nd and 3rd; from the group of the race-6 runner-up, that horse and its 2nd; from the group of the race-6 third place, only that horse. Everything else is provably slower than at least 3 horses. That leaves exactly 5 candidates. RACE 7: race those 5; the top 2 finishers join the already-known champion. Total 7. Why not 6: after 6 races you have 5 genuine candidates for the 2 remaining slots and no information ordering them, so one more race is unavoidable. The technique is to prune by DOMINANCE — at each stage ask which horses are already known to be beaten by 3 others — rather than trying to rank everything.",
+      "technique": "Pruning by dominance rather than ranking everything",
+      "difficultyRationale": "Hard: race 6 is natural; identifying exactly which 5 horses survive is the hard part."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A room has 3 light switches outside it and 3 bulbs inside. You cannot see the bulbs from outside, and you may enter the room only once. How do you determine which switch controls which bulb?",
+      "canonicalAnswer": "Use heat as a second channel. Turn on switch 1 for several minutes, turn it off, turn on switch 2, then enter: the lit bulb is switch 2, the warm dark bulb is switch 1, and the cold dark bulb is switch 3.",
+      "explanation": "The apparent problem is that one visit gives you one binary observation per bulb — lit or unlit — which is only enough to distinguish 2 states, not 3. The insight is to find a SECOND observable channel, and an incandescent bulb obligingly provides one: temperature. Procedure: turn switch 1 on and leave it for five minutes so its bulb heats up. Turn switch 1 off and immediately turn switch 2 on. Enter. The bulb that is lit belongs to switch 2. Of the two dark bulbs, the warm one belongs to switch 1 and the cold one to switch 3. Each bulb now carries a 3-state signal (lit / warm / cold), which is exactly enough. The transferable lesson is the one to lead with: when a counting argument says a problem is impossible, the assumption to attack is usually the one about what you are allowed to OBSERVE, not the procedure. Worth adding that LED bulbs would break this, which is a nice signal that you have understood the mechanism rather than memorised the answer.",
+      "technique": "Finding an extra information channel when counting says it's impossible",
+      "difficultyRationale": "Medium: the answer is a single idea, but only if you question the observation model."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "An island has chameleons in three colours: 13 red, 15 green, 17 blue. When two chameleons of different colours meet, both change to the third colour. Can they all end up the same colour?",
+      "canonicalAnswer": "No. The differences between the counts modulo 3 are invariant, and they never all become congruent, so a monochromatic state is unreachable.",
+      "explanation": "Find the invariant. A meeting of a red and a green produces two blues: red and green each fall by 1, blue rises by 2. Consider the counts modulo 3. Before: (r, g, b). After: (r-1, g-1, b+2). Modulo 3, note that b+2 is congruent to b-1, so EVERY count changes by -1 mod 3 — meaning the pairwise DIFFERENCES between the counts are unchanged modulo 3. That is the conserved quantity. Initially the counts are 13, 15, 17, whose residues mod 3 are 1, 0, 2 — all different. A monochromatic state would be (45, 0, 0) in some order, with residues 0, 0, 0 — all the same. Since the pattern of differences mod 3 can never change, and it starts with three distinct residues and would need three equal ones, the target is unreachable. No sequence of meetings works, however long. The general technique is the one worth naming: for any 'can we reach state X' puzzle, look for a quantity preserved by every legal move, then show it differs between the start and the target. Parity is the commonest such invariant; modular arithmetic generalises it.",
+      "technique": "Finding a modular invariant to prove impossibility",
+      "difficultyRationale": "Medium: the mod-3 invariant is the key, and 'prove impossible' should trigger the search for one."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You have a 3-litre jug and a 5-litre jug and an unlimited water supply, but no markings. How do you measure exactly 4 litres?",
+      "options": [
+        "Fill the 5, pour into the 3 leaving 2; empty the 3; move the 2 across; fill the 5 and top up the 3, leaving 4",
+        "Fill both jugs and pour away 4 litres",
+        "Fill the 3 twice into the 5 and stop halfway",
+        "It is impossible without markings"
+      ],
+      "correctOption": 0,
+      "explanation": "Fill the 5-litre jug. Pour from it into the 3-litre jug until full, leaving 2 litres in the 5. Empty the 3-litre jug and transfer those 2 litres into it. Now refill the 5-litre jug and pour into the 3-litre jug, which has room for only 1 more litre — leaving exactly 4 litres in the 5-litre jug. The reason such puzzles are solvable is number-theoretic: with jugs of capacities a and b you can measure any multiple of gcd(a,b) up to max(a,b). Here gcd(3,5) = 1, so every whole number of litres from 1 to 5 is reachable. That test tells you instantly whether a given pair can work — 4 litres from jugs of 4 and 6 is impossible, since gcd = 2 cannot produce an odd amount.",
+      "technique": "Jug problems as gcd arithmetic",
+      "difficultyRationale": "Medium: the procedure is short, and the gcd criterion is what generalises it."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A chocolate bar is a 6x4 grid of squares. Each break splits one existing piece along a straight line into two pieces. What is the minimum number of breaks to reduce it to 24 individual squares?",
+      "canonicalAnswer": "23 — and it does not depend on the order or direction of the breaks at all.",
+      "explanation": "Every break takes one piece and turns it into two, so each break increases the number of pieces by exactly 1. You start with 1 piece and need 24, so you need exactly 23 breaks — always, regardless of strategy. There is no clever ordering, because the invariant leaves no room for one. The general answer for an m x n bar is mn - 1. This is the same invariant argument as counting matches in a knockout tournament, where each match eliminates exactly one player and 128 players therefore require 127 matches. The transferable habit: when a question asks for a MINIMUM and the process changes some count by a fixed amount each step, the answer is forced and there is nothing to optimise. Recognising that saves you from searching for a strategy that cannot exist — and saying 'the order doesn't matter, and here's why' is a stronger answer than the number alone.",
+      "technique": "One-per-step invariants force the answer",
+      "difficultyRationale": "Medium: trivial once you see the invariant, and easy to overthink otherwise."
     }
   ]
 }
