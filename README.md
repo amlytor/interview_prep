@@ -67,7 +67,7 @@ nothing leaves your machine at all.
 - **Mock Interview** — a timed, mixed-topic session (default 5 questions, configurable).
   No feedback is shown until you finish; the debrief screen grades everything at once
   and gives you a per-question breakdown plus session-level weak topics.
-- **Your own topics** — the 31 seeded topics aren't a fixed set. "+ New topic" on
+- **Your own topics** — the 33 seeded topics aren't a fixed set. "+ New topic" on
   the Topics page lets you add your own: give it a title, pick its prerequisites,
   write the note. It then behaves exactly like a seeded topic — mastery ring,
   unlock rules, Learn mode, quiz generation, trickle-down credit. Or paste raw,
@@ -82,16 +82,17 @@ nothing leaves your machine at all.
 - **Settings** — AI provider and model, per-provider API keys, a personal
   spend-awareness note, backup, and JSON export/import of all your data.
 
-Seed content lives in `src/data/studyNotes.json` (31 authored notes, whose
+Seed content lives in `src/data/studyNotes.json` (33 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
-(307 authored questions), merged with the original starter bank for ~325 seeded
+(324 authored questions), merged with the original starter bank for ~340 seeded
 questions across the taxonomy. Every topic has at least six questions and a
 note of 1,900–4,700 characters. Topics you add yourself live in your browser
 alongside your progress, not in these files.
 
 Coverage spans the material a quant finance or quant risk interview actually
 draws on: probability, combinatorics and statistics; calculus methods and
-linear algebra; Markov chains, martingales and Ito calculus; order statistics;
+linear algebra; modular arithmetic and proof technique; Markov chains,
+martingales and Ito calculus; order statistics;
 derivatives and the Greeks; VaR and risk theory; fixed income and the yield
 curve; portfolio theory and CAPM; time series and volatility modelling; optimal
 stopping; algorithms and numerical methods; and Fermi estimation. The questions
@@ -262,8 +263,8 @@ original v1 schema is migrated automatically on first load, and the old
 src/
   types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
   data/
-    studyNotes.json      31 authored study notes + the prerequisite graph (source of truth)
-    seedQuestions.json   307 authored seed questions (source of truth)
+    studyNotes.json      33 authored study notes + the prerequisite graph (source of truth)
+    seedQuestions.json   324 authored seed questions (source of truth)
   lib/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files

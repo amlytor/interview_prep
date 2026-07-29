@@ -3655,6 +3655,212 @@
       "explanation": "Every break takes one piece and turns it into two, so each break increases the number of pieces by exactly 1. You start with 1 piece and need 24, so you need exactly 23 breaks — always, regardless of strategy. There is no clever ordering, because the invariant leaves no room for one. The general answer for an m x n bar is mn - 1. This is the same invariant argument as counting matches in a knockout tournament, where each match eliminates exactly one player and 128 players therefore require 127 matches. The transferable habit: when a question asks for a MINIMUM and the process changes some count by a fixed amount each step, the answer is forced and there is nothing to optimise. Recognising that saves you from searching for a strategy that cannot exist — and saying 'the order doesn't matter, and here's why' is a stronger answer than the number alone.",
       "technique": "One-per-step invariants force the answer",
       "difficultyRationale": "Medium: trivial once you see the invariant, and easy to overthink otherwise."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the last digit of 7^100?",
+      "options": [
+        "1",
+        "7",
+        "9",
+        "3"
+      ],
+      "correctOption": 0,
+      "explanation": "1. Powers of 7 cycle through last digits 7, 9, 3, 1 and then repeat with period 4. Since 100 is divisible by 4, 7^100 ends in the same digit as 7^4, which is 1. Formally, 7^4 = 2401 is congruent to 1 mod 10, so 7^100 = (7^4)^25 is congruent to 1^25 = 1. The general method: find the cycle length of the last digit, reduce the exponent modulo that length, and read it off. Every digit's cycle divides 4 (a consequence of Euler's theorem, since phi(10) = 4), so checking the first four powers is always enough. This is the standard shape of 'last digit of a huge power' questions.",
+      "technique": "Cyclic order of powers modulo 10",
+      "difficultyRationale": "Easy: one cycle to find, and the period-4 fact makes it instant."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Prove that any number is divisible by 9 exactly when its digit sum is. Then check 123,456,789 without dividing.",
+      "canonicalAnswer": "Because 10 is congruent to 1 mod 9, every power of 10 is too, so a number is congruent to the sum of its digits mod 9. The digit sum of 123,456,789 is 45, which is divisible by 9, so the number is.",
+      "explanation": "Write the number as a sum of digits times powers of ten: N = sum of d_k * 10^k. Since 10 is congruent to 1 mod 9, every 10^k is congruent to 1^k = 1. So N is congruent to sum of d_k * 1 = the digit sum, mod 9. The two are therefore divisible by 9 together, and more strongly they leave the SAME remainder. Check: 1+2+3+4+5+6+7+8+9 = 45, and 4+5 = 9, so yes, divisible by 9 (and indeed by 9 exactly, since 45 is). The same argument with a different base gives the other rules: 10 is congruent to 1 mod 3, so the digit-sum test works for 3 as well; and 10 is congruent to -1 mod 11, so for 11 you use the ALTERNATING digit sum. This also underlies 'casting out nines', an old arithmetic check: if a multiplication is correct, it must be correct mod 9 too, which catches most slips in seconds. Useful when an interviewer asks you to sanity-check a large product in your head.",
+      "technique": "Reducing a base modulo n to derive a divisibility rule",
+      "difficultyRationale": "Medium: the proof is three lines, and generalising to 3 and 11 shows you have it."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have a 3-litre jug and a 5-litre jug. Which whole numbers of litres can you measure? What if the jugs were 4 and 6 litres?",
+      "canonicalAnswer": "With 3 and 5 you can measure any whole number from 1 to 5, because gcd(3,5) = 1. With 4 and 6, gcd = 2, so only even amounts are reachable — 1, 3 and 5 litres are impossible.",
+      "explanation": "Every operation — filling, emptying, pouring between jugs — leaves the total water as an integer combination of the two capacities: a*3 + b*5 for integers a and b. By Bezout's identity the set of such combinations is exactly the multiples of gcd(3,5) = 1, so every whole number is reachable (subject to the jug sizes bounding what you can hold). With capacities 4 and 6, gcd = 2, so every reachable amount is a multiple of 2 and no odd quantity can ever be measured, however you pour. That is an INVARIANT argument: parity of the total volume is conserved by every legal move. The practical value is that the gcd test settles solvability in two seconds, before you waste time hunting for a pouring sequence that cannot exist. And when it IS solvable, the extended Euclidean algorithm hands you the sequence: for 4 litres from jugs of 3 and 5, note 4 = 3*3 - 5, meaning fill the 3-litre jug three times into the 5-litre one, emptying the 5 whenever it fills.",
+      "technique": "Bezout's identity as a reachability test",
+      "difficultyRationale": "Medium: the gcd criterion is the insight, and it turns a search into a one-line check."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Take any 5 integers. Why must two of them differ by a multiple of 4?",
+      "options": [
+        "There are only 4 residue classes mod 4, so two integers must share one",
+        "Because 5 is prime",
+        "Because every 5 consecutive integers span a multiple of 4",
+        "It is only true if the integers are consecutive"
+      ],
+      "correctOption": 0,
+      "explanation": "Residue classes are the boxes. Every integer leaves remainder 0, 1, 2 or 3 on division by 4 — four boxes for five integers — so by pigeonhole two share a remainder. If a and b are congruent mod 4 then 4 divides a - b, which is exactly the claim. Nothing about the integers being consecutive or 5 being prime enters. The general statement is worth carrying: any n+1 integers contain two whose difference is divisible by n. This pairing of MODULAR ARITHMETIC (to build the boxes) with PIGEONHOLE (to force the collision) is one of the most productive combinations in interview problems, and neither half works alone — the whole skill is realising the residues are the categories.",
+      "technique": "Residue classes as pigeonholes",
+      "difficultyRationale": "Medium: the boxes have to be constructed, and residues are the construction that works."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "An island has 13 red, 15 green and 17 blue chameleons. When two of different colours meet, both change to the third colour. Can they ever all become the same colour? Prove your answer.",
+      "canonicalAnswer": "No. Every meeting changes all three counts by -1 modulo 3, so the differences between the counts are invariant mod 3. They start as three distinct residues (1, 0, 2) and a monochromatic state needs three equal ones, so it is unreachable.",
+      "explanation": "Find the invariant. A red-green meeting produces two blues: red falls by 1, green falls by 1, blue rises by 2. Work modulo 3 and note that +2 is congruent to -1, so EVERY count changes by -1 mod 3 on every meeting, whichever pair meets. Since all three shift by the same amount, the pairwise DIFFERENCES between counts are unchanged modulo 3 — that is the conserved quantity. Initially the counts 13, 15, 17 have residues 1, 0, 2 mod 3 — all distinct. A monochromatic state is (45, 0, 0) in some order, with residues 0, 0, 0 — all equal. Since the pattern of residues can never change, and it starts with three distinct values and would need three equal ones, no sequence of meetings can reach it. Note what makes this a PROOF rather than evidence: the invariant holds for every legal move without exception, so no amount of searching could ever find a counterexample. Worth stating the general recipe, since it is the transferable part: for any 'can we reach state X' question, look for a quantity every move changes predictably, compute it at the start and at the target, and if they differ you are done. Mod 2 (parity) is the most common choice; mod 3 is the next. And if your chosen modulus gives matching values, that proves nothing — you must try another.",
+      "technique": "Constructing a modular invariant to prove impossibility",
+      "difficultyRationale": "Hard: spotting that +2 ≡ -1 mod 3 is the whole trick, and it is not suggested by the question."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Prove that n^3 - n is divisible by 6 for every integer n.",
+      "canonicalAnswer": "Factor it as (n-1)n(n+1) — three consecutive integers. One of any three consecutive integers is divisible by 3, and at least one is even, so the product is divisible by both 2 and 3, hence by 6.",
+      "explanation": "Factor first: n^3 - n = n(n^2 - 1) = (n-1)n(n+1), the product of three CONSECUTIVE integers. Now argue divisibility separately for the coprime factors of 6. By 3: among any three consecutive integers, exactly one is congruent to 0 mod 3, so 3 divides the product. By 2: among any three consecutive integers at least one is even (in fact at least one of any two consecutive is), so 2 divides the product. Since 2 and 3 are coprime and both divide the product, 6 divides it. The coprimality matters — you may only combine divisors this way when they share no factor, which is why this argument gives 6 but would not give 4 from two factors of 2. The general pattern is worth carrying: a product of k consecutive integers is always divisible by k!, because among any k consecutive integers exactly one falls in each residue class mod k. That instantly gives n^3 - n divisible by 3! = 6, and it means binomial coefficients are integers. The alternative route — checking n = 0, 1, 2, 3, 4, 5 mod 6 case by case — also works and is a perfectly good fallback if the factorisation does not come to you, but it is six times the work.",
+      "technique": "Factor into consecutive integers, then argue prime by prime",
+      "difficultyRationale": "Medium: the factorisation is the step, and combining the divisors needs coprimality."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Seven coins sit in a circle, all heads up. You may flip any three ADJACENT coins. Show that an odd number of moves is necessary, and explain how modular arithmetic settles the whole problem.",
+      "canonicalAnswer": "Each coin must be flipped an odd number of times, so the total flips is a sum of 7 odd numbers, which is odd. Each move contributes 3 flips, so 3m is odd, forcing m odd. Working in GF(2) turns the whole puzzle into a linear system whose unique solution is 'use all seven moves'.",
+      "explanation": "PARITY BOUND. Flipping a coin twice is the same as not flipping it, so what matters is each coin's flip count modulo 2, and every coin must be flipped an ODD number of times. Summing over the 7 coins, the total number of coin-flips is a sum of 7 odd numbers, hence odd. But each move flips exactly 3 coins, so the total is 3m. Therefore 3m is odd, and since 3 is odd this forces m odd — ruling out 2, 4 and 6 immediately, with no search. FULL SOLUTION. Number the positions 0 to 6 and let x_i be 1 if you use the move starting at i. Coin j is covered by the moves starting at j, j-1 and j-2, so the requirement becomes x_j + x_(j-1) + x_(j-2) = 1 mod 2 for every j — a linear system over GF(2). Its associated polynomial is 1 + t + t^2, and gcd(1 + t + t^2, t^7 + 1) = 1 over GF(2), because t^7 + 1 factors as (t+1)(t^3+t+1)(t^3+t^2+1) and 1 + t + t^2 is none of those. A trivial gcd means the homogeneous system has only the zero solution, so the inhomogeneous one has a UNIQUE solution — and x = all ones plainly works, covering each coin exactly 3 times. So the answer is exactly 7 moves. The lesson: reducing mod 2 converts a flipping puzzle into linear algebra, where 'is it solvable and in how many ways' becomes a computation rather than a search.",
+      "technique": "Reducing a flipping puzzle to linear algebra over GF(2)",
+      "difficultyRationale": "Hard: the parity bound is accessible, the uniqueness argument is not."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Why can't you cancel a common factor from both sides of a congruence the way you would in an ordinary equation?",
+      "options": [
+        "Cancelling k is only valid when gcd(k, n) = 1",
+        "Congruences do not support multiplication",
+        "You can always cancel; the rule is the same as for equations",
+        "Cancelling is only valid when n is prime"
+      ],
+      "correctOption": 0,
+      "explanation": "Cancellation needs gcd(k, n) = 1. Counterexample: 2 x 3 is congruent to 2 x 8 mod 10 (both are 6 mod 10... check: 6 and 16, and 16 mod 10 = 6, yes), but cancelling the 2 would give 3 congruent to 8 mod 10, which is false. The problem is that 2 shares a factor with 10, so multiplying by 2 is not invertible mod 10. When gcd(k,n) = 1, k has a multiplicative inverse mod n and cancellation is legitimate. Note the last option is close but not right: n prime is SUFFICIENT (every nonzero k is then coprime to n) but not necessary — you can cancel 3 mod 10 perfectly well. Addition, subtraction and multiplication always pass through congruences unharmed; division is the only operation that needs a side condition, and it is the standard source of errors.",
+      "technique": "When cancellation is valid in modular arithmetic",
+      "difficultyRationale": "Easy: one rule, but it is the operation people wrongly assume is safe."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A chocolate bar is an m x n grid. Each break splits one piece along a straight line. Prove that reducing it to individual squares always takes exactly mn - 1 breaks, whatever order you use.",
+      "canonicalAnswer": "Every break increases the piece count by exactly 1. You start with 1 piece and need mn, so exactly mn - 1 breaks are required — the order is irrelevant and no strategy can do better.",
+      "explanation": "The invariant is the number of PIECES. Each break takes one piece and produces two, so the count rises by exactly 1 — regardless of where you break, which piece you choose, or which direction you break in. Starting at 1 piece and finishing at mn, you need exactly mn - 1 breaks. This is a complete proof of both directions at once: it is a lower bound (fewer breaks cannot produce enough pieces) and an upper bound (any sequence of breaks reaches the target in that many), so there is nothing to optimise. Saying 'and the order does not matter, here is why' is a stronger answer than the number alone, because the question is phrased to make you hunt for a clever strategy that cannot exist. The same argument counts matches in a knockout tournament: each match eliminates exactly one player, so 128 players require exactly 127 matches, byes and bracket shape notwithstanding. The transferable pattern: when a question asks for a MINIMUM and every legal step changes some count by a fixed amount, the answer is forced. Recognising that saves you from searching.",
+      "technique": "Per-step invariants force the answer",
+      "difficultyRationale": "Medium: trivial once you see the invariant, and easy to overthink into a search."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You must prove a statement holds for all n, and the inductive step splits the problem into two pieces of unpredictable sizes. What do you need?",
+      "options": [
+        "Strong induction — assume the statement for all values up to n",
+        "Ordinary induction is sufficient",
+        "Proof by contradiction",
+        "A direct construction"
+      ],
+      "correctOption": 0,
+      "explanation": "Strong induction. Ordinary induction gives you the statement only for n-1 when proving n, which is useless if your step reduces the problem to two pieces of sizes k and n-k for some unknown k. Strong induction assumes it for ALL values below n, so both pieces are covered whatever the split. The chocolate-bar and coin-split problems are the standard examples: breaking a bar into pieces of size k and n-k needs the claim for both, and you cannot control k. Worth knowing that strong induction is not actually a stronger axiom — it is equivalent to ordinary induction applied to the statement 'holds for all values up to n' — but it is far more convenient, and reaching for it when the split is unpredictable is the practical skill.",
+      "technique": "Recognising when ordinary induction is insufficient",
+      "difficultyRationale": "Medium: the distinction only matters when the recursion branches unpredictably."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have 1,000 bottles of wine, exactly one poisoned. A test takes 24 hours and you have 24 hours. Prove that 10 test subjects suffice and that 9 do not.",
+      "canonicalAnswer": "Each subject's outcome is one bit, so k subjects distinguish at most 2^k cases. 2^9 = 512 < 1000, so 9 is impossible; 2^10 = 1024 >= 1000, and binary labelling achieves it.",
+      "explanation": "LOWER BOUND (the half people skip). After the tests you observe a pattern of sick and healthy subjects — one bit each — so k subjects produce at most 2^k distinguishable outcomes. To identify which of 1000 bottles is poisoned you need at least 1000 distinguishable outcomes, so 2^k >= 1000, giving k >= 10 since 2^9 = 512 is not enough. That is a genuine impossibility proof, not a failure to find a scheme. CONSTRUCTION. Number the bottles 0 to 999 in binary, using 10 bits. Subject i drinks from every bottle whose ith bit is 1. The resulting pattern of illness, read as a binary number, IS the index of the poisoned bottle. Both halves are needed for a complete answer: the bound shows 10 is necessary, the construction shows it is sufficient. Two conditions are worth calling out because they are doing real work in the question. The tests must run in PARALLEL — the 24-hour limit is what forbids adaptive, sequential testing, which would allow a different trade-off. And each subject must be able to drink from up to 500 bottles simultaneously, which is why this is a puzzle rather than a protocol. The general technique — count how much information each observation yields, then compare with the number of cases — is the most reusable idea in this topic. It also gives the 3^k bound for balance-scale weighings, where each has three outcomes, and the n log n lower bound for comparison sorting.",
+      "technique": "Information-counting lower bound plus a matching construction",
+      "difficultyRationale": "Medium: the construction is well known; producing the impossibility half is what's tested."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You have 12 identical-looking balls, one of which differs in weight — you do not know whether it is heavier or lighter. Show that 3 weighings on a balance scale are enough, and explain how you would know to aim for 3.",
+      "canonicalAnswer": "Count first: 12 balls x 2 states = 24 possibilities, and 3 weighings with 3 outcomes each distinguish up to 27. So 3 might suffice and 2 (giving 9) cannot. The tightness tells you every weighing must split the possibilities near-evenly, which rules out timid opening moves.",
+      "explanation": "START WITH THE COUNT, because it tells you what to aim for. There are 12 x 2 = 24 possibilities (which ball, and whether heavy or light). Each weighing has THREE outcomes — left heavier, right heavier, balanced — so k weighings distinguish at most 3^k. With k = 2 that is 9 < 24, impossible. With k = 3 it is 27 >= 24, so it might work — but only just, and that near-tightness is informative: every weighing must split the remaining possibilities into three roughly equal parts, so an opening move of 1 ball against 1 (which leaves at least 20 cases in the 'balanced' branch) cannot be part of a solution. That reasoning points straight at 4 against 4. WEIGHING 1: split into groups A, B, C of 4 and weigh A against B. If BALANCED, the odd ball is among C's 4, all 8 others are known good, and 8 possibilities remain for 2 weighings (9 available) — comfortable. If A > B, then either a ball in A is heavy or one in B is light: 8 possibilities, each ball now carrying a direction. WEIGHING 2 (the A > B branch): weigh {3 from A, 1 from B} against {1 from A, 3 known-good}. Balanced means the odd ball is one of the 3 untouched B balls, all possibly-light. Tilting left implicates the 3 moved A balls as possibly-heavy. Tilting right means either the moved B ball is light or the moved A ball is heavy — 2 cases. WEIGHING 3 resolves whichever set of at most 3 remains by weighing two of them against each other. The lesson to lead with: for any minimum-number-of-tests question, count the information before searching for a procedure. Here it tells you the answer is 3 rather than 4, and it tells you how aggressive the first weighing must be.",
+      "technique": "Information bound first, then a maximally-splitting search",
+      "difficultyRationale": "Hard: the procedure is intricate, and the counting bound is what makes it findable at all."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Prove that any sequence of n^2 + 1 distinct real numbers contains a monotone subsequence of length n + 1.",
+      "canonicalAnswer": "Label each position with the pair (longest increasing subsequence ending here, longest decreasing subsequence ending here). If no monotone subsequence exceeds n, every label lies in an n x n grid — n^2 boxes for n^2 + 1 positions — so two positions share a label, which is impossible.",
+      "explanation": "This is Erdos-Szekeres, and it is proof by contradiction with an invented set of pigeonholes. For each position i, let a_i be the length of the longest INCREASING subsequence ending at i, and d_i the longest DECREASING subsequence ending at i. Suppose, for contradiction, that no monotone subsequence has length n+1. Then every a_i and every d_i lies in {1, ..., n}, so each label (a_i, d_i) lives in an n x n grid of n^2 possible values. We have n^2 + 1 positions, so by pigeonhole two positions i < j share a label. Now derive the contradiction. The numbers are distinct, so either x_i < x_j — in which case the longest increasing subsequence ending at i can be extended by x_j, giving a_j >= a_i + 1 > a_i — or x_i > x_j, in which case d_j > d_i by the same argument. Either way the labels differ, contradicting the assumption that they were equal. Hence no such labelling is possible and a monotone subsequence of length n+1 must exist. TIGHTNESS: n^2 numbers can be arranged with no monotone run longer than n — concatenate n decreasing blocks of length n, with each block's values above the next. So the bound cannot be improved. What makes this hard is that the pigeonholes are pairs of DERIVED STATISTICS, not anything present in the problem statement. That is the pattern worth remembering: when the obvious categories do not work, look for a quantity you can compute at each position and box by that instead.",
+      "technique": "Contradiction plus pigeonholes built from derived statistics",
+      "difficultyRationale": "Hard: the boxes must be invented from scratch and the contradiction needs care in both cases."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "There are 25 horses and a track that races 5 at a time. You have no timer, only finishing orders. Find the fastest 3, and prove your race count is minimal.",
+      "canonicalAnswer": "7 races. Race 5 groups of 5, then race the 5 winners; that identifies the champion and prunes the field to exactly 5 remaining candidates, which one final race resolves. Six cannot suffice because after any 6 races at least 5 horses remain viable for the 2 open slots.",
+      "explanation": "RACES 1-5: divide into 5 groups of 5 and race each, ranking within groups. RACE 6: race the 5 group winners. Its winner is the fastest horse overall. Now PRUNE BY DOMINANCE — ask which horses are already known to be beaten by at least 3 others, and discard them. Survivors: from the champion's group, its 2nd and 3rd; from the group of race 6's runner-up, that horse and its 2nd; from the group of race 6's third place, only that horse. Everything else is provably behind 3 or more horses. That leaves exactly 5 candidates for the 2 remaining podium slots. RACE 7: race those 5 and take the top 2. MINIMALITY: after 6 races you hold 5 genuine candidates and no information ordering them against each other, so at least one more race is unavoidable — 7 is optimal. Giving that argument matters: without it you have a method, not a proof, and 'I found a way to do it in 7' is a weaker answer than 'and 6 is impossible because...'. The transferable technique is pruning by dominance rather than trying to rank the whole field — you never need a total order, only enough comparisons to eliminate everyone who cannot place.",
+      "technique": "Pruning by dominance, plus a minimality argument",
+      "difficultyRationale": "Hard: race 6 is natural; identifying exactly which 5 survive, and proving 6 fails, is not."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A room has 3 light switches outside and 3 bulbs inside, invisible from outside. You may enter only once. Determine which switch controls which bulb — and say what the counting argument tells you before you find the trick.",
+      "canonicalAnswer": "Counting says one visit gives one binary observation per bulb, which distinguishes only 2 states, not 3 — so a purely on/off scheme is provably impossible. That is the signal to find a second observable channel: heat.",
+      "explanation": "COUNT FIRST, and this is the part worth leading with. On entering you observe each bulb as lit or unlit — one bit per bulb — but you need to distinguish 3 switches, so a binary observation per bulb is provably insufficient. The counting argument does not merely fail to find a solution; it proves no on/off scheme can work. That tells you precisely what to attack: not the procedure, but the assumption about what you are allowed to OBSERVE. THE SOLUTION. An incandescent bulb offers a second channel: temperature. Turn switch 1 on and leave it for five minutes so its bulb heats up. Turn switch 1 off and immediately turn switch 2 on. Enter. The lit bulb is switch 2; of the two dark bulbs, the warm one is switch 1 and the cold one is switch 3. Each bulb now carries a 3-state signal — lit, warm, cold — which is exactly enough for 3 switches. The general lesson: when a counting bound says a problem is impossible, the assumption to question is usually the observation model rather than the method. Worth adding that LED bulbs would defeat this, which signals you have understood the mechanism rather than recalled the answer — and an interviewer who raises it is testing exactly that.",
+      "technique": "Using an impossibility count to locate the false assumption",
+      "difficultyRationale": "Medium: the trick is one idea, but the counting argument is what makes it findable rather than lucky."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A question asks for the minimum number of moves to achieve something. What does a complete answer require?",
+      "options": [
+        "A lower bound proving fewer is impossible, AND a construction achieving it",
+        "A construction achieving the number",
+        "A lower bound argument",
+        "An example showing it works for a small case"
+      ],
+      "correctOption": 0,
+      "explanation": "Both halves. A construction alone shows the number is ACHIEVABLE but says nothing about whether fewer would do — you might simply not have found the better method. A lower bound alone shows fewer is impossible but leaves open whether your target is reachable at all. Only together do they pin the minimum. In practice the lower bound comes from an invariant (each break adds one piece) or an information count (each weighing yields log 3 bits), and the construction is an explicit procedure. Interviewers reliably push on whichever half you skip, and it is almost always the lower bound — most people give a method and stop. Where the bound is tight, showing that k-1 fails is the strongest possible evidence you understood the problem rather than recalled the answer.",
+      "technique": "The two halves of a minimality proof",
+      "difficultyRationale": "Medium: meta-knowledge, but it changes how you answer a whole class of questions."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which technique proves that a target state can NEVER be reached, no matter how many moves you make?",
+      "options": [
+        "Find an invariant that differs between the start and the target",
+        "Try many move sequences and observe that none works",
+        "Induction on the number of moves",
+        "A counting bound on the number of states"
+      ],
+      "correctOption": 0,
+      "explanation": "An invariant. Find a quantity that every legal move changes in a predictable way (or leaves alone), compute it for the start and for the target, and if they differ then no sequence of moves can connect them — because the quantity would have to change in a way no move permits. That is a proof, valid for all sequences of any length, which is exactly what exhaustive searching can never give you: failing to find a solution is not evidence that none exists. Parity is the most common invariant, modular arithmetic the general form. Induction and counting bounds are useful tools but answer different questions — induction proves statements about all n, counting bounds lower-bound the number of steps needed when the target IS reachable.",
+      "technique": "Invariants as impossibility proofs",
+      "difficultyRationale": "Easy: conceptual, and the contrast with searching is the point."
     }
   ]
 }
