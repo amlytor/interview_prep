@@ -4641,6 +4641,276 @@
       "explanation": "Illiquid exotics. Model risk scales with how much the model is DECIDING rather than translating. Futures and swaps are priced by no-arbitrage from observable instruments, so the model is essentially bookkeeping — real curve-construction choices exist but the price is pinned by the market. Liquid vanilla options are priced BY the market, and Black-Scholes just converts that price into an implied vol; everyone knows the assumptions are false and the smile is the visible proof, so nobody is misled. For an illiquid exotic there is no observable price to anchor to, so the model output IS the value, it IS the P&L, and two desks can hold identical trades at materially different marks. That is where validation effort and model reserves belong.",
       "technique": "Model risk scales with the model's decision-making role",
       "difficultyRationale": "Easy: the ranking follows once you ask what sets the price."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Your options book is delta-neutral but has gamma of -3,000. Can you neutralise the gamma by trading the underlying?",
+      "options": [
+        "No — the underlying has zero gamma, so you need a traded OPTION",
+        "Yes, buy 3,000 shares",
+        "Yes, sell 3,000 shares",
+        "Only if the underlying is a future rather than a stock"
+      ],
+      "correctOption": 0,
+      "explanation": "No. The underlying's value is linear in its own price, so its second derivative is exactly zero — no quantity of stock changes your gamma. To change gamma you need an instrument that is itself convex in the underlying, which means another option. The standard procedure is two-step and the ORDER matters: first buy w_T units of a traded option to make total gamma zero, where w_T = -gamma_portfolio/gamma_option, then re-hedge delta with the underlying, because the option you just bought brought its own delta with it. Doing it the other way round leaves you delta-exposed. The same argument applies to VEGA — the underlying has none, so vega hedging also requires options. Delta is the only Greek you can hedge with the underlying alone, which is precisely why delta hedging is done continuously and gamma/vega hedging only periodically: options cost bid-offer to trade and the hedge decays.",
+      "technique": "Only convex instruments can change gamma",
+      "difficultyRationale": "Medium: the reasoning is one line, and the two-step ordering is the practical detail."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A portfolio has delta 0, gamma -5,000, and vega -8,000. A traded option has delta 0.6, gamma 0.5 and vega 2.0. How do you make the book gamma- and vega-neutral, and what does it cost you?",
+      "canonicalAnswer": "You cannot do both with one option — you need two different traded options plus the underlying. Solve the 2x2 system for the two option quantities, then re-hedge delta with stock. The cost is bid-offer on the options plus the theta you take on.",
+      "explanation": "ONE OPTION IS NOT ENOUGH. A single instrument gives you one degree of freedom; you have two constraints (gamma and vega). Using this option to zero gamma needs +10,000 units (5,000/0.5), which brings vega of 10,000 x 2.0 = +20,000, overshooting the -8,000 you needed to offset. So you need TWO traded options with different gamma/vega ratios — in practice different maturities, since gamma is concentrated short-dated and vega long-dated. Solve: w1*g1 + w2*g2 = 5,000 and w1*v1 + w2*v2 = 8,000, then hedge the resulting delta with the underlying. WHY THE MATURITY SPLIT WORKS: gamma scales like 1/sqrt(T) and vega like sqrt(T), so a short-dated and a long-dated option span the space. If you tried two options of the same maturity and strike the system would be singular. WHAT IT COSTS. Being short gamma and vega meant you were COLLECTING theta; neutralising them means giving that up, plus paying bid-offer on two option legs and the ongoing cost of re-hedging as the Greeks drift. That is the real trade-off on a desk: perfect neutrality is expensive, so books typically run delta tight, gamma and vega within limits rather than at zero, and rebalance when a limit is approached rather than continuously.",
+      "technique": "Solving a multi-Greek hedge as a linear system",
+      "difficultyRationale": "Hard: needs the degrees-of-freedom argument and the maturity split to make it solvable."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Write down the Taylor expansion of a portfolio's value change in terms of its Greeks, and say which terms matter most in practice.",
+      "canonicalAnswer": "dP = theta*dt + delta*dS + (1/2)*gamma*(dS)^2 + vega*dsigma + rho*dr + higher-order terms. For a delta-hedged book over a day, the gamma and theta terms dominate, with vega mattering when implied vol moves.",
+      "explanation": "THE EXPANSION. Portfolio value depends on spot, time, volatility and rates, so a second-order Taylor expansion gives dP = theta*dt + delta*dS + (1/2)*gamma*(dS)^2 + vega*dsigma + rho*dr, plus cross-terms (vanna = d(delta)/d(sigma), volga = d(vega)/d(sigma)) and higher orders. WHAT MATTERS. (1) If you are NOT delta-hedged, the delta term swamps everything — a 1% move on a 0.5 delta dwarfs any second-order effect, so first get delta flat. (2) Once delta-hedged, GAMMA and THETA dominate the daily P&L, and they are linked by the PDE: dP is approximately (1/2)*gamma*S^2*[(dS/S)^2 - sigma^2*dt], i.e. realised variance minus implied variance, scaled by gamma. That single expression is the daily P&L of a hedged option book. (3) VEGA matters on days when implied vol moves, which is often larger than the gamma P&L for a long-dated book. (4) RHO is usually negligible for short-dated equity options but matters for long-dated ones and for anything rates-related. PRACTICAL CAUTIONS. The expansion is LOCAL: it fails for large moves (where you need full revaluation) and for discontinuous payoffs like digitals and barriers, where the Greeks blow up near the discontinuity and no polynomial approximation is honest. This is also exactly why the delta-gamma VaR approximation exists and why it is still only an approximation.",
+      "technique": "Taylor expansion of portfolio value in the Greeks",
+      "difficultyRationale": "Medium: writing it is easy; ranking the terms by practical importance is the substance."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is rho, and when does it matter?",
+      "options": [
+        "Sensitivity to interest rates — significant for long-dated options and rates products, usually minor for short-dated equity options",
+        "Sensitivity to correlation, significant for basket options",
+        "Sensitivity to dividends",
+        "The second derivative of vega"
+      ],
+      "correctOption": 0,
+      "explanation": "Rho is dV/dr. For a European call it is positive (a higher rate lowers the present value of the strike you will pay, which helps), and for a put it is negative. Magnitude scales with the strike's discount factor and hence with maturity, so a 3-month equity option has negligible rho while a 5-year one does not — and for anything rates-based it is the dominant Greek, not an afterthought. Two practical notes. In a low-rate environment rho was widely ignored, and desks were caught out when rates moved sharply in 2022. And for FX options there are TWO rhos, one for each currency's rate, since both discount factors enter. The other options describe different quantities: correlation sensitivity has no standard Greek letter and is usually handled by scenario, dividend sensitivity is sometimes called psi.",
+      "technique": "Rho and when it stops being negligible",
+      "difficultyRationale": "Easy: definitional, and the maturity dependence is the practical part."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Black-Scholes assumes continuous rebalancing. What actually happens when you delta-hedge discretely, and how do you choose the frequency?",
+      "canonicalAnswer": "Discrete hedging leaves a residual P&L with zero mean but non-zero variance, proportional to gamma and to the square of the rebalancing interval. Hedging more often reduces that variance but costs more in transaction costs — so the frequency is a variance-versus-cost optimisation, not a convergence question.",
+      "explanation": "WHAT GOES WRONG. Between rebalances your delta is stale, so you carry an unintended directional position. The resulting hedging error has approximately zero mean — you are not systematically wrong — but a variance that scales with gamma^2 and with the rebalancing interval. In the continuous limit the variance goes to zero and you recover exact replication, which is the Black-Scholes result; in practice you rebalance daily or on a delta trigger and you keep the residual. THE TRADE-OFF. More frequent hedging reduces replication variance but multiplies transaction costs, which for a real book are bid-offer plus market impact. The optimum is where marginal cost equals marginal variance reduction, and the standard practical rules are: rebalance when delta moves beyond a BAND rather than on a fixed clock (a move-based trigger dominates a time-based one for the same cost), and widen the band when transaction costs are high or gamma is low. WHAT MAKES IT WORSE. Being SHORT gamma is the dangerous side: your hedging error compounds against you, since you rebalance after the move has gone against you. A gap — an overnight move or a news jump — is unhedgeable at any frequency, and that is where short-gamma books lose serious money. And near expiry, at-the-money, gamma explodes and no achievable frequency is adequate, which is why desks reduce those positions rather than trying to hedge through them.",
+      "technique": "Discrete hedging error as a variance-cost trade-off",
+      "difficultyRationale": "Medium: the zero-mean/non-zero-variance framing and the band rule are what show desk experience."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A trader runs a large book of options on the same underlying. How should they think about hedging?",
+      "options": [
+        "Hedge the NET Greeks of the whole book, not each option individually",
+        "Hedge each option separately to keep the attribution clean",
+        "Hedge only the largest position",
+        "Hedge only options that are in the money"
+      ],
+      "correctOption": 0,
+      "explanation": "Hedge the net position. The Greeks are additive across a book on the same underlying, so hundreds of individual positions collapse into a handful of numbers — net delta, gamma, vega, theta, rho — and only those need managing. Hedging option by option would multiply transaction costs enormously for zero risk benefit, since long and short positions largely offset before any trade is needed. This is the fundamental economy of a derivatives desk: it warehouses many offsetting client trades and hedges only the residual, which is what lets it quote tight prices. The caveats worth adding: Greeks only add across the SAME underlying, so a multi-name book needs a factor model or correlation assumptions to aggregate; and net Greeks conceal the distribution of risk, so a book that is net-flat gamma can still hold a large long position at one strike against a short at another, which behaves nothing like flat once spot moves. That is why desks look at gamma and vega profiles ACROSS strikes and maturities, not just the net number.",
+      "technique": "Netting Greeks across a book",
+      "difficultyRationale": "Medium: the answer is standard, and the 'net conceals the profile' caveat is the depth."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why are exotic options harder to hedge than vanillas, and what is static options replication?",
+      "canonicalAnswer": "Their Greeks can be discontinuous or unbounded — a barrier's delta can exceed 1 and flip sign at the barrier — so dynamic hedging requires trading huge size at exactly the worst moment. Static replication instead builds a portfolio of vanilla options that matches the exotic's payoff on the relevant boundary and then needs no rebalancing.",
+      "explanation": "WHY DYNAMIC HEDGING FAILS. For a vanilla, delta moves smoothly between 0 and 1 and gamma is bounded away from expiry. For a barrier option the value function has a discontinuity in its derivative at the barrier: a down-and-out call is worth something just above the barrier and exactly zero at it, so delta is very large near the barrier and can exceed 1. Worse, for an up-and-out call the value function slopes DOWNWARD near the barrier — you hedge a call by going long stock. So the dynamic hedge demands enormous trades precisely when spot is pinned at the barrier and the market is least accommodating, and you get whipsawed if spot oscillates across it. Digitals have the same pathology at the strike near expiry. STATIC REPLICATION (Derman-Ergener-Kani). Instead of rebalancing, construct a portfolio of standard options, chosen so that its value matches the exotic's along the BOUNDARY where the exotic's behaviour is determined — the barrier level over time for a barrier option. If the values match on the boundary and both satisfy the same PDE inside it, they match everywhere inside. Then the hedge needs no rebalancing at all: you put it on once and unwind when the barrier is hit. ADVANTAGES: no rebalancing cost, no gap risk, and it is robust to the hedge instruments' own model. LIMITATIONS: it needs liquid vanillas at the required strikes and maturities, the match is exact only under simplifying assumptions (typically zero drift or a specific vol structure), and residual model risk remains. Real desks use a hybrid — static replication for the bulk of the exposure, dynamic hedging for the residual.",
+      "technique": "Static replication as an answer to unhedgeable Greeks",
+      "difficultyRationale": "Hard: requires the barrier pathology first, then the boundary-matching argument."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "An options desk produces a scenario matrix of P&L across spot moves and volatility moves. Why is this more useful than the Greeks alone?",
+      "options": [
+        "Greeks are local approximations; the matrix shows actual revalued P&L for large moves and captures cross-effects",
+        "The matrix is quicker to compute than the Greeks",
+        "It removes the need to hedge delta",
+        "It shows the P&L attribution by trader"
+      ],
+      "correctOption": 0,
+      "explanation": "Because the Greeks are a LOCAL Taylor expansion and the risks that hurt are not local. A scenario matrix — typically spot from -20% to +20% against implied vol from -10 to +10 vol points, with the book fully revalued at each node — shows what actually happens for a large move, captures the cross-effects (vanna: how delta changes as vol moves; volga: how vega changes), and reveals cliffs from barriers and digitals that no polynomial approximation can express. It also surfaces the asymmetry a symmetric gamma number hides: a book can look modestly short gamma yet lose ten times more on a 20% fall than on a 20% rise, because vol rises in the fall. That is why every options desk reports a grid alongside the Greek summary, and why regulators pushed full revaluation over delta-gamma approximations in FRTB. The Greeks remain useful for the day-to-day hedging decision; the matrix is for understanding what you actually own.",
+      "technique": "Full revaluation versus a local expansion",
+      "difficultyRationale": "Medium: the local-approximation point is the answer, and the cross-effects make it concrete."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are long a 1-month at-the-money straddle, delta-hedged daily. Over the month spot ends exactly where it started and implied vol is unchanged. Did you make or lose money?",
+      "canonicalAnswer": "It depends entirely on the PATH. You profit if realised volatility over the month exceeded the implied vol you paid, and lose if it was lower. Where spot ended is irrelevant.",
+      "explanation": "This is the central insight of a hedged option book and it catches people out because the natural answer is 'nothing happened, so nothing changed'. Being long a delta-hedged straddle is a bet on REALISED versus IMPLIED volatility, not on direction. The daily P&L is approximately (1/2)*gamma*S^2*[(dS/S)^2 - sigma^2*dt] — you collect the squared realised move and pay the squared implied move each day. Sum over the month: if the stock oscillated wildly and came back, you rebalanced constantly, bought low and sold high each time, and made money despite ending flat. If it drifted quietly, you paid theta every day for movement that never came and lost. TWO PATHS, SAME ENDPOINT, OPPOSITE P&L. This is why 'volatility is a tradeable asset' is meaningful and why variance swaps exist — they pay realised minus implied variance directly, without the path-dependence introduced by the hedging schedule. PRACTICAL REFINEMENTS worth adding. The gamma weighting means moves matter MORE when spot is near the strike, so the same realised vol delivers different P&L depending on where it occurred relative to the strike — this is the 'dollar gamma weighting' that makes a hedged option position an imperfect vol trade. And discrete daily hedging means you capture close-to-close variance, not true realised variance, so intraday moves that reverse are lost.",
+      "technique": "Path dependence of hedged option P&L",
+      "difficultyRationale": "Medium: the answer is counter-intuitive, and the variance-swap contrast shows real understanding."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Vega is usually quoted per one volatility POINT. An option has vega of 20 and implied vol moves from 18% to 19%. What is the P&L?",
+      "options": [
+        "+20 for a long position",
+        "+2 for a long position",
+        "+0.2 for a long position",
+        "+2,000 for a long position"
+      ],
+      "correctOption": 0,
+      "explanation": "+20. The market convention is to quote vega as the value change for a ONE PERCENTAGE POINT move in implied volatility, so a move from 18 to 19 is exactly one point and the P&L is the vega itself. The trap is the underlying mathematics: the analytic partial derivative dV/dsigma is per UNIT of vol (i.e. per 100 points), so the raw formula output must be divided by 100 to get the quoted number. Getting this wrong is a factor-of-100 error, which is the kind of mistake that shows up immediately in a risk report. The same convention issue applies to rho (usually quoted per basis point or per 1%) and theta (usually per calendar day, though some desks use per business day — worth asking which). Always confirm the convention before interpreting a Greek number on an unfamiliar system.",
+      "technique": "Greek quoting conventions",
+      "difficultyRationale": "Medium: trivial once you know the convention, and a factor-of-100 error if you don't."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does an options desk care about the gamma and vega PROFILE across strikes, not just the net numbers?",
+      "canonicalAnswer": "Because net Greeks conceal the distribution of risk. A book that is net-flat gamma can be long gamma at one strike and short at another, which behaves nothing like flat once spot moves — the net number is only valid at today's spot.",
+      "explanation": "THE PROBLEM WITH NET NUMBERS. Greeks are evaluated at the current spot and vol. A book long 1,000 gamma at the 100 strike and short 1,000 gamma at the 120 strike reports net zero gamma today. But move spot to 120 and the short-gamma position dominates: gamma is now concentrated where you are short, and the book that looked flat is now materially short gamma in a market that has already moved against you. The net number was true and useless. WHAT DESKS LOOK AT INSTEAD. (1) A gamma PROFILE — gamma plotted against spot, showing where the exposure sits and where it flips sign. (2) A vega profile by MATURITY bucket, because vega at 1 month and vega at 2 years are different risks: the short end moves far more, and a book long front vega and short back vega is running a term-structure position that nets to zero vega. (3) The scenario matrix, which is the profile idea generalised to two dimensions. THE GENERAL PRINCIPLE, which applies well beyond options: any risk summary that aggregates across a dimension can hide offsetting exposures that will not stay offset. It is the same reason rates desks report bucketed DV01s rather than a single duration, and the same reason a diversified VaR can conceal a concentration.",
+      "technique": "Why aggregated risk numbers hide their own distribution",
+      "difficultyRationale": "Medium: the concrete two-strike example is what makes the abstract point land."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "For a delta-hedged position, which combination of Greeks describes the daily P&L?",
+      "options": [
+        "Gamma and theta",
+        "Delta and rho",
+        "Vega and rho",
+        "Delta and gamma"
+      ],
+      "correctOption": 0,
+      "explanation": "Gamma and theta. Delta hedging removes the first-order spot exposure, leaving dP ≈ theta*dt + (1/2)*gamma*(dS)^2. Substituting the Black-Scholes PDE relation theta = -(1/2)*sigma^2*S^2*gamma (exact when r = 0) gives dP ≈ (1/2)*gamma*S^2*[(dS/S)^2 - sigma^2*dt] — you are long realised variance and short implied variance, with gamma as the position size and theta as the rent. Vega also matters, but only on days when implied volatility actually moves, whereas gamma and theta act every single day regardless. Rho is negligible over one day for anything short-dated. This is the single most useful identity for an options trader, and being able to write it down cold is expected.",
+      "technique": "The gamma-theta identity for hedged P&L",
+      "difficultyRationale": "Easy: direct recall, and it underpins most of the topic."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you calculate the Greeks for an exotic option with no closed-form price?",
+      "canonicalAnswer": "Finite differences on the pricing model: bump each input, reprice, and divide by the bump. For Monte Carlo, use the SAME random numbers for the base and bumped runs, or the noise will swamp the sensitivity.",
+      "explanation": "THE METHOD. Price the option, bump the input by a small amount, reprice, and take the difference over the bump. Central differences — bump up and down and use [V(S+h) - V(S-h)]/(2h) — are second-order accurate and worth the extra revaluation. Gamma comes from [V(S+h) - 2V(S) + V(S-h)]/h^2. THE CRITICAL DETAIL FOR MONTE CARLO: use COMMON RANDOM NUMBERS. If you re-draw fresh paths for the bumped run, the difference between the two prices is dominated by simulation noise rather than by the bump — the Monte Carlo standard error is typically far larger than the sensitivity you are trying to measure. Fixing the random seed makes the two runs differ only by the bump, and the difference becomes meaningful. This single point is what the question is usually testing. CHOOSING THE BUMP SIZE is a genuine bias-variance trade-off: too large and you pick up curvature (bias), too small and you amplify numerical noise, and for Monte Carlo too small a bump can produce identical paths through a discontinuous payoff and hence a Greek of exactly zero. For discontinuous payoffs (digitals, barriers) finite differences are unreliable near the discontinuity and you want either a smoothed payoff or a pathwise/likelihood-ratio method. ALTERNATIVES worth naming: pathwise differentiation and the likelihood ratio method give Greeks in a single simulation, and adjoint algorithmic differentiation (AAD) computes all Greeks at roughly the cost of one extra pricing run — which is why it became standard for large XVA and exotic books where bumping every input is computationally impossible.",
+      "technique": "Finite-difference Greeks and common random numbers",
+      "difficultyRationale": "Medium: the method is obvious, the common-random-numbers requirement is not."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A client asks you to quote a 2-year option on an illiquid single stock where only 3-month options trade. What are the risks?",
+      "canonicalAnswer": "You have no market to calibrate the 2-year volatility to, so the price is a model output. Once you trade it you cannot hedge the vega — there is no 2-year option to trade — so you are left with an unhedgeable long-dated vol position plus model risk on the term structure.",
+      "explanation": "THE PRICING PROBLEM. Implied vol has a term structure, and you can observe it only at 3 months. Extrapolating to 2 years is a model assumption, not an observation. A mean-reverting vol model will pull the long-dated vol toward a long-run level; a flat extrapolation will not; the two can differ by several vol points, which on a 2-year option is a large fraction of the premium. There is no market to tell you which is right. THE HEDGING PROBLEM, which is worse. Even if the price is fair, you cannot hedge the vega: hedging 2-year vega with 3-month options requires rolling the hedge eight times, and each roll is at an unknown future 3-month vol. You are running a vol TERM-STRUCTURE position whether you want to or not, and the hedge ratio depends on your model of how the term structure moves. You can hedge the delta continuously, so gamma is manageable, but the vega is stuck. WHAT TO DO. Quote wide — the bid-offer must compensate for unhedgeable risk and model uncertainty, and 'I would quote it, but very wide, and here is what the width is paying for' is the answer they want. Size-limit the exposure. Take a model reserve sized by repricing under alternative term-structure assumptions. Consider hedging with a correlated liquid name and accepting basis risk. And check whether the client's real need can be met with a structure you CAN hedge — often a strip of shorter options or a different payoff achieves the economics with a tradeable risk profile. THE GENERAL POINT: the question is not 'can I price it' but 'can I hedge it', and unhedgeable risk should be priced as inventory, not as a spread.",
+      "technique": "Pricing and hedging where the market does not extend",
+      "difficultyRationale": "Hard: needs both the calibration and the hedging problem, and the commercial answer."
+    },
+    {
+      "topicId": "derivatives-greeks",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Why is a short-dated at-the-money option the most dangerous position to be short?",
+      "options": [
+        "Gamma is maximised there, so delta swings violently and hedging cannot keep up",
+        "Vega is maximised there",
+        "Rho is maximised there",
+        "Its premium is highest"
+      ],
+      "correctOption": 0,
+      "explanation": "Gamma. For an at-the-money option gamma scales roughly as 1/(S*sigma*sqrt(T)), so it blows up as expiry approaches — delta must travel from about 0.5 all the way to 0 or 1 within days, which means small spot moves force large hedge trades. Short that position and every move costs you, the required rebalancing is largest exactly when it is most expensive, and a gap through the strike is unhedgeable. The theta you collect is the compensation, and it is real, but the distribution is brutally asymmetric: you earn a little most days and can lose a great deal in one. VEGA is maximised for LONG-dated at-the-money options, the opposite maturity profile — which is the standard confusion this question tests, and it is why desks trade short-dated options for gamma and long-dated ones for vega. Premium is highest for long-dated, and rho is not a material equity risk at short maturity.",
+      "technique": "Why short-dated ATM gamma is the dangerous exposure",
+      "difficultyRationale": "Medium: the maturity profiles of gamma and vega are opposite and easily confused."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does 'risk-neutral valuation' actually mean? Does it assume investors do not care about risk?",
+      "canonicalAnswer": "No. It is a computational device: because the derivative can be replicated by the underlying and cash, its price is fixed by no-arbitrage and is the same whatever anyone's risk preferences are. So you may as well compute it in the imaginary world where everyone is risk-neutral, since the answer must agree.",
+      "explanation": "THE MISCONCEPTION the question is probing is that risk-neutral valuation assumes indifference to risk. It does not. THE ARGUMENT: a derivative's payoff can be manufactured by continuously trading the underlying and cash. Therefore its price is pinned by no-arbitrage to the cost of that replication — no preferences enter. And since the price cannot depend on risk preferences, you are free to compute it under ANY consistent assumption about them. Choosing risk-neutrality makes the maths easy, because then every asset drifts at r and you can discount expected payoffs at r. The answer applies in the real world because the price never depended on the assumption. THE STRIKING CONSEQUENCE: two investors who violently disagree about a stock's expected return must still agree on the option's price. Their disagreement concerns the stock, and it is already fully expressed in the stock's price today — which IS an input to the formula. The expected return has not been ignored; it has been absorbed into S, and adding it again would double-count. WHERE IT BREAKS: the argument rests on replication, so it needs a complete market — continuous, frictionless trading in the underlying. For a non-traded underlying (weather, mortality, an illiquid name) replication fails, the risk-neutral measure is not unique, and prices genuinely do depend on preferences. That is why those markets are hard and why their prices embed a risk premium you cannot arbitrage away.",
+      "technique": "Replication as the justification for the risk-neutral device",
+      "difficultyRationale": "Medium: the standard answer is recall; explaining where it breaks is the discriminator."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You need to compute a 10-day 99% VaR for an options book. Which measure do you simulate under?",
+      "options": [
+        "The real-world measure — VaR is a statement about what will actually happen",
+        "The risk-neutral measure, since that is how the options are priced",
+        "Either; they give the same answer over 10 days",
+        "Risk-neutral for the paths, real-world for the valuation"
+      ],
+      "correctOption": 0,
+      "explanation": "Real world for the scenario generation. VaR asks what losses you will ACTUALLY experience with what frequency, which is a question about the real-world distribution of market moves — so you simulate paths under the real-world drift and volatility. Using the risk-neutral drift would mean assuming every asset earns the risk-free rate, which is not a forecast of anything and systematically misstates the distribution of a risky book. The subtlety worth adding, and it is what makes this question good: once you are AT a future scenario, you value the options in it using RISK-NEUTRAL valuation, because that is how they will be marked. So a full VaR simulation for a derivatives book uses BOTH — real-world paths to generate the scenarios, risk-neutral pricing to revalue at each one. The last option has it exactly backwards. Note also that over 10 days the drift difference is small relative to volatility, so the practical impact is modest — but the conceptual answer still matters, and it matters a great deal for long-horizon exposure calculations like CVA.",
+      "technique": "Which measure for scenario generation versus valuation",
+      "difficultyRationale": "Medium: the both-measures nuance is what separates a real answer."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the market price of risk, and what happens to volatility when you change measure?",
+      "canonicalAnswer": "lambda = (m - r)/s, the excess return per unit of volatility for a variable with real-world drift m and volatility s. Changing measure shifts the DRIFT by lambda*s and leaves the volatility completely unchanged.",
+      "explanation": "THE DEFINITION. For any variable driving asset prices, with real-world drift m and volatility s, the market price of risk is lambda = (m - r)/s — the excess expected return the market demands per unit of risk borne. For a traded asset it is determined by the market. Crucially, all derivatives dependent on the SAME source of uncertainty must have the same lambda, which is the no-arbitrage condition underlying the whole framework. THE MEASURE CHANGE. Moving from the real-world to the risk-neutral measure (Girsanov) subtracts lambda*s from the drift, taking m down to r. The VOLATILITY IS UNCHANGED. That is the fact to remember and the point of the question. WHY IT MATTERS PRACTICALLY: it is why implied volatility is a meaningful, comparable market observable — the vol you back out of an option price under the risk-neutral measure is the same vol that governs real-world dynamics, so it can be compared directly with realised volatility. An 'implied drift' would have no such interpretation. It also explains the asymmetry in estimation difficulty: volatility can be estimated well from a few months of data, whereas the real-world drift needs decades, since the standard error of a mean return estimate falls only as 1/sqrt(T) in CALENDAR time and cannot be improved by sampling more frequently. That is why risk models focus on volatility and largely ignore drift over short horizons. FOR NON-TRADED VARIABLES lambda is not pinned down by any market, which is exactly why weather derivatives, longevity swaps and similar instruments carry irreducible pricing uncertainty.",
+      "technique": "The market price of risk and drift-only measure changes",
+      "difficultyRationale": "Medium: the formula is recall; the volatility-invariance and its consequences are the substance."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "For estimating potential future exposure to a counterparty over 10 years, which world should generate the paths?",
+      "options": [
+        "Usually real-world for regulatory exposure, though front-office CVA desks often use risk-neutral so the number is hedgeable",
+        "Always risk-neutral, since exposure is a pricing concept",
+        "Always real-world, with no exceptions",
+        "Neither — exposure is computed deterministically"
+      ],
+      "correctOption": 0,
+      "explanation": "Both are defensible and the choice depends on the purpose, which is what makes this a good question. REAL-WORLD is the natural answer for a RISK measure: PFE asks where the market plausibly goes over ten years, and that is a real-world question. Regulators generally expect real-world calibration for exposure modelling. RISK-NEUTRAL is what front-office CVA desks typically use, because CVA is a PRICE that must be booked, hedged and marked — and a hedge only works if the exposure is computed under the same measure the hedging instruments are priced in. Using real-world exposures to compute a number you then hedge with risk-neutral instruments creates a systematic mismatch. In both cases the VALUATION at each future node is risk-neutral; the disagreement is only about the path generation. Over a 10-year horizon the drift difference is material — it compounds — so this is not academic: the two approaches can produce meaningfully different exposure profiles, and being able to say why a bank might run both is a strong answer.",
+      "technique": "Measure choice for long-horizon exposure",
+      "difficultyRationale": "Hard: the honest answer is 'it depends on the purpose', with reasons on both sides."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In a risk-neutral world, what is the expected return on every asset?",
+      "options": [
+        "The risk-free rate",
+        "Zero",
+        "The asset's real-world expected return",
+        "The market return"
+      ],
+      "correctOption": 0,
+      "explanation": "The risk-free rate — that is the defining property of the measure. Every asset, however risky, drifts at r, and every payoff is discounted at r. Note this is a property of the artificial measure used for pricing, not a claim about reality: in the real world risky assets earn a premium over r, which is precisely the market price of risk that the measure change removes. Two related facts worth having: under the risk-neutral measure the DISCOUNTED price of any traded asset is a martingale, which is the formal statement of the same idea; and the risk-neutral probability of an event is generally NOT the real-world probability, so N(d2) — the risk-neutral probability that a call finishes in the money — is not a forecast of anything.",
+      "technique": "The defining property of the risk-neutral measure",
+      "difficultyRationale": "Easy: definitional, and the 'not a forecast' point prevents a common misuse."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is the real-world drift so much harder to estimate than volatility?",
+      "canonicalAnswer": "Because the standard error of a mean-return estimate depends only on the total CALENDAR span of data, not on sampling frequency — so you need decades. Volatility estimation improves with more frequent sampling, so months of daily data suffice.",
+      "explanation": "THE ASYMMETRY. For a diffusion with drift mu and volatility sigma observed over a period T with n samples: the standard error of the estimated mean return is sigma/sqrt(T), depending only on the calendar span. Sampling hourly instead of daily does not help at all — you get more observations, but each carries proportionally less information about the drift. To estimate an 8% equity drift with a 20% volatility to within one percentage point you need sigma^2/(0.01)^2 = 400 years of data. VOLATILITY IS THE OPPOSITE: its standard error is roughly sigma/sqrt(2n), which depends on the NUMBER of observations. Sample more frequently and the estimate improves without needing a longer history, which is why a few months of daily data gives a usable volatility and why high-frequency realised-volatility estimators work so well. THE CONSEQUENCES, which is what the question is after. (1) Risk models over short horizons sensibly ignore the drift — over a day it is negligible relative to volatility anyway, roughly 0.03% against 1%. (2) This is a deep reason why risk-neutral valuation is so useful: it removes the parameter you cannot estimate and keeps the one you can. (3) It is why any strategy or model whose output is sensitive to an estimated expected return should be treated with suspicion — mean-variance optimisation is notoriously unstable for exactly this reason, and constraining or shrinking the return estimates is not a hack but a necessity.",
+      "technique": "Why drift estimation is calendar-limited and volatility is not",
+      "difficultyRationale": "Medium: the sqrt(T)-versus-sqrt(n) distinction is the crux and is genuinely non-obvious."
     }
   ]
 }
