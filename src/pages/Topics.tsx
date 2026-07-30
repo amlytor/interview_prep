@@ -153,7 +153,7 @@ export function Topics({ onNavigate, onDrillTopic }: TopicsProps) {
                           {stagedCount > 0 && ` · ${stagedCount} staged`}
                         </>
                       ) : (
-                        <>Locked — needs {blockers.join(", ")}</>
+                        <>Suggested first: {blockers.join(", ")}</>
                       )}
                     </div>
                     {note && note.prereqs.length > 0 && (

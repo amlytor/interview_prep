@@ -237,7 +237,7 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
               {m.mastered && <span className="badge badge-verdict-correct">Mastered</span>}
               {!m.mastered && m.proficient && <span className="badge badge-topic">Proficient</span>}
               {!unlocked && (
-                <span className="badge badge-verdict-partial">Locked — needs {blockers.join(", ")}</span>
+                <span className="badge badge-verdict-partial">Suggested first: {blockers.join(", ")}</span>
               )}
               {note.modified && <span className="badge badge-topic">Edited</span>}
               {note.source === "ai" && <span className="badge badge-verdict-partial">AI-drafted</span>}
@@ -248,12 +248,17 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
             <button
               className="btn btn-gold"
               onClick={startLearn}
-              disabled={!unlocked || topicQuestions.length === 0}
+              // Advisory, not blocking. The prerequisite badge still shows the
+              // recommended order, but it must not stop you studying a topic you
+              // already know — the graph is nine tiers deep, so gating Learn
+              // behind proficiency would hide most of the app from anyone who
+              // arrives already competent in the upper tiers.
+              disabled={topicQuestions.length === 0}
               title={
-                !unlocked
-                  ? `Locked — get proficient at ${blockers.join(", ")} first`
-                  : topicQuestions.length === 0
-                    ? "No questions for this topic yet — generate a quiz first"
+                topicQuestions.length === 0
+                  ? "No questions for this topic yet — generate a quiz first"
+                  : !unlocked
+                    ? `Recommended: get proficient at ${blockers.join(", ")} first`
                     : undefined
               }
             >

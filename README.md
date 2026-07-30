@@ -26,8 +26,12 @@ nothing leaves your machine at all.
   you whether today still needs doing.
 - **Topics (knowledge tree)** — every topic laid out in prerequisite tiers with a
   mastery ring per topic (0–100, recency-weighted). Proficiency (60+ over 3+
-  attempts) unlocks dependent topics; 80+ over 5+ attempts counts as mastered.
-  A "next up" recommendation points at your knowledge frontier.
+  attempts) marks dependent topics as ready; 80+ over 5+ attempts counts as
+  mastered. A "next up" recommendation points at your knowledge frontier. The
+  prerequisite gate is **advisory** — a topic whose prerequisites aren't solid
+  shows "Suggested first: …", but nothing stops you studying it. The graph is
+  nine tiers deep, so a hard gate would hide most of the app from anyone who
+  arrives already competent in the upper tiers.
 - **Study notes** — one human-authored markdown note per topic (core idea /
   trigger / formulas / worked example / common mistakes), rendered with KaTeX
   math. Fully editable in-app with live preview. An "Expand with AI" button

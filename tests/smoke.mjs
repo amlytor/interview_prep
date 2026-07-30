@@ -147,6 +147,25 @@ check("its note deleted", !afterDelete.studyNotes.some((n) => n.topicId === "ref
 check("seeded topics untouched", afterDelete.studyNotes.length === SEEDED_TOPICS,
   `${afterDelete.studyNotes.length} notes`);
 
+// --- The prerequisite gate is advisory, never blocking ---------------------
+// The graph is nine tiers deep, so gating Learn behind proficiency would hide
+// most of the app from someone who arrives already competent in the upper
+// tiers. The badge still shows the recommended order; the button still works.
+await nav(page, /Topics/);
+await page.waitForSelector(".topic-card");
+await page
+  .locator(".topic-card")
+  .filter({ has: page.locator(".topic-card-title", { hasText: "Black-Scholes" }) })
+  .click();
+await page.waitForTimeout(300);
+const learnBtn = page.getByRole("button", { name: /^Learn \(/ });
+check("a topic with unmet prerequisites still shows the suggestion",
+  (await page.getByText(/Suggested first:/).count()) > 0);
+check("but Learn mode is NOT blocked by it", !(await learnBtn.isDisabled()));
+check("the tooltip reads as advice, not a refusal",
+  ((await learnBtn.getAttribute("title")) ?? "").startsWith("Recommended:"),
+  await learnBtn.getAttribute("title"));
+
 check("no runtime errors", errors.length === 0, errors.slice(0, 3).join(" | "));
 
 await browser.close();
