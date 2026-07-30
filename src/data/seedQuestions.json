@@ -5925,6 +5925,260 @@
       "explanation": "WHAT IT IS. Run your normal VaR model, but calibrate every input — volatilities and correlations — to a continuous 12-month window of significant financial stress, selected as the worst period for the CURRENT portfolio composition rather than a fixed historical date. The result is added to ordinary VaR, roughly doubling the charge. WHY A MULTIPLIER WOULD NOT DO. (1) CORRELATIONS differ. In stress, correlations converge toward 1, so the diversification credit in a calm-calibrated model largely disappears. A multiplier scales the whole number uniformly and cannot reproduce that — it preserves the diversification structure while inflating the level, which is exactly backwards. (2) The relative risk of DIFFERENT POSITIONS changes. A position that looks like a hedge under calm correlations may not be one in stress, so the stressed number reallocates risk across the book, not just scales it. A multiplier cannot do that either. (3) DISTRIBUTION SHAPE differs, with fatter tails and more skew. THE MOTIVATION, which is the point to lead with: pre-crisis VaR was PROCYCLICAL. Calibrated on the preceding calm period, it produced small numbers right before the crisis and spiked afterwards, so capital was lowest exactly when risk was highest and highest when the system could least afford to raise it. Anchoring half the charge to a fixed stressed window breaks that feedback loop. That is a regulatory design choice about system stability, not a claim that the stressed number is a better risk estimate.",
       "technique": "Why stressed VaR needs recalibration, not rescaling",
       "difficultyRationale": "Medium: the correlation argument is the discriminating one."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the sum 1 + 2 + 3 + ... + 100?",
+      "options": [
+        "5,050",
+        "5,000",
+        "10,100",
+        "4,950"
+      ],
+      "correctOption": 0,
+      "explanation": "Use n(n+1)/2 with n = 100: 100 x 101/2 = 5,050. The derivation is Gauss's trick and is worth seeing once: write the sum forwards and backwards, one above the other, and add columnwise. Each column gives 101 (1+100, 2+99, 3+98...), and there are 100 columns, so twice the sum is 100 x 101 and the sum is 5,050. Knowing the derivation rather than the formula means you can reconstruct it, and it generalises: the same pairing trick handles any arithmetic series.",
+      "technique": "Gauss pairing for an arithmetic sum",
+      "difficultyRationale": "Easy: one formula, and the derivation makes it unforgettable."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the sum of the infinite series 1 + 1/2 + 1/4 + 1/8 + ...?",
+      "options": [
+        "2",
+        "Infinity",
+        "1",
+        "3/2"
+      ],
+      "correctOption": 0,
+      "explanation": "2. This is geometric with first term a = 1 and ratio r = 1/2. The finite sum is a(1 - r^n)/(1 - r); as n grows, r^n shrinks to zero when |r| < 1, leaving a/(1 - r) = 1/(1 - 0.5) = 2. WHY IT MATTERS: this is the single most-used series in finance. A perpetuity paying C forever discounted at r is worth C/r by exactly this argument. The expected value of a geometric distribution, 1/p, comes from the same sum. And any 'sum over all future periods' calculation reduces to it. If the ratio were 1 or more the sum would diverge — that is why a growth rate must be below the discount rate for a growing perpetuity to have a finite value.",
+      "technique": "Infinite geometric series and where it appears",
+      "difficultyRationale": "Easy: one formula, with the perpetuity link making it stick."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which is equal to ln(a) + ln(b)?",
+      "options": [
+        "ln(ab)",
+        "ln(a+b)",
+        "ln(a)*ln(b)",
+        "ln(a/b)"
+      ],
+      "correctOption": 0,
+      "explanation": "ln(ab). Logs turn multiplication into addition — that is their defining property and the reason they appear everywhere in finance. Returns compound multiplicatively, so a 10% gain followed by a 10% loss multiplies by 1.1 x 0.9 = 0.99; take logs and those become ln(1.1) + ln(0.9) = 0.0953 - 0.1054 = -0.0101, which ADDS. That additivity is why log returns are the natural unit for multi-period analysis and why the variance of a T-period log return is T times the one-period variance. The common error is ln(a+b) = ln a + ln b, which is false — logs do not distribute over addition.",
+      "technique": "Logs convert products to sums",
+      "difficultyRationale": "Easy: one rule, and the compounding link is why it matters."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Annual volatility is 20%. What is the two-year volatility, assuming independent returns?",
+      "options": [
+        "About 28.3%",
+        "40%",
+        "20%",
+        "About 14.1%"
+      ],
+      "correctOption": 0,
+      "explanation": "20% x sqrt(2) = 28.3%. VARIANCES add over independent periods, not standard deviations — so two-year variance is 2 x 0.20^2 = 0.08, and the volatility is its square root, 0.283. Answering 40% is the single most common magnitude error in finance: it scales the standard deviation linearly when only the variance is linear. The general rule is that volatility scales with the SQUARE ROOT of time, which is why a daily vol is annualised by multiplying by sqrt(252), and why doubling your horizon multiplies risk by only 1.41 rather than 2. Remember it as: you cannot split a square root over a sum.",
+      "technique": "Square-root-of-time scaling",
+      "difficultyRationale": "Easy: one rule, and it is the error most worth eliminating."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Roughly how many years does money take to double at 6% annual growth?",
+      "options": [
+        "About 12",
+        "About 6",
+        "About 17",
+        "About 20"
+      ],
+      "correctOption": 0,
+      "explanation": "About 12 years, by the rule of 72: 72/6 = 12. WHERE IT COMES FROM: doubling means the growth factor reaches 2, so you need ln(2) = 0.693 of cumulative log growth. At rate r (as a decimal) that takes 0.693/r periods, or 69.3/r when r is in percent. The number 72 is used instead of 69.3 because it divides evenly by 2, 3, 4, 6, 8, 9 and 12, making the mental arithmetic easy — and it happens to be slightly more accurate for the mid-single-digit rates people usually care about. Exact check: 1.06^12 = 2.012. Close enough.",
+      "technique": "The rule of 72 and its log derivation",
+      "difficultyRationale": "Easy: one division, and knowing where 72 comes from is the extra."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Explain why the arithmetic mean of a set of returns is always at least the geometric mean, and why that matters for investing.",
+      "canonicalAnswer": "AM-GM says the arithmetic mean is at least the geometric mean, with equality only when every value is identical. It matters because your actual compounded wealth grows at the GEOMETRIC rate while the headline 'average return' is usually the arithmetic one — so volatility makes realised growth lag the advertised average.",
+      "explanation": "THE INEQUALITY. For non-negative numbers, (a+b)/2 >= sqrt(ab), with equality only when a = b. The two-number case is easy to see: (sqrt(a) - sqrt(b))^2 >= 0 expands to a + b >= 2*sqrt(ab). The more spread out the values, the bigger the gap. WHY IT MATTERS. Suppose an asset returns +50% then -50%. The ARITHMETIC mean is 0%. But your money goes 100 -> 150 -> 75, so you have lost 25%, and the geometric (compound) rate is sqrt(0.75) - 1 = -13.4% a year. The arithmetic mean describes a single period drawn at random; the geometric mean describes what actually happens to your wealth over many periods. THE APPROXIMATION worth carrying: geometric mean is roughly arithmetic mean minus half the variance. That sigma^2/2 term is the 'volatility drag', and it is exactly the same quantity that appears as the -sigma^2/2 in the Black-Scholes drift and in the lognormal's mean-versus-median gap. Three appearances of one idea. THE PRACTICAL READING: two funds with the same average return but different volatility do not leave you equally well off, and the more volatile one leaves you worse off.",
+      "technique": "AM-GM and the volatility drag",
+      "difficultyRationale": "Easy: the arithmetic is simple, and the drag connection is the payoff."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "f(x) = x^2 is a convex function. What does Jensen's inequality say about E[X^2] versus (E[X])^2?",
+      "options": [
+        "E[X^2] >= (E[X])^2, and the gap is the variance",
+        "E[X^2] <= (E[X])^2",
+        "They are always equal",
+        "It depends on the distribution's shape"
+      ],
+      "correctOption": 0,
+      "explanation": "Jensen's inequality says that for a CONVEX function, the expectation of the function is at least the function of the expectation: E[f(X)] >= f(E[X]). With f(x) = x^2 that gives E[X^2] >= (E[X])^2 — and the gap is exactly the variance, since Var(X) = E[X^2] - (E[X])^2. So the inequality is not an abstraction; it is the statement that variance is non-negative. Convex means curving upward, like x^2 or e^x. The same inequality applied to the exponential gives E[e^X] > e^(E[X]), which is why a lognormal's mean exceeds its median and why the -sigma^2/2 correction appears in option pricing. If f were CONCAVE (like ln x) the inequality flips, which is the formal reason log utility makes people risk-averse.",
+      "technique": "Jensen's inequality, with variance as the concrete case",
+      "difficultyRationale": "Easy: the variance identity makes an abstract inequality tangible."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Simplify (a^3 * a^5) / a^2.",
+      "options": [
+        "a^6",
+        "a^7",
+        "a^15",
+        "a^(15/2)"
+      ],
+      "correctOption": 0,
+      "explanation": "Multiplying powers of the same base ADDS the exponents, dividing SUBTRACTS them: a^3 * a^5 = a^8, then a^8/a^2 = a^6. The two rules to keep straight are a^m * a^n = a^(m+n) and (a^m)^n = a^(mn) — answering a^15 comes from confusing them. Related facts worth having automatic: a^0 = 1 for any non-zero a, a^(-n) = 1/a^n, and a^(1/2) = sqrt(a). That last one is why e^(rT) and its reciprocal e^(-rT) are discounting and compounding of the same quantity, and why half a period of compounding is a square root.",
+      "technique": "Exponent rules",
+      "difficultyRationale": "Easy: pure mechanics, but they underpin all the discounting algebra."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the derivative of x^3?",
+      "options": [
+        "3x^2",
+        "x^2/3",
+        "3x",
+        "x^4/4"
+      ],
+      "correctOption": 0,
+      "explanation": "3x^2, by the power rule: differentiating x^n gives n*x^(n-1) — bring the exponent down, reduce it by one. The rule follows from the definition of the derivative as a limit; doing it once by hand for x^2 (where the difference quotient simplifies to 2x + h, tending to 2x) shows why. x^4/4 is the INTEGRAL of x^3, which is the standard confusion — integration reverses the operation, raising the exponent and dividing by the new one. Keeping the two directions straight is worth the ten seconds: differentiating reduces the power, integrating raises it.",
+      "technique": "The power rule",
+      "difficultyRationale": "Easy: pure mechanics, with the integral confusion as the only trap."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the derivative of e^(2x)?",
+      "options": [
+        "2e^(2x)",
+        "e^(2x)",
+        "2x*e^(2x)",
+        "e^(2x)/2"
+      ],
+      "correctOption": 0,
+      "explanation": "2e^(2x), by the chain rule. Differentiate the outside (e^u differentiates to e^u), keep the inside (2x), and multiply by the derivative of the inside (2). The exponential is the unique function that is its own derivative, which is exactly why it appears wherever a quantity grows in proportion to itself — continuous compounding, radioactive decay, population growth. The chain rule is the most-used and most-fumbled rule in the set; the phrase to repeat is 'derivative of the outside, times derivative of the inside'. You will apply exactly this pattern differentiating the normal density e^(-x^2/2), which gives -x*e^(-x^2/2).",
+      "technique": "The chain rule on an exponential",
+      "difficultyRationale": "Easy: one application, and the pattern recurs constantly."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What does a derivative MEAN, and give three examples from finance.",
+      "canonicalAnswer": "It is a rate of change — the slope of the function at a point, the limit of (f(x+h) - f(x))/h as h shrinks to zero. In finance every sensitivity is a derivative: delta is dV/dS, vega is dV/dsigma, and modified duration is -(1/P)dP/dy.",
+      "explanation": "THE MEANING. Take two nearby points and compute the average rate of change, (f(x+h) - f(x))/h. Shrink the gap to nothing and the average becomes the instantaneous rate — the slope of the tangent line at that point. That is the derivative. Concretely: if f is your portfolio value and x is the stock price, f'(x) tells you how much you gain per $1 the stock moves right now. IN FINANCE, every sensitivity number is a derivative and the vocabulary is just naming them: DELTA is dV/dS, how option value responds to the underlying. VEGA is dV/dsigma, the response to volatility. MODIFIED DURATION is -(1/P) dP/dy, the response of a bond price to yield. RHO, THETA and the rest are the same idea against other inputs. SECOND derivatives measure how the FIRST derivative changes: gamma is d2V/dS2, convexity is the bond analogue. Those matter because a first derivative is only a local approximation — it tells you the slope right here, and if the function curves, that slope is wrong as soon as you move. That is the whole reason a delta hedge needs rebalancing and why gamma is the risk you carry between rebalances. THE PRACTICAL HABIT: whenever someone quotes a sensitivity, ask what it is the derivative OF and WITH RESPECT TO — that single question resolves most confusion about risk reports.",
+      "technique": "The derivative as a sensitivity",
+      "difficultyRationale": "Easy: conceptual, and the finance mapping is the point."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "f(x) has f'(3) = 0 and f''(3) = -4. What is happening at x = 3?",
+      "options": [
+        "A local maximum",
+        "A local minimum",
+        "A point of inflection",
+        "Nothing special"
+      ],
+      "correctOption": 0,
+      "explanation": "A local maximum. A zero first derivative means the slope is flat — a stationary point — and the second derivative tells you which kind: NEGATIVE means the curve is concave (bending downward), so the flat point is a peak. Positive f'' would mean convex and a minimum; f'' = 0 is inconclusive and needs more work. The finance reading is direct: to maximise something (a portfolio's Sharpe ratio, an expected payoff) you set the derivative to zero and check the second-order condition. And ALWAYS check the boundaries too — a constrained optimum frequently sits at an endpoint where the derivative is not zero at all, which is the most common way people get optimisation questions wrong.",
+      "technique": "First and second-order conditions",
+      "difficultyRationale": "Easy: two signs, plus the boundary reminder."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the integral of 1/x?",
+      "options": [
+        "ln|x| + C",
+        "x^0",
+        "-1/x^2 + C",
+        "1/(2x^2) + C"
+      ],
+      "correctOption": 0,
+      "explanation": "ln|x| + C. This is the exception to the power rule for integration: the general rule integrates x^n to x^(n+1)/(n+1), which would divide by zero at n = -1. So 1/x is the one case that produces a logarithm instead. It is worth knowing why this matters: it is the reason logs appear in the harmonic sum (the coupon collector's n*log(n)), and the reason continuous growth and logs are inverse operations. The absolute value is there because ln is only defined for positive arguments; in finance the variable is almost always positive so it is usually written ln x.",
+      "technique": "The exceptional case of the power rule",
+      "difficultyRationale": "Easy: one exception, and it explains where logs come from."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A random variable X is non-negative. Show that E[X] = the integral of P(X > x) from 0 to infinity, and use it to find the expected value of the maximum of two uniform [0,1] draws.",
+      "canonicalAnswer": "Write X as the integral from 0 to X of 1, i.e. the integral over x of the indicator that x < X, then swap expectation and integration. For the max of two uniforms, P(max > x) = 1 - x^2, so E = the integral of (1 - x^2) from 0 to 1 = 1 - 1/3 = 2/3.",
+      "explanation": "THE IDENTITY. For X >= 0, note that X equals the integral from 0 to X of 1 dx, which is the same as integrating the INDICATOR that x < X over all x from 0 to infinity. Take expectations of both sides and swap the order of expectation and integration (legitimate here because everything is non-negative): E[X] = integral from 0 to infinity of P(X > x) dx. Geometrically you are integrating the area ABOVE the CDF rather than under x*f(x); the two regions are the same. THE APPLICATION. Let M be the larger of two independent uniforms on [0,1]. P(M <= x) = x^2, since BOTH draws must be below x. So P(M > x) = 1 - x^2, and E[M] = integral from 0 to 1 of (1 - x^2) dx = [x - x^3/3] evaluated at 1 = 1 - 1/3 = 2/3. Note it is NOT 1/2 — averaging the two draws is a different quantity from taking the larger one, and that is the standard error here. WHY THIS IS THE MOST USEFUL SHORTCUT in the topic: no differentiation at all. The alternative route is to differentiate the CDF to get the density 2x, then integrate x*2x — same answer, twice the work and twice the chances to slip. For n draws the same method gives n/(n+1) immediately. The discrete version, E[N] = sum over k >= 0 of P(N > k), does the same job for waiting-time problems.",
+      "technique": "The tail formula for expectations",
+      "difficultyRationale": "Medium: the identity needs a swap of order, but the payoff is large."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Differentiate the normal density kernel e^(-x^2/2).",
+      "options": [
+        "-x * e^(-x^2/2)",
+        "e^(-x^2/2)",
+        "-e^(-x^2/2)",
+        "x * e^(-x^2/2)"
+      ],
+      "correctOption": 0,
+      "explanation": "-x * e^(-x^2/2), by the chain rule. The outside function is e^u, which differentiates to e^u; the inside is -x^2/2, whose derivative is -x. Multiply: e^(-x^2/2) * (-x). This exact derivative is worth having automatic because the normal density is phi(x) = e^(-x^2/2)/sqrt(2*pi), so phi'(x) = -x*phi(x) — a relation used constantly in deriving option Greeks, and the reason vega and gamma come out as clean multiples of phi(d1). Note the sign: the density falls away on both sides of zero, so the derivative is negative for positive x and positive for negative x, which -x*phi(x) captures.",
+      "technique": "Chain rule on the normal density",
+      "difficultyRationale": "Easy: one application, and it recurs throughout option pricing."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Why does integration by parts work?",
+      "options": [
+        "It is the product rule for differentiation, read backwards",
+        "It is the chain rule, read backwards",
+        "It is a separate result with no connection to differentiation",
+        "It only works for polynomials"
+      ],
+      "correctOption": 0,
+      "explanation": "It is the product rule reversed. The product rule says (uv)' = u'v + uv'. Integrate both sides: uv = the integral of u'v plus the integral of uv'. Rearrange and you have the integral of u dv = uv minus the integral of v du. That is all it is, which is why it is worth deriving once rather than memorising — you can reconstruct it in ten seconds from a rule you already know. (Substitution, by the same logic, is the chain rule reversed.) In practice integration by parts is how you compute E[X] for most continuous distributions when the tail formula does not apply, and how you handle anything of the form x times an exponential.",
+      "technique": "Integration by parts as the reversed product rule",
+      "difficultyRationale": "Easy: the derivation is two lines and makes the rule memorable."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In probability, what does the area under a probability density function represent?",
+      "options": [
+        "Probability — the total area is 1",
+        "The expected value",
+        "The variance",
+        "The number of outcomes"
+      ],
+      "correctOption": 0,
+      "explanation": "Probability. For a continuous random variable the density f(x) is not itself a probability — f(x) can exceed 1 — but the AREA under it between two points is the probability of landing in that range. The total area is 1, which is the statement that some outcome must occur. This is the single most important idea when moving from discrete to continuous probability: sums become integrals and probabilities become areas. Two consequences worth noting: P(X = x) = 0 for any exact value, because a single point has zero width and hence zero area; and the expected value is a DIFFERENT integral, the integral of x*f(x), which weights each outcome by its value rather than just counting probability.",
+      "technique": "Density versus probability",
+      "difficultyRationale": "Easy: conceptual, and the P(X = x) = 0 point is the extension."
     }
   ]
 }

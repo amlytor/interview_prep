@@ -21,10 +21,12 @@ import type { Page } from "../App";
 
 // One name per prerequisite depth. Deeper tiers appeared once the graph gained
 // the stochastic-calculus chain (derivatives → Ito → martingales → Markov
-// chains → recursive states → conditional probability → basic probability);
+// chains → recursive states → conditional probability → basic probability), and
+// again when the maths-toolkit/calculus-refresher floor was added below it;
 // anything past the end falls back to "Tier N" rather than rendering blank.
 const TIER_NAMES = [
-  "Foundation",
+  "Foundations", // maths toolkit, estimation, number theory, proof
+  "Core building blocks", // calculus refresher, basic probability, linear algebra
   "Core techniques",
   "Composite techniques",
   "Advanced",

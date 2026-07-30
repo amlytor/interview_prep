@@ -30,7 +30,7 @@ nothing leaves your machine at all.
   mastered. A "next up" recommendation points at your knowledge frontier. The
   prerequisite gate is **advisory** — a topic whose prerequisites aren't solid
   shows "Suggested first: …", but nothing stops you studying it. The graph is
-  nine tiers deep, so a hard gate would hide most of the app from anyone who
+  ten tiers deep, so a hard gate would hide most of the app from anyone who
   arrives already competent in the upper tiers.
 - **Study notes** — one human-authored markdown note per topic (core idea /
   trigger / formulas / worked example / common mistakes), rendered with KaTeX
@@ -53,7 +53,9 @@ nothing leaves your machine at all.
 - **Drill** — one question at a time, filterable by topic and difficulty. Free-text
   answers are graded by AI (correct / partial / incorrect, Socratic feedback,
   and a "why missed" tag); multiple-choice is graded instantly and locally.
-  Questions whose answers you haven't seen are served first.
+  Questions whose answers you haven't seen are served first, and within those,
+  easiest first — meeting a topic for the first time shouldn't hand you its
+  hardest question.
 - **"Why did I get this wrong?"** — after a miss, a short diagnostic chat works
   out the *root cause*, which is often not the obvious one. It classifies into a
   fixed taxonomy (didn't recognise the technique / misread / couldn't execute /
@@ -71,7 +73,7 @@ nothing leaves your machine at all.
 - **Mock Interview** — a timed, mixed-topic session (default 5 questions, configurable).
   No feedback is shown until you finish; the debrief screen grades everything at once
   and gives you a per-question breakdown plus session-level weak topics.
-- **Your own topics** — the 45 seeded topics aren't a fixed set. "+ New topic" on
+- **Your own topics** — the 47 seeded topics aren't a fixed set. "+ New topic" on
   the Topics page lets you add your own: give it a title, pick its prerequisites,
   write the note. It then behaves exactly like a seeded topic — mastery ring,
   unlock rules, Learn mode, quiz generation, trickle-down credit. Or paste raw,
@@ -86,12 +88,19 @@ nothing leaves your machine at all.
 - **Settings** — AI provider and model, per-provider API keys, a personal
   spend-awareness note, backup, and JSON export/import of all your data.
 
-Seed content lives in `src/data/studyNotes.json` (45 authored notes, whose
+Seed content lives in `src/data/studyNotes.json` (47 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
-(483 authored questions), merged with the original starter bank for ~495 seeded
+(500 authored questions), merged with the original starter bank for 518 seeded
 questions across the taxonomy. Every topic has at least six questions and a
 note of 1,900–6,900 characters. Topics you add yourself live in your browser
 alongside your progress, not in these files.
+
+The two lowest topics — **Maths toolkit** (summation notation, logs and
+exponentials, series) and **Calculus refresher** (what a derivative and an
+integral actually are, the product/quotient/chain rules) — sit below everything
+else and are written to *teach*, with derivations rather than the
+memorise-this framing the tiers above use. If none of that is rusty you'll
+clear both in an evening; if it is, the rest of the tree stops being a wall.
 
 Coverage spans the material a quant finance or quant risk interview actually
 draws on: probability, combinatorics and statistics; calculus methods and
@@ -111,7 +120,7 @@ topic at 67 questions, covering both the puzzle angle and the desk-practice one.
 are written for this app — each carries its own worked explanation, the
 technique it tests, and why it sits at its stated difficulty.
 
-The prerequisite graph is nine tiers deep and is meant to be load-bearing:
+The prerequisite graph is ten tiers deep and is meant to be load-bearing:
 Black-Scholes sits under the Greeks, Ito calculus and risk-neutral valuation
 under Black-Scholes, martingales under those, Markov chains under martingales,
 and so on down to basic probability. That is what lets the
@@ -276,8 +285,8 @@ original v1 schema is migrated automatically on first load, and the old
 src/
   types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
   data/
-    studyNotes.json      45 authored study notes + the prerequisite graph (source of truth)
-    seedQuestions.json   483 authored seed questions (source of truth)
+    studyNotes.json      47 authored study notes + the prerequisite graph (source of truth)
+    seedQuestions.json   500 authored seed questions (source of truth)
   lib/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files
@@ -292,7 +301,7 @@ src/
                          note classification, miss diagnosis (chat + conclusion)
     calibration.ts       Per-topic difficulty calibration from your own ratings
     diagnostics.ts       Miss-reason pivot + "recommended focus" rules
-    practice.ts          Question selection (prefers answers you haven't seen)
+    practice.ts          Question selection (unseen first, then easy → medium → hard)
     backup.ts            Continuous auto-save to a file (File System Access API)
   components/            Shared UI: Sidebar, QuestionAttempt, Markdown+KaTeX renderer,
                          MasteryRing, TopicDetail, NewTopic, LearnSession, badges,

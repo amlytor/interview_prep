@@ -18,10 +18,22 @@ export function attemptedIdSet(attempts: Attempt[]): Set<string> {
   return new Set(attempts.map((a) => a.questionId));
 }
 
+/** easy before medium before hard, so first exposure to a topic ramps. */
+const DIFFICULTY_RANK: Record<string, number> = { easy: 0, medium: 1, hard: 2 };
+
+function rank(q: Question): number {
+  return DIFFICULTY_RANK[q.difficulty] ?? 1;
+}
+
 /**
- * Order a pool for practice: unseen-and-unattempted first (shuffled among
- * themselves so it isn't the same order every session), then everything else
+ * Order a pool for practice: unseen-and-unattempted first, then everything else
  * by least-recently-attempted.
+ *
+ * Fresh questions are ordered EASY FIRST, shuffled only within a difficulty
+ * band. Without this, someone meeting a topic for the first time could be
+ * handed its hardest question — Ito's lemma as your opening move in stochastic
+ * calculus is a wall, not a ramp. Shuffling within the band keeps sessions from
+ * being identical while preserving the ramp.
  */
 export function orderForPractice(pool: Question[], attempts: Attempt[]): Question[] {
   const attemptedIds = attemptedIdSet(attempts);
@@ -36,6 +48,9 @@ export function orderForPractice(pool: Question[], attempts: Attempt[]): Questio
   for (const q of pool) (isFresh(q, attemptedIds) ? fresh : rest).push(q);
 
   shuffleInPlace(fresh);
+  // Stable sort after shuffling: bands stay in easy → medium → hard order while
+  // membership within each band stays randomised.
+  fresh.sort((a, b) => rank(a) - rank(b));
   rest.sort((a, b) => (lastSeen.get(a.id) ?? 0) - (lastSeen.get(b.id) ?? 0));
 
   return [...fresh, ...rest];
@@ -44,6 +59,10 @@ export function orderForPractice(pool: Question[], attempts: Attempt[]): Questio
 /**
  * Pick one question for practice, preferring fresh ones. `excludeId` avoids
  * serving the same question twice in a row when the pool allows it.
+ *
+ * Among fresh questions the choice is random within the EASIEST band available,
+ * so a topic is worked through easy → medium → hard rather than at random. Once
+ * nothing fresh is left it falls back to the least-recently-attempted.
  */
 export function pickPractice(
   pool: Question[],
@@ -56,11 +75,15 @@ export function pickPractice(
 
   const ordered = orderForPractice(candidates, attempts);
   const attemptedIds = attemptedIdSet(attempts);
-  const freshCount = ordered.filter((q) => isFresh(q, attemptedIds)).length;
+  const fresh = ordered.filter((q) => isFresh(q, attemptedIds));
 
-  // Random among the fresh ones if there are any, so drilling doesn't march
-  // through the bank in a fixed order; otherwise fall back to the staleest.
-  if (freshCount > 0) return ordered[Math.floor(Math.random() * freshCount)];
+  if (fresh.length > 0) {
+    // orderForPractice has already banded them, so the easiest band is the run
+    // of leading questions sharing the first one's difficulty.
+    const easiest = rank(fresh[0]);
+    const band = fresh.filter((q) => rank(q) === easiest);
+    return band[Math.floor(Math.random() * band.length)];
+  }
   return ordered[0];
 }
 
