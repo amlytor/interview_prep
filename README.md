@@ -93,8 +93,10 @@ Seed content lives in `src/data/studyNotes.json` (47 authored notes, whose
 (604 authored questions), merged with the original starter bank for 622 seeded
 questions across the taxonomy. Every topic has at least six questions — and,
 with one exception, at least four EASY ones, so no topic opens with its
-hardest problem — plus a note of 1,900–6,900 characters. Topics you add
-yourself live in your browser alongside your progress, not in these files.
+hardest problem — plus a note of 2,100–8,000 characters. Every note ends on a
+fully worked example: the steps, the arithmetic, and what to notice about the
+answer, not just the formula. Topics you add yourself live in your browser
+alongside your progress, not in these files.
 
 The two lowest topics — **Maths toolkit** (summation notation, logs and
 exponentials, series) and **Calculus refresher** (what a derivative and an

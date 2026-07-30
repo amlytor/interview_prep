@@ -148,7 +148,7 @@ check("seeded topics untouched", afterDelete.studyNotes.length === SEEDED_TOPICS
   `${afterDelete.studyNotes.length} notes`);
 
 // --- The prerequisite gate is advisory, never blocking ---------------------
-// The graph is nine tiers deep, so gating Learn behind proficiency would hide
+// The graph is ten tiers deep, so gating Learn behind proficiency would hide
 // most of the app from someone who arrives already competent in the upper
 // tiers. The badge still shows the recommended order; the button still works.
 await nav(page, /Topics/);
@@ -165,6 +165,17 @@ check("but Learn mode is NOT blocked by it", !(await learnBtn.isDisabled()));
 check("the tooltip reads as advice, not a refusal",
   ((await learnBtn.getAttribute("title")) ?? "").startsWith("Recommended:"),
   await learnBtn.getAttribute("title"));
+
+// --- Notes teach, and their math renders -----------------------------------
+// Every seeded note carries a worked example; a note that only lists formulas
+// is a reference sheet, not a lesson. KaTeX renders errors inline as
+// .katex-error rather than throwing, so a broken macro is silent unless
+// something looks for it — which is exactly how the escaped-dollar bug in the
+// inline-math tokenizer survived.
+check("the note shows a worked example",
+  (await page.getByRole("heading", { name: /Worked example/i }).count()) > 0);
+check("its math renders", (await page.locator(".katex").count()) > 0);
+check("with no KaTeX errors", (await page.locator(".katex-error").count()) === 0);
 
 check("no runtime errors", errors.length === 0, errors.slice(0, 3).join(" | "));
 

@@ -24,7 +24,13 @@ function MathTex({ tex, display }: { tex: string; display: boolean }) {
 function renderInline(text: string, keyPrefix: string): ReactNode[] {
   const out: ReactNode[] = [];
   // One combined regex; alternation order sets the precedence.
-  const pattern = /(`[^`]+`)|(\$[^$\n]+\$)|(\*\*[^*]+\*\*)|(\*[^*\n]+\*)/g;
+  //
+  // The math branch consumes backslash-escaped characters as a unit, so a
+  // literal dollar sign inside math ("$\$3.50$", used for currency amounts)
+  // doesn't terminate the span early. Without that, the closing delimiter was
+  // read as the escaped "$", leaving KaTeX to render a lone backslash and the
+  // rest of the line to be re-scanned out of phase.
+  const pattern = /(`[^`]+`)|(\$(?:[^$\n\\]|\\[^\n])+\$)|(\*\*[^*]+\*\*)|(\*[^*\n]+\*)/g;
   let last = 0;
   let match: RegExpExecArray | null;
   let k = 0;

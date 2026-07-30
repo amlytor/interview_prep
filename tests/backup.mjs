@@ -102,7 +102,16 @@ const browser = await launch();
   check("connects to the chosen file",
     (await page.locator(".backup-status").textContent())?.includes("quantprep-backup.json"));
 
-  const initialWrites = await page.evaluate(() => window.__backup.writes);
+  // The counter increments on close(), not on createWritable(), so a large
+  // payload can still be streaming when .backup-connected appears. Wait for the
+  // completed write rather than sampling the instant the UI updates.
+  let initialWrites = 0;
+  try {
+    await page.waitForFunction(() => window.__backup.writes > 0, null, { timeout: 5000 });
+    initialWrites = await page.evaluate(() => window.__backup.writes);
+  } catch {
+    initialWrites = await page.evaluate(() => window.__backup.writes);
+  }
   check("writes immediately on connect", initialWrites === 1, `${initialWrites} writes`);
 
   const firstPayload = await readBackup(page);
