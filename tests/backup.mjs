@@ -27,10 +27,21 @@ function stubPicker(permission = "granted") {
       return "granted";
     };
 
+    // Count COMPLETED writes, not started ones. OPFS's createWritable() streams
+    // into a swap file and only swaps it in on close(), so between those two
+    // calls the file still reads back as its previous contents — valid,
+    // parseable, and stale. A counter incremented at createWritable() would let
+    // a waitForFunction pass while the old data is still what's on disk.
     const createWritable = proto.createWritable;
-    proto.createWritable = function (...args) {
-      window.__backup.writes++;
-      return createWritable.apply(this, args);
+    proto.createWritable = async function (...args) {
+      const writable = await createWritable.apply(this, args);
+      const close = writable.close.bind(writable);
+      writable.close = async (...a) => {
+        const r = await close(...a);
+        window.__backup.writes++;
+        return r;
+      };
+      return writable;
     };
 
     window.showSaveFilePicker = async () => {
@@ -175,6 +186,9 @@ const browser = await launch();
   await page.waitForSelector(".backup-connected", { timeout: 5000 });
   check("reconnect re-requests permission and resumes",
     (await page.evaluate(() => window.__backup.requested)) === 1);
+  // Wait rather than sample: `writes` now counts COMPLETED writes, which land
+  // shortly after the UI reports the connection.
+  await page.waitForFunction(() => window.__backup.writes > 0, null, { timeout: 8000 });
   check("writes once reconnected", (await page.evaluate(() => window.__backup.writes)) > 0);
 
   await page.close();

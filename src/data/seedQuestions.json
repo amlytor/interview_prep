@@ -5337,6 +5337,594 @@
       "explanation": "Both exceed their normal counterparts, and ES rises by MORE. VaR is a single quantile, so it moves out only as far as the 1% point has shifted. ES averages every loss beyond the threshold, so it picks up the entire fat tail including the extreme losses that VaR cannot see — the fatter the tail, the wider the gap. This is precisely the intended behaviour that motivated FRTB's switch: under normality 97.5% ES and 99% VaR nearly coincide, so a near-normal book sees little capital change, while a book with genuine tail risk is charged materially more. It is also why the fat-tail correction matters more at higher confidence: the normal understatement grows as you move further out, so a 99.9% VaR computed under normality can be wrong by a factor approaching two.",
       "technique": "How tail thickness affects a quantile versus a tail average",
       "difficultyRationale": "Medium: the direction is easy; that ES moves more is the discriminating part."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In the Black-Scholes formula, which input is the only one not directly observable in the market?",
+      "options": [
+        "Volatility",
+        "The strike price",
+        "Time to maturity",
+        "The risk-free rate"
+      ],
+      "correctOption": 0,
+      "explanation": "Volatility. Spot, strike, maturity and (near enough) the rate are all observable; sigma is the forward-looking volatility over the option's life, which nobody can look up. That single unobservable is what the entire implied-volatility industry exists to handle: rather than forecast sigma and price the option, the market prices the option and you invert to get sigma. It is also why the model's most-violated assumption and its only free parameter are the same thing — the smile is the market's record of how badly a single constant sigma fits.",
+      "technique": "Identifying the model's only free parameter",
+      "difficultyRationale": "Easy: recall, and it motivates the whole implied-vol framework."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A stock is at $50, strike $50, r = 5%, T = 1 year, sigma = 20%. Roughly what is the call worth, without a calculator?",
+      "canonicalAnswer": "About $4.60. Use the ATM approximation 0.4*S*sigma*sqrt(T) = 0.4*50*0.2 = $4 for the volatility value, then add roughly half the interest on the strike, 0.5*50*0.05 = $1.25 times N(d2)~0.5, giving about $0.6 — total around $4.6.",
+      "explanation": "Fast route. The at-the-money approximation C ~ 0.4*S*sigma*sqrt(T) prices the pure volatility component: 0.4 * 50 * 0.20 * 1 = $4.00. That formula assumes r = 0, so add the interest benefit: you pay the strike later, worth about K*(1 - e^(-rT)) = 50*(1 - 0.951) = $2.44, but you only pay it when you exercise, so weight by roughly N(d2) ~ 0.5, giving about $1.22... call it $0.6-1.2 depending on how you weight. Total $4.6-5.2. EXACT: d1 = (0 + (0.05 + 0.02))/0.20 = 0.35, d2 = 0.15. N(0.35) = 0.6368, N(0.15) = 0.5596. C = 50(0.6368) - 50(0.9512)(0.5596) = 31.84 - 26.61 = $5.23. So the approximation lands within about 12%, which is the right accuracy for a ten-second answer. The lesson: quote the approximation, state that it ignores the interest term, and say which direction that biases you (low, since r > 0 helps a call).",
+      "technique": "ATM approximation plus the interest correction",
+      "difficultyRationale": "Medium: the approximation is the tool; knowing its bias direction is the skill."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In Black-Scholes, what is the delta of a European PUT?",
+      "options": [
+        "N(d1) - 1",
+        "−N(d1)",
+        "N(−d2)",
+        "1 − N(d2)"
+      ],
+      "correctOption": 0,
+      "explanation": "Delta of a put is N(d1) - 1, which is negative and runs from -1 (deep in the money) to 0 (deep out). The fastest derivation is put-call parity: p = c - S + K*e^(-rT), so differentiating with respect to S gives put delta = call delta - 1 = N(d1) - 1. Equivalently -N(-d1), since N(-x) = 1 - N(x). That parity route is worth internalising because it generates every put Greek from the corresponding call Greek in one line: gamma and vega are IDENTICAL for a put and call at the same strike (the -S + K*e^(-rT) terms have zero second derivative in S and no sigma dependence), while theta and rho differ by the derivative of the discounting term.",
+      "technique": "Deriving put Greeks from parity",
+      "difficultyRationale": "Medium: the parity route generates all of them, which is the reusable part."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Write down the Black-Scholes formulas for vega and gamma, and say what they have in common.",
+      "canonicalAnswer": "Vega = S*phi(d1)*sqrt(T) and Gamma = phi(d1)/(S*sigma*sqrt(T)), where phi is the standard normal density. Both are IDENTICAL for a call and a put at the same strike, and both are proportional to phi(d1), so both peak near the money.",
+      "explanation": "THE FORMULAS. Vega = S*phi(d1)*sqrt(T). Gamma = phi(d1)/(S*sigma*sqrt(T)). Note Vega = Gamma * S^2 * sigma * T, which is the algebraic form of the fact that gamma and vega are two views of the same convexity. WHAT THEY SHARE. (1) Both are the same for a call and a put at the same strike and maturity — immediate from parity, since c - p = S - K*e^(-rT) has zero second derivative in S and no sigma dependence at all. (2) Both carry phi(d1), the normal DENSITY rather than the cumulative, so both peak near the money and decay in both directions. That is why at-the-money options are where all the convexity lives. THE MATURITY SPLIT is where they differ and it is the practically important part: vega scales with sqrt(T) while gamma scales with 1/sqrt(T). So short-dated at-the-money options are the gamma instruments and long-dated ones are the vega instruments, which is exactly why hedging both requires two maturities and why the two-option hedge system is solvable.",
+      "technique": "Vega and gamma as two views of convexity",
+      "difficultyRationale": "Medium: the formulas are recall; the opposite maturity scaling is the content."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Under Black-Scholes with no dividends, what is the probability (risk-neutral) that a call finishes in the money?",
+      "options": [
+        "N(d2)",
+        "N(d1)",
+        "1 - N(d1)",
+        "N(d1) - N(d2)"
+      ],
+      "correctOption": 0,
+      "explanation": "N(d2). Under the risk-neutral measure ln(S_T) is normal with mean ln(S_0) + (r - sigma^2/2)T and standard deviation sigma*sqrt(T), so P(S_T > K) works out to N(d2) exactly. Note the -sigma^2/2 in that drift: it is why d2 = d1 - sigma*sqrt(T) and why N(d2) < N(d1) always. Two cautions. This is a RISK-NEUTRAL probability, not a forecast — the real-world probability uses drift mu and is generally higher for a stock with a positive risk premium. And N(d1) is not a probability of exercise under any measure you would call natural; it is the exercise probability under the stock-numeraire measure, which is also why it equals the delta.",
+      "technique": "Risk-neutral exercise probability",
+      "difficultyRationale": "Medium: the answer is short; the real-world caveat is what distinguishes it."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under what conditions does the Black-Scholes price of a call equal its intrinsic value?",
+      "canonicalAnswer": "When there is no time value left: at expiry, or in the limits of zero volatility with the option in the money on a forward basis, or as the option goes infinitely deep in the money. For a non-dividend payer the European call always exceeds S - K before expiry, so intrinsic value is a strict lower bound.",
+      "explanation": "The call's value decomposes into intrinsic plus time value, and time value comes from two sources: the VOLATILITY value (the chance of moving further into the money) and the INTEREST value (paying the strike later). Both must vanish. AT EXPIRY, T = 0, so both vanish and c = max(S-K,0). ZERO VOLATILITY with S > K*e^(-rT): the option becomes a forward, worth S - K*e^(-rT), which exceeds S - K whenever r > 0 — so it equals the FORWARD intrinsic, not the spot intrinsic. That distinction is worth making. DEEP IN THE MONEY: N(d1) and N(d2) both approach 1, so c approaches S - K*e^(-rT), again the discounted-strike version. So for a non-dividend-paying stock the European call is ALWAYS strictly above S - K before expiry, which is the formal reason early exercise is never optimal — exercising would realise S - K when you could sell for more. The picture inverts for the PUT: a deep in-the-money European put approaches K*e^(-rT) - S, which is BELOW the intrinsic K - S, and that gap is exactly the early-exercise premium the American put commands.",
+      "technique": "Decomposing time value into volatility and interest components",
+      "difficultyRationale": "Medium: the forward-versus-spot intrinsic distinction is the discriminating detail."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "hard",
+      "type": "multiple_choice",
+      "prompt": "Black-Scholes is homogeneous of degree 1 in S and K: C(lambda*S, lambda*K) = lambda*C(S,K). What follows?",
+      "options": [
+        "Euler's theorem gives C = S*(dC/dS) + K*(dC/dK), linking the price to its Greeks",
+        "The price is independent of the strike",
+        "Delta must equal 1",
+        "Volatility must be constant"
+      ],
+      "correctOption": 0,
+      "explanation": "Homogeneity means scaling spot and strike together scales the price by the same factor — economically obvious, since a stock split changes nothing real. Euler's theorem for a degree-1 homogeneous function then gives C = S*(dC/dS) + K*(dC/dK) = S*N(d1) - K*e^(-rT)*N(d2), reproducing the formula itself and confirming that dC/dK = -e^(-rT)*N(d2), which is the digital option price. The same homogeneity underpins Euler allocation of VaR into component VaRs that sum exactly to the total — the identical mathematical fact in a different setting. It also implies the price depends on S and K only through their RATIO (moneyness), which is why vol surfaces are naturally parameterised in log-moneyness rather than absolute strike.",
+      "technique": "Euler's theorem applied to a homogeneous pricing function",
+      "difficultyRationale": "Hard: the homogeneity is easy to state and its consequences are not obvious."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your Black-Scholes implementation returns a call price below max(S - K*e^(-rT), 0) for some inputs. What are the likely bugs?",
+      "canonicalAnswer": "Almost certainly a numerical issue in the cumulative normal, a sign error in d1/d2, or the discounting applied to the wrong term. That bound is a hard no-arbitrage floor, so a violation is a bug, never a modelling choice.",
+      "explanation": "THE BOUND. c >= max(S - K*e^(-rT), 0) is a static no-arbitrage result independent of any model: if it failed you could buy the call, short the stock, invest K*e^(-rT), and lock in a riskless profit. Black-Scholes satisfies it identically, so a violation means your CODE is wrong. WHERE TO LOOK, in order. (1) The CUMULATIVE NORMAL approximation. Many closed-form N(x) approximations (Abramowitz-Stegun, Hart) lose accuracy in the far tails, and for deep in-the-money options d1 and d2 are large, so N() should be essentially 1 — if your approximation returns 0.9999 for one and 1.0001 for the other, the difference of two large near-equal numbers loses precision and the price can go below the bound. Use a high-accuracy erf or clamp. (2) SIGN ERRORS in d1/d2, especially ln(S/K) inverted, or d2 = d1 + sigma*sqrt(T) instead of minus. (3) DISCOUNTING applied to the S*N(d1) term as well as the strike term, which is the single most common implementation bug. (4) Units: sigma or r given as percentages rather than decimals, or T in days rather than years. WHAT TO DO ABOUT IT: build the bounds into a unit test alongside the other invariants — put-call parity, the sigma -> 0 and sigma -> infinity limits, delta in [0,1], and price monotone in sigma. Those five checks catch essentially every implementation error and take minutes to write.",
+      "technique": "No-arbitrage bounds as implementation tests",
+      "difficultyRationale": "Medium: the diagnosis list is the value, and the testing point is the takeaway."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Two European calls on the same stock differ only in strike: K1 < K2. What must be true of their prices?",
+      "options": [
+        "C(K1) > C(K2), and C(K1) - C(K2) <= (K2 - K1)*e^(-rT)",
+        "C(K1) > C(K2), with no bound on the difference",
+        "C(K1) < C(K2)",
+        "Their prices are unrelated without knowing volatility"
+      ],
+      "correctOption": 0,
+      "explanation": "Two model-free constraints. MONOTONICITY: a lower strike is unambiguously better, so C(K1) > C(K2) — otherwise buy the low-strike call, sell the high-strike one, and you have a bull spread with negative cost and non-negative payoff. BOUNDED SLOPE: the difference cannot exceed the discounted strike gap, because the bull spread's maximum payoff is K2 - K1. Violate that and you sell the spread for more than it can ever pay. Together these say -e^(-rT) <= dC/dK <= 0, and the third constraint is CONVEXITY in strike (the butterfly condition), which is what makes d2C/dK2 the risk-neutral density. All three are static arbitrage results holding for any model, which is why they are the standard sanity checks on a quoted surface and on any interpolation of it.",
+      "technique": "Static arbitrage bounds across strikes",
+      "difficultyRationale": "Medium: monotonicity is obvious; the slope bound is the part people miss."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Show that the Black-Scholes delta of a call, N(d1), is what falls out of differentiating the formula — why don't the derivatives of N(d1) and N(d2) contribute?",
+      "canonicalAnswer": "They contribute, but they cancel exactly. Differentiating c = S*N(d1) - K*e^(-rT)*N(d2) with respect to S gives N(d1) + S*phi(d1)*(dd1/dS) - K*e^(-rT)*phi(d2)*(dd2/dS). Since dd1/dS = dd2/dS and S*phi(d1) = K*e^(-rT)*phi(d2), the last two terms cancel and delta = N(d1).",
+      "explanation": "THE CALCULATION. dc/dS = N(d1) + S*phi(d1)*(dd1/dS) - K*e^(-rT)*phi(d2)*(dd2/dS). Since d2 = d1 - sigma*sqrt(T) and sigma*sqrt(T) does not depend on S, we have dd1/dS = dd2/dS = 1/(S*sigma*sqrt(T)). So the two extra terms cancel if and only if S*phi(d1) = K*e^(-rT)*phi(d2). THE KEY IDENTITY. Verify it directly: phi(d1)/phi(d2) = exp(-(d1^2 - d2^2)/2). Now d1^2 - d2^2 = (d1+d2)(d1-d2) = (d1+d2)*sigma*sqrt(T), and substituting d1 + d2 = 2*ln(S/K)/(sigma*sqrt(T)) + ... works out to give exactly ln(S/(K*e^(-rT))) * 2, so the ratio becomes K*e^(-rT)/S. Hence S*phi(d1) = K*e^(-rT)*phi(d2). QED. WHY IT MATTERS beyond the algebra. This identity is not a coincidence — it is the statement that the two N() terms are expectations under two different measures related by the stock as numeraire, and the cancellation is the change-of-measure Jacobian. It is also enormously convenient in practice: it means delta is just N(d1) with no correction, and the same identity makes vega collapse to S*phi(d1)*sqrt(T) rather than a messy sum. Any implementation that computes delta by finite differences and gets something other than N(d1) has a bug.",
+      "technique": "The phi(d1)/phi(d2) identity behind the clean Greeks",
+      "difficultyRationale": "Hard: the identity is genuinely fiddly and is why the Greeks look so simple."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A stock will pay a known dividend of $2 in three months. You are pricing a six-month European call. What do you use as the stock price input?",
+      "options": [
+        "S minus the present value of the dividend",
+        "S plus the present value of the dividend",
+        "S unchanged",
+        "S times e^(-qT) using an estimated yield"
+      ],
+      "correctOption": 0,
+      "explanation": "Subtract the PV of the dividend: use S - 2*e^(-r*0.25). The reasoning is that the option holder does not receive the dividend, so the asset underlying the option is only the RISKY residual after the known cash payment is stripped out. Since that payment is known with certainty it is not part of the lognormal component, and modelling it as such would misstate the distribution. This is the standard market treatment for a discrete dividend within the option's life. The continuous-yield adjustment (the last option) is the right approach for an INDEX, where dividends arrive in a steady stream from many constituents and no single payment date matters, but it is a poor fit for a single stock with one known payment. Note the approximation is imperfect — sigma should strictly apply only to the risky part, so the volatility input needs a small upward adjustment — but the PV-subtraction is what desks do.",
+      "technique": "Discrete versus continuous dividend treatment",
+      "difficultyRationale": "Medium: the direction is easy; knowing when to use which method is the point."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Black-Scholes assumes returns are lognormal. What does that actually imply about the stock price, and what does it get wrong?",
+      "canonicalAnswer": "It implies the price cannot go negative, that log returns are normal and additive over time, and that returns are independent. It gets the tails wrong (real returns have kurtosis 5-10 against the normal's 3), the skew wrong, and it rules out volatility clustering and jumps.",
+      "explanation": "WHAT LOGNORMALITY BUYS. (1) The price stays POSITIVE, which is right for equities and is why the model uses geometric rather than arithmetic Brownian motion. (2) Log returns are NORMAL, so they add across periods and the sum of T daily log returns is normal with variance T*sigma^2 — that additivity is where sqrt(t) scaling comes from. (3) Returns are INDEPENDENT across periods, which makes the process Markov and the PDE tractable. WHAT IT GETS WRONG, in order of consequence. (1) TAILS. Real daily equity returns have kurtosis around 5-10 against the normal's 3, and moves that should occur once a century show up every few years. This is why the model underprices far out-of-the-money options and why the smile exists. (2) SKEW. Equity returns are negatively skewed — crashes are sudden, rallies gradual — while the lognormal is positively skewed in price terms. This is the main driver of the equity skew specifically, as opposed to a symmetric smile. (3) INDEPENDENCE. Volatility clusters, so returns are uncorrelated but NOT independent — dependence lives in the second moment. That single failure explains much of the observed kurtosis, since a mixture of normals with different variances is leptokurtic even though each component is not. (4) CONTINUITY. Prices gap, and jumps are unhedgeable at any rebalancing frequency. THE USEFUL FRAMING: standardise returns by a GARCH volatility estimate and the residuals are much closer to normal — so a large part of the lognormality failure is really a constant-volatility failure in disguise.",
+      "technique": "What lognormality assumes and where it breaks",
+      "difficultyRationale": "Medium: listing the failures is easy; ranking them and noting the GARCH point is not."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What happens to a European call's Black-Scholes price as time to maturity increases, all else equal?",
+      "options": [
+        "It increases",
+        "It decreases",
+        "It is unchanged",
+        "It increases then decreases"
+      ],
+      "correctOption": 0,
+      "explanation": "It increases. Longer maturity means more total volatility (sigma*sqrt(T) grows) and a larger discount on the strike you eventually pay, both of which help a call. Formally, the European call on a non-dividend payer is increasing in T. Note this is NOT the same statement as theta: theta describes what happens to a FIXED option as the calendar advances toward its fixed expiry, which is negative for most options. Comparing two different options with different maturities is a different comparison entirely, and confusing the two is the standard error. Also note the result is specific: a European PUT on a non-dividend payer is not necessarily increasing in maturity, because the longer discounting of the strike works against it — a deep in-the-money long-dated put can be worth less than a shorter-dated one.",
+      "technique": "Monotonicity in maturity, and the theta confusion",
+      "difficultyRationale": "Easy: the trap is conflating this with time decay."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you price a European option numerically if you did not have the closed form? Name three methods and when each is preferred.",
+      "canonicalAnswer": "Binomial tree (intuitive, handles early exercise), finite-difference PDE solver (efficient in low dimensions, handles boundaries and early exercise well), and Monte Carlo (the only practical choice in high dimensions or with path dependence).",
+      "explanation": "BINOMIAL TREE. Discretise the price into up/down moves with risk-neutral probabilities, work backwards from the payoff. Strengths: transparent, easy to explain in an interview, and naturally handles early exercise by comparing continuation value against intrinsic at each node. Weaknesses: slow to converge (error O(1/n)), oscillatory near barriers and discontinuous payoffs, and useless above two or three underlyings. FINITE DIFFERENCE. Solve the PDE on a grid in spot and time. Strengths: efficient in one or two dimensions, gives the whole solution surface so Greeks come out essentially free, and handles boundary conditions (barriers, early exercise) cleanly. Weaknesses: the curse of dimensionality bites hard beyond two or three factors, and explicit schemes are only conditionally stable. MONTE CARLO. Simulate paths, average the discounted payoff. Strengths: error is O(1/sqrt(N)) INDEPENDENT of dimension, so it is the only option for baskets, and it handles path dependence naturally. Weaknesses: slow convergence, Greeks need care (bump with common random numbers, or use pathwise/AAD), and early exercise needs Longstaff-Schwartz regression. THE DECISION RULE: one or two factors and possible early exercise, use finite differences; high dimension or path dependence, use Monte Carlo; explaining it to someone, use the tree. The crossover is around three dimensions.",
+      "technique": "Choosing a numerical method by dimension and payoff type",
+      "difficultyRationale": "Medium: naming three is easy; the crossover rule is what shows judgement."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In a one-period binomial model with u = 1.2, d = 0.8, r = 0 and S = 100, what is the risk-neutral probability of an up move?",
+      "options": [
+        "0.5",
+        "0.6",
+        "0.4",
+        "It depends on the real-world probability"
+      ],
+      "correctOption": 0,
+      "explanation": "0.5. The risk-neutral probability is q = (e^(rT) - d)/(u - d) = (1 - 0.8)/(1.2 - 0.8) = 0.2/0.4 = 0.5. Equivalently, q is whatever makes the stock a martingale: 100 = q(120) + (1-q)(80) gives 100 = 80 + 40q, so q = 0.5. The real-world probability is irrelevant and is the standard distractor — it is already embedded in the current price of 100, and using it would double-count. As the number of periods grows with u = e^(sigma*sqrt(dt)) and d = 1/u, this binomial converges to Black-Scholes, which is the Cox-Ross-Rubinstein result and the cleanest way to see where the lognormal comes from.",
+      "technique": "Risk-neutral probability from the martingale condition",
+      "difficultyRationale": "Medium: one formula, with the real-world distractor doing the work."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Why does the Black-Scholes hedging argument require the portfolio to be self-financing, and what breaks if it isn't?",
+      "canonicalAnswer": "Self-financing means all changes in portfolio value come from changes in asset prices, with no cash injected or withdrawn. Without it the replication argument is vacuous — you could 'replicate' any payoff by topping up the portfolio, and the initial cost would tell you nothing about the option's value.",
+      "explanation": "THE CONDITION. A self-financing strategy satisfies dPi = (units of stock)*dS + (cash)*r*dt — every change in value comes from the assets moving, never from external money. Rebalancing is allowed but must be funded by selling one holding to buy the other. WHY IT IS ESSENTIAL. The Black-Scholes argument says: the option's price must equal the cost of the replicating portfolio, because otherwise there is arbitrage. That only holds if the replicating portfolio needs no further funding after inception. If you could inject cash along the way, you could replicate any payoff whatsoever starting from any initial amount, and the initial cost would carry no information about the option's value. Self-financing is what makes 'cost of replication' a well-defined number. THE TECHNICAL SUBTLETY, which is what the question is really probing. In the standard derivation you form Pi = -f + (df/dS)*S and then differentiate, treating df/dS as CONSTANT over the interval — writing dPi = -df + (df/dS)dS rather than including a d(df/dS)*S term. That step is exactly the self-financing assumption, and it is only legitimate in the continuous limit. In discrete time the rebalancing does generate a funding mismatch, which is precisely the discrete-hedging error: zero mean, non-zero variance proportional to gamma. So self-financing is not a technicality bolted on for rigour — it is the assumption that becomes false the moment you hedge at finite frequency, and its failure IS the replication error you observe in practice.",
+      "technique": "Self-financing as the assumption that fails in discrete time",
+      "difficultyRationale": "Hard: usually treated as a footnote; connecting it to discrete hedging error is the insight."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "For which of these is the Black-Scholes formula exactly correct, given its own assumptions hold?",
+      "options": [
+        "A European call on a non-dividend-paying stock",
+        "An American put",
+        "A barrier option",
+        "An Asian option"
+      ],
+      "correctOption": 0,
+      "explanation": "Only the European call (and its put counterpart) — the formula solves the PDE with the European payoff as terminal condition and no other boundary conditions. An AMERICAN PUT has a free boundary (the early-exercise frontier) and no closed form. A BARRIER option satisfies the same PDE but with an additional boundary condition along the barrier, which changes the solution — closed forms exist for simple barriers under Black-Scholes assumptions, but they are not the Black-Scholes formula. An ASIAN option depends on the average, so the payoff is path-dependent and the state variable is no longer just S — you need an extra dimension, and there is no closed form for an arithmetic average (though the geometric-average Asian does have one, which is why it makes such a good control variate). The unifying point: the PDE is shared, the boundary and terminal conditions are what differ, and only one combination gives the familiar formula.",
+      "technique": "What the closed form actually solves",
+      "difficultyRationale": "Medium: the shared-PDE framing makes the answer systematic rather than memorised."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Interview question: 'Price a one-year at-the-money call, S = K = 100, r = 0, sigma = 25%. Then tell me the delta.' No calculator.",
+      "canonicalAnswer": "About $10, with delta about 0.55. C ~ 0.4*S*sigma*sqrt(T) = 0.4*100*0.25 = $10. Delta = N(d1) where d1 = sigma*sqrt(T)/2 = 0.125, and N(0.125) ~ 0.55.",
+      "explanation": "PRICE. With r = 0 and S = K, use C ~ 0.4*S*sigma*sqrt(T) = 0.4 * 100 * 0.25 * 1 = $10. (Exact: d1 = 0.125, d2 = -0.125, N(0.125) = 0.5497, N(-0.125) = 0.4503, C = 100(0.5497) - 100(0.4503) = $9.94. The approximation is within 1%.) DELTA. With r = 0 and S = K, ln(S/K) = 0 so d1 = (sigma^2/2)T/(sigma*sqrt(T)) = sigma*sqrt(T)/2 = 0.125. Delta = N(0.125). Approximating the normal CDF near zero as 0.5 + 0.4*x gives 0.5 + 0.05 = 0.55. THE TWO SHORTCUTS worth memorising for this exact question, which is asked constantly: (1) C ~ 0.4*S*sigma*sqrt(T) for the ATM price; (2) N(x) ~ 0.5 + 0.4x for small x, which is just the normal density at zero (0.399) times x. Together they let you produce both numbers in about fifteen seconds. Sanity checks to say out loud: the price must be under $25 (a one-standard-deviation move) and the delta must be just above 0.5 (spot-ATM with the sigma^2/2 term pushing d1 positive), and both hold.",
+      "technique": "The two ATM shortcuts for price and delta",
+      "difficultyRationale": "Medium: both approximations must be at your fingertips, not derived."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you numerically compute an implied volatility from an observed option price?",
+      "canonicalAnswer": "Newton-Raphson on sigma: sigma_(n+1) = sigma_n - (BS(sigma_n) - market)/vega(sigma_n), starting from a sensible guess. Vega is the derivative you need and you already have it in closed form, so convergence is quadratic and takes 3-4 iterations.",
+      "explanation": "THE METHOD. You want sigma such that BS(sigma) = market price. Newton's iteration is sigma_(n+1) = sigma_n - f(sigma_n)/f'(sigma_n) where f(sigma) = BS(sigma) - market and f'(sigma) = vega. Since vega has a closed form, S*phi(d1)*sqrt(T), each step is cheap and convergence is quadratic — typically 3-4 iterations to machine precision. STARTING POINT matters for robustness. Invert the ATM approximation: sigma_0 = price/(0.4*S*sqrt(T)), or use Brenner-Subrahmanyam sigma_0 = sqrt(2*pi/T)*price/S. Either lands close enough that Newton converges immediately. WHERE IT FAILS. Deep in- or out-of-the-money options have vega approaching zero, so you are dividing by a tiny number and the iteration becomes unstable or overshoots into negative sigma. Remedies: bracket with BISECTION as a fallback (guaranteed to converge since price is monotone in sigma), clamp sigma to a sensible range, or solve on a transformed variable. Production implementations use a hybrid — Newton where vega is healthy, bisection at the wings. ALSO CHECK THE PRICE IS ATTAINABLE first: if the quoted price is below the intrinsic bound max(S - K*e^(-rT),0) or above S, no implied vol exists and you should reject the quote rather than let the solver wander. That check catches stale and erroneous marks, which is a large share of what a production vol-surface builder actually spends its time on.",
+      "technique": "Newton-Raphson with vega, and where it breaks down",
+      "difficultyRationale": "Medium: the method is standard; the wing instability and bracketing fallback show implementation experience."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A 25-delta risk reversal in FX is quoted at +2 vols. What does that mean?",
+      "options": [
+        "The 25-delta call's implied vol exceeds the 25-delta put's by 2 vol points",
+        "The option costs 2% more than at-the-money",
+        "Implied vol is 2 points above realised",
+        "The forward is 2% above spot"
+      ],
+      "correctOption": 0,
+      "explanation": "The risk reversal is the difference between the 25-delta call vol and the 25-delta put vol, so +2 means calls are bid relative to puts by 2 volatility points — the market is paying up for upside in the base currency. It is the standard measure of SKEW in FX, and it is a vanna exposure: a position in a risk reversal is a bet on how the skew moves, which is how delta responds to vol changes. Together with the at-the-money vol and the 25-delta BUTTERFLY (the average of the two wing vols minus the ATM vol, a volga/kurtosis measure), the risk reversal is one of the three quotes that define an FX smile for a given maturity — the market quotes those three rather than a strike grid, and everything else is interpolated from them. In equities the analogous quantity is the put skew, and it is almost always negative in the FX sign convention because puts are bid.",
+      "technique": "Reading the FX smile's three quoting instruments",
+      "difficultyRationale": "Medium: FX market convention, and the vanna link is the depth."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Realised volatility over the last month was 15% but one-month implied is 22%. Is that a trade?",
+      "canonicalAnswer": "Not obviously. The gap is roughly the normal variance risk premium, so short vol here is selling insurance at close to the going rate rather than exploiting a mispricing. You would need a view on FORWARD realised vol, plus knowledge of what is scheduled in the window.",
+      "explanation": "WHY IT IS NOT AUTOMATICALLY A TRADE. Implied exceeds subsequent realised on average — that is the variance risk premium, and it is compensation for bearing a negatively skewed payoff, not a free lunch. A 7-point gap is within the normal range for equity indices, so selling it is taking the standard premium at the standard price. THE QUESTIONS TO ASK FIRST. (1) Is anything SCHEDULED in the window — earnings, a central bank meeting, an election, an index rebalance? Implied vol correctly prices known event risk that trailing realised vol cannot see, and much of the apparent gap is often a single event. (2) What is the CURRENT vol regime? Trailing realised is backward-looking; if vol has been rising, 15% understates what is happening now. Compare implied against a GARCH FORECAST rather than against trailing realised — that is the like-for-like comparison. (3) Where does the gap sit in its own HISTORY? A 7-point premium is meaningful if the typical premium for this name is 2 points, and unremarkable if it is 6. (4) What is the SKEW doing? If the premium is concentrated in downside puts, you are being paid for crash risk specifically, not for volatility. IF YOU DO TRADE IT: short variance swap or delta-hedged straddle, size it small, and understand the payoff — steady small gains punctuated by a large loss. The 2018 short-VIX unwind is the standard illustration of what selling this premium unhedged eventually costs.",
+      "technique": "Distinguishing a risk premium from a mispricing",
+      "difficultyRationale": "Medium: the naive answer is 'sell vol'; the discipline of ruling out events and regime is the content."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "What does a steeply negative equity skew imply about the risk-neutral distribution of returns?",
+      "options": [
+        "A fatter left tail than lognormal — more probability on large downward moves",
+        "A fatter right tail",
+        "Higher overall volatility",
+        "Lower correlation between assets"
+      ],
+      "correctOption": 0,
+      "explanation": "Higher implied vol at low strikes means out-of-the-money puts cost more than a lognormal model would charge, which is exactly the statement that the risk-neutral density has MORE mass in the left tail. Formally you can recover the whole density from the surface via Breeden-Litzenberger — the second derivative of call price with respect to strike IS the discounted risk-neutral density — so the skew is not a vague indicator, it pins the distribution precisely. Note the qualifier RISK-NEUTRAL. The implied density blends the market's genuine beliefs about crash probability with its risk PREFERENCES, since investors will pay above actuarially fair value for protection. So a steep skew tells you crashes are feared and hedged, not that they are objectively that likely, and the gap between the risk-neutral and real-world left tail is the variance risk premium concentrated in the wings.",
+      "technique": "Reading the risk-neutral density off the skew",
+      "difficultyRationale": "Medium: the direction is gettable; the Breeden-Litzenberger and risk-neutral caveats are the depth."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between a variance swap and a volatility swap, and why are variance swaps far more common?",
+      "canonicalAnswer": "A variance swap pays realised VARIANCE minus a strike; a volatility swap pays realised VOLATILITY minus a strike. Variance swaps dominate because they have an exact static replication in vanilla options, whereas volatility swaps do not.",
+      "explanation": "THE PAYOFFS. Variance swap: notional * (realised variance - K_var). Volatility swap: notional * (realised vol - K_vol). Economically the volatility swap is what people actually want — it is linear in the quantity they are thinking about — but the variance swap is what trades. WHY. A variance swap can be replicated STATICALLY by a portfolio of vanilla options weighted 1/K^2 across all strikes, plus a dynamic futures hedge. That replication is exact under fairly weak assumptions (continuous paths, no jumps), so a dealer can hedge it with instruments that already trade and quote it tightly. A volatility swap has no such replication — vol is the square root of variance, and the square root is a nonlinear function, so no static option portfolio reproduces it. Dealers price volatility swaps off variance swaps with a CONVEXITY ADJUSTMENT, and that adjustment depends on the vol-of-vol, which is itself hard to observe. THE CONSEQUENCE FOR THE BUYER: variance is CONVEX in volatility, so a variance swap pays disproportionately in a big spike — a vol move from 20 to 40 quadruples the variance while only doubling the vol. That convexity is worth something to a long, which is why K_var typically exceeds K_vol^2, and it is why long variance is a better crash hedge than long vol. It is also why most variance swaps written after 2008 are CAPPED, usually at 2.5x the strike: the uncapped short position produced catastrophic losses in the crisis, and dealers stopped writing them.",
+      "technique": "Static replicability as the reason variance dominates",
+      "difficultyRationale": "Medium: the payoff difference is easy; the replication argument is why one exists and the other barely does."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the 'vol of vol', and which instrument is most sensitive to it?",
+      "options": [
+        "The volatility of implied volatility itself — options on volatility, and the volga of a vanilla book",
+        "The volatility of the underlying, measured twice",
+        "The difference between implied and realised vol",
+        "The slope of the term structure"
+      ],
+      "correctOption": 0,
+      "explanation": "Vol of vol is the volatility of the volatility process — how much implied vol itself moves. It matters wherever a position is CONVEX in volatility. The purest exposures are options on volatility (VIX options) and the volga of a vanilla book, since volga is the second derivative of value with respect to sigma. It also drives the difference between a variance swap and a volatility swap: the convexity adjustment between them is a function of vol of vol. And it is what a stochastic volatility model like Heston parameterises explicitly, alongside mean reversion and the spot-vol correlation. Practically, high vol of vol makes wing options relatively more valuable, so it is one of the drivers of the smile's curvature (the butterfly) as distinct from its slope (the risk reversal).",
+      "technique": "Vol of vol and where it shows up",
+      "difficultyRationale": "Easy: definitional, and the volga/butterfly link makes it concrete."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You need an implied vol for a strike and maturity where nothing trades. How do you get one, and what can go wrong?",
+      "canonicalAnswer": "Interpolate within the observed surface using a parameterisation that is arbitrage-free by construction (SVI in strike, SSVI across maturities), working in total variance and log-moneyness. Naive splines or extrapolating far into the wings can produce negative densities and calendar arbitrage.",
+      "explanation": "THE APPROACH. (1) Work in the right COORDINATES: total implied variance (sigma^2*T) against log-moneyness (ln(K/F)). In those coordinates the surface is far flatter and the no-arbitrage conditions are cleanest. (2) Fit a PARAMETERISATION that enforces the constraints rather than interpolating raw quotes — Gatheral's SVI for a single maturity slice, SSVI to couple slices across maturities. (3) Check both conditions hold on the fitted surface: BUTTERFLY (d2C/dK2 >= 0, the density is non-negative) and CALENDAR (total variance non-decreasing in T at fixed moneyness). WHAT GOES WRONG. (1) SPLINES. A cubic spline through vol quotes is smooth in VOL but the constraints bind on the second derivative of PRICE in strike. Tiny wiggles invisible to the eye produce negative densities in the wings, and anything priced off that surface — an exotic, a Monte Carlo — comes out as nonsense with no obvious symptom. (2) EXTRAPOLATION. Beyond the quoted strikes you have no information, and the wings are exactly where the density is most fragile. Flat extrapolation is common and at least safe; polynomial extrapolation can blow up. (3) STALE OR BAD QUOTES. A single erroneous mark drags the fit and can break the constraints; filter first, checking that each quote respects the intrinsic bounds and that call and put implied vols agree at the same strike (parity says they must). (4) SPARSE MATURITIES. Interpolating in T between two distant expiries can violate the calendar condition even when both slices are individually fine. THE HONEST POSITION: any vol you produce for a non-traded point is a model output, so mark a model reserve against exotics that depend heavily on the interpolated region.",
+      "technique": "Arbitrage-free surface construction",
+      "difficultyRationale": "Hard: the coordinate choice, the parameterisation and the failure modes are all production concerns."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Implied vol for a one-month option is 30% and for a one-year option is 20%. What does that tell you?",
+      "options": [
+        "The market expects near-term volatility to be elevated but to mean-revert",
+        "The one-year option is mispriced",
+        "Long-dated options are always cheaper in vol terms",
+        "There is a calendar arbitrage"
+      ],
+      "correctOption": 0,
+      "explanation": "An inverted term structure signals elevated near-term volatility that the market expects to subside. Implied vol at maturity T reflects the average expected variance over that horizon, so a high short-dated vol and a lower long-dated one means the market is pricing a spike now and reversion later — typically after a shock, or ahead of a known near-term event. There is NO arbitrage here: the calendar condition constrains TOTAL variance (sigma^2*T), not vol. Check it: one month gives 0.30^2/12 = 0.0075, one year gives 0.20^2 = 0.04. Total variance is increasing, so the surface is fine. That check is exactly why the constraint is stated in total variance — an inverted vol term structure is completely normal and only becomes arbitrageable if total variance actually decreases with maturity.",
+      "technique": "Inverted term structure versus calendar arbitrage",
+      "difficultyRationale": "Medium: the arithmetic check on total variance is the discriminating step."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why do single-stock options have a flatter skew than index options on the same market?",
+      "canonicalAnswer": "Because index skew also prices CORRELATION risk. In a crash, correlations rise toward 1, so index volatility rises more than the constituents' individual volatilities — and index puts price that, while single-stock puts do not.",
+      "explanation": "THE MECHANISM. Index variance is a weighted sum of constituent variances plus all the pairwise covariance terms. In normal conditions correlations are moderate, so the covariance terms are modest and index vol sits well below the average single-stock vol. In a crash correlations converge toward 1, the covariance terms swell, and index vol rises MORE than the individual names' vols do. So an index put is protection against two things — the market falling AND correlations spiking — while a single-stock put is protection against one. That extra correlation exposure is priced into low-strike index options, steepening the index skew relative to the components'. THE TRADE THIS IMPLIES is dispersion: sell index options, buy the constituents' options, delta-hedged. You are short index vol and long single-stock vol, which nets to being SHORT correlation — you profit if realised correlation comes in below the level implied by the gap. It is a real and widely-run strategy, and its risk profile is exactly what you would expect: it grinds out returns in normal markets and loses badly in a crash, when correlation goes to 1. That is the same short-tail shape as selling variance, arrived at from a different direction. SECOND-ORDER POINT worth adding: the gap between implied index vol and the implied vol of a basket of the constituents defines an IMPLIED CORRELATION, which is quotable and tradeable in its own right and is a useful market-stress indicator.",
+      "technique": "Correlation risk embedded in index skew",
+      "difficultyRationale": "Hard: the mechanism needs the variance decomposition, and the dispersion trade is the payoff."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A local volatility model is calibrated to fit today's entire vol surface exactly. What is its main weakness?",
+      "options": [
+        "It predicts unrealistic forward smile dynamics — the smile flattens over time in a way markets do not",
+        "It cannot fit the surface exactly",
+        "It requires a second stochastic factor",
+        "It violates no-arbitrage"
+      ],
+      "correctOption": 0,
+      "explanation": "Local vol (Dupire) makes sigma a deterministic function of spot and time, chosen to reproduce today's surface exactly — and because it keeps a single risk factor the market stays complete and options remain perfectly hedgeable with the underlying. The problem is DYNAMICS. Fitting today's smile says nothing about how the smile evolves, and local vol's implied evolution is wrong: it predicts the smile flattens rapidly as time passes and moves in the opposite direction to spot in a way that does not match observation. That matters enormously for anything whose value depends on the FUTURE smile — forward-starting options, cliquets, barriers — where local vol can misprice badly despite fitting every vanilla today. The standard response is a stochastic-local volatility hybrid: a stochastic vol component to get the dynamics roughly right, with a local vol correction on top to restore the exact fit to vanillas.",
+      "technique": "Fitting today's surface versus getting its dynamics right",
+      "difficultyRationale": "Medium: the calibration strength is well known; the dynamics failure is the real content."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Implied vol on a stock jumps from 25% to 40% with no move in the share price. What could cause that, and what would you check?",
+      "canonicalAnswer": "Most likely a scheduled or rumoured event entering the window — earnings, a bid, a regulatory decision, a trial result. Check the event calendar first, then whether the jump is uniform across maturities or concentrated in the front end.",
+      "explanation": "WHAT TO CHECK, in order. (1) THE EVENT CALENDAR. A vol jump without a spot move almost always means new information about future UNCERTAINTY rather than about value — earnings scheduled, an M&A rumour, a drug trial readout, a court ruling. The spot may be unmoved because the market genuinely does not know which way it resolves, while knowing the move will be large. (2) THE TERM STRUCTURE SHAPE. If only the front end moved, it is a dated event inside that window, and you can often back out the implied event-day move: if the one-month vol jumps while two-month barely moves, the extra variance is concentrated in the days the shorter option covers and the longer one shares. That decomposition is a standard earnings-vol calculation. (3) THE SKEW. If the whole surface lifted, it is a general uncertainty repricing. If the puts lifted specifically, it is downside fear — a credit concern or a deal-break risk. (4) SUPPLY AND DEMAND. A large structured issue or a convertible arbitrage unwind can move vol mechanically with no news at all, especially in a single name where the options market is thin. (5) DATA. Before believing any of it, check the quote is real — a stale mark, a wide crossed market, or a single small print can produce a phantom vol move, and single-name option data is noisy. THE TRADING IMPLICATION: if it is a dated event, the vol is not 'expensive' in a comparable sense, because the extra premium is buying a specific known risk. Compare like with like by stripping the event out and looking at the residual diffusive vol.",
+      "technique": "Diagnosing a pure vol move",
+      "difficultyRationale": "Medium: the event-calendar answer is quick; the term-structure decomposition is the depth."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Implied vol is 20% annualised. What is the approximate implied daily move?",
+      "options": [
+        "About 1.25%",
+        "About 20%",
+        "About 0.08%",
+        "About 4%"
+      ],
+      "correctOption": 0,
+      "explanation": "Divide by 16: 20/16 = 1.25% per day. The rule comes from sqrt(252) = 15.87, near enough 16, so annual vol divided by 16 gives the one-standard-deviation daily move. It is one of the most-used pieces of trading arithmetic — a 32 vol means 2% daily moves, a 16 vol means 1%. Two uses. It converts an option quote into an intuitive statement about what the market expects day to day, which is how you sanity-check whether a vol looks rich or cheap without any model. And it gives the BREAKEVEN for a delta-hedged position: long gamma at 20 vol, you need the stock to move more than 1.25% a day on average to profit. Related shortcuts: divide by 4 for a monthly move (sqrt(12) ~ 3.5, so slightly conservative), and multiply a weekly vol by 7.2 to annualise.",
+      "technique": "The divide-by-16 rule",
+      "difficultyRationale": "Easy: essential trading arithmetic, and the breakeven reading is the point."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a vol surface 'twist', and why does it matter more than a parallel shift for a book that is vega-hedged?",
+      "canonicalAnswer": "A twist is a change in the SHAPE of the surface — skew steepening, or the term structure rotating — as opposed to every point moving together. A vega-hedged book is neutral to the parallel shift by construction, so twists are precisely what it is still exposed to.",
+      "explanation": "THE ANALOGY is exactly the yield curve. Net vega is the vol-surface equivalent of duration: it measures sensitivity to a PARALLEL move in implied vol across all strikes and maturities. Hedge it to zero and you are neutral to that one mode — and fully exposed to every other. THE MODES THAT REMAIN. (1) TERM STRUCTURE rotation: front-end vol spikes while the back end barely moves, which is the normal crisis pattern. A book long front vega and short back vega has zero net vega and a large exposure to this. (2) SKEW steepening: put vols rise relative to call vols. A risk reversal position is exactly this exposure, and it nets to zero vega by construction. (3) CURVATURE: the wings move relative to the middle, which is the butterfly. WHAT TO REPORT INSTEAD of a single net vega, and this is the practical answer: vega bucketed by MATURITY (front, belly, back) and by MONEYNESS or delta, so the profile is visible. Most desks report a vega grid for the same reason rates desks report key-rate DV01s rather than one duration. And the scenario matrix — full revaluation across a spot-by-vol grid — catches the interactions a bucketed report still misses. THE GENERAL LESSON, which recurs across this whole topic: any risk summary that aggregates across a dimension can hide offsetting exposures that will not stay offset.",
+      "technique": "Why net vega is the duration of the vol surface",
+      "difficultyRationale": "Medium: the yield-curve analogy makes it click, and the bucketed-reporting answer is what desks do."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Two options on the same underlying, same maturity, same strike — one a call, one a put. What must be true of their implied vols?",
+      "options": [
+        "They must be equal, because put-call parity fixes their price difference model-free",
+        "The put's will be higher because of the skew",
+        "The call's will be higher",
+        "They are unrelated"
+      ],
+      "correctOption": 0,
+      "explanation": "They must be EQUAL. Put-call parity is a static arbitrage relation holding regardless of any model, so it pins the price DIFFERENCE between a call and put at the same strike and maturity. Since Black-Scholes satisfies parity identically for every sigma, the only way both prices are consistent with parity is if you back out the same implied vol from each. The skew is a function of STRIKE, not of option type — at a given strike, calls and puts share one implied vol, and the skew describes how that single number varies as you move the strike. WHY IT MATTERS PRACTICALLY: this is a data-quality check. If you observe different implied vols for a call and put at the same strike, you have found a stale quote, a wrong dividend or borrow assumption, or a genuine arbitrage — and it is almost always the first two. Production surface builders run exactly this test before fitting.",
+      "technique": "Parity forces a single implied vol per strike",
+      "difficultyRationale": "Medium: the answer follows from parity, and the data-check use is the payoff."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you strip a known earnings event out of an implied vol to get the underlying 'diffusive' vol?",
+      "canonicalAnswer": "Work in total variance. Total variance over the option's life is the diffusive variance over the trading days plus a lump for the event: sigma_imp^2 * T = sigma_diff^2 * T + J^2, where J is the implied event-day move. Two maturities that straddle the event let you solve for both.",
+      "explanation": "THE DECOMPOSITION. Variance is additive over independent periods, so model total implied variance as the sum of a steady diffusive component and a one-off event contribution: sigma_imp^2 * T = sigma_diff^2 * T + J^2, where J^2 is the variance contributed by the event day alone. That single equation has two unknowns, so you need a second observation. SOLVING IT. Take two maturities T1 < T2 that BOTH contain the event. Both carry the same J^2, so subtracting gives sigma_imp1^2*T1 - sigma_imp2^2*T2 = sigma_diff^2*(T1 - T2), from which sigma_diff follows, and then J. Alternatively use one maturity before the event and one after, where the pre-event option has no J term at all — cleaner when such an expiry exists. WORKED SHAPE. If a one-month option implies 40% and a three-month implies 25%, total variances are 0.40^2/12 = 0.01333 and 0.25^2/4 = 0.015625. Solving gives a diffusive vol well below 25% and a substantial J. WHY IT MATTERS. (1) COMPARABILITY — you cannot judge whether vol is rich or cheap by comparing a number that contains an event against one that does not. (2) The implied J is directly tradeable intuition: it converts to an expected earnings-day move that you can compare against the stock's historical earnings reactions. (3) After the event passes, the vol will drop mechanically by the amount you computed, which is the 'vol crush' — knowing its size in advance is the whole point.",
+      "technique": "Additive variance decomposition for event risk",
+      "difficultyRationale": "Hard: the two-equation setup and the interpretation of J are both non-obvious."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Why is the VIX futures curve usually in contango, and what does that mean for long-VIX ETPs?",
+      "options": [
+        "Because spot vol is usually below its long-run level; the ETPs bleed from rolling up the curve",
+        "Because volatility has a positive drift",
+        "Because of storage costs",
+        "It is usually in backwardation, not contango"
+      ],
+      "correctOption": 0,
+      "explanation": "Volatility mean-reverts, and it spends most of its time BELOW its long-run average — calm periods are long, spikes are short. So the curve typically slopes upward: near-dated futures price current calm, longer-dated ones price reversion toward the average. Add a risk premium (people pay for crash protection at every tenor) and contango is the normal state. FOR LONG-VIX ETPs the consequence is severe. They hold a constant-maturity position, so every day they sell the cheaper near contract and buy the more expensive next one — rolling UP the curve and losing the roll differential continuously. Over years that compounds into near-total decay, which is why these products lose almost all their value over long horizons despite VIX itself being range-bound. They are tactical hedges measured in days, never buy-and-hold. The curve inverts into backwardation during a spike, which is exactly when the ETPs finally pay — and that inversion is itself a useful stress signal.",
+      "technique": "Contango, roll yield and structural decay",
+      "difficultyRationale": "Medium: the mean-reversion cause is the answer, and the ETP consequence is the practical payoff."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A client wants to buy a 3-month 90% strike put. You look at your surface and it is quoted in 25-delta terms. What do you need to do, and where is the risk of error?",
+      "canonicalAnswer": "Convert between strike space and delta space, which requires the vol itself — so it is a fixed-point problem: the delta depends on the vol, and the vol you look up depends on the delta. Solve iteratively, and be careful about which delta convention the surface uses.",
+      "explanation": "THE CIRCULARITY. To find the vol for a 90% strike you interpolate the surface — but the surface is parameterised in DELTA, and computing the delta of the 90% strike option requires knowing its vol. So you iterate: guess a vol, compute the delta at that strike, look up the surface at that delta, get a new vol, repeat. It converges in a few passes because the dependence is weak, but it must be done rather than assumed. WHERE THE ERRORS ARE, and this is what an interviewer is probing. (1) DELTA CONVENTION. Spot delta or forward delta? Premium-adjusted or not? In FX, premium-adjusted delta is standard for some currency pairs and not others, and using the wrong one shifts the strike materially in the wings. Getting this wrong is a classic source of mismarked books. (2) WHICH OPTION'S delta — a 25-delta put and a 25-delta call are at different strikes, and 'the 25-delta vol' is ambiguous without saying which. (3) INTERPOLATION SPACE. Interpolating vol linearly in delta and linearly in strike give different answers, and only some choices preserve the no-arbitrage conditions. (4) EXTRAPOLATION if 90% falls outside the quoted delta range. THE PRACTICAL ANSWER: use a parameterisation (SVI) fitted once in log-moneyness and total variance, and evaluate it at whatever strike you need. That removes the conversion problem entirely, which is a large part of why parameterised surfaces replaced interpolated grids.",
+      "technique": "Strike-delta conversion as a fixed-point problem",
+      "difficultyRationale": "Hard: the circularity is subtle and the convention traps are real production issues."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "On a normal equity index vol surface, which option has the HIGHEST implied volatility?",
+      "options": [
+        "A short-dated deep out-of-the-money put",
+        "A short-dated at-the-money option",
+        "A long-dated out-of-the-money call",
+        "A long-dated at-the-money option"
+      ],
+      "correctOption": 0,
+      "explanation": "The short-dated deep out-of-the-money put — the bottom-left corner of the surface. Two effects compound there. The SKEW means low strikes carry higher vol, driven by crash risk, the leverage effect and structural demand for downside protection. And the skew is STEEPEST at short maturities, because a large move in a few days is far more extreme in standard-deviation terms than the same move over a year, so the tail premium is concentrated at the front end. It is common to see a one-month 80% strike put trading 15-20 vol points above the at-the-money. That corner is also where the model is least trustworthy: it is thinly traded, the density there is fragile, and it is exactly where interpolation and extrapolation error is largest.",
+      "technique": "Locating the peak of the equity vol surface",
+      "difficultyRationale": "Easy: skew plus its maturity dependence, and both are needed."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Realised vol computed from close-to-close returns is 18%; a range-based estimator gives 24%. Why the gap, and which do you trust?",
+      "canonicalAnswer": "Close-to-close ignores everything that happens intraday, so a day that swings widely and closes flat contributes nothing. Range-based estimators (Parkinson, Garman-Klass) use the high and low and capture that, making them several times more efficient per observation — but they miss overnight gaps and are sensitive to illiquidity.",
+      "explanation": "THE GAP'S CAUSE. Close-to-close uses one observation per day, so it sees only the net move. A day that rallies 3%, falls 4% and closes down 1% registers as a 1% day. The range-based estimators use the high and the low, so they see the 7% of traversal. A persistent gap in this direction means the market is CHOPPY — moving a lot intraday and mean-reverting — which is exactly the pattern that hurts a discretely-hedged long-gamma position, since you only capture the close-to-close move but pay theta on the full period. WHICH TO TRUST depends on the use. (1) For measuring VARIANCE efficiently, range-based wins: the Parkinson estimator is roughly five times more efficient per day than close-to-close, so it gives a comparably precise estimate from a fifth of the data — a real advantage when you need a responsive number. (2) For a DELTA-HEDGING P&L comparison, close-to-close is the right one, because that is the frequency at which you actually rebalance and hence the variance you actually capture. Hedging daily, you earn close-to-close variance, not the true integrated variance. (3) For OVERNIGHT-GAP-heavy assets, range-based underestimates, since it only observes the trading session. Garman-Klass incorporates the open and close to partially fix this. THE HONEST ANSWER: report both, and say which question each one answers. The gap between them is itself informative about whether the market is trending or chopping.",
+      "technique": "Close-to-close versus range-based volatility estimation",
+      "difficultyRationale": "Medium: the efficiency argument is standard; the hedging-frequency point is what makes it practical."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In a stochastic volatility model such as Heston, which parameter controls the SKEW of the resulting implied vol surface?",
+      "options": [
+        "The correlation between the spot and volatility processes",
+        "The long-run variance",
+        "The mean reversion speed",
+        "The vol of vol"
+      ],
+      "correctOption": 0,
+      "explanation": "The spot-vol correlation, rho. A NEGATIVE rho means volatility rises as the price falls, which fattens the left tail of the terminal distribution and produces a downward-sloping skew — exactly the equity pattern, and it is the model's way of encoding the leverage effect. Set rho = 0 and Heston produces a symmetric smile with no skew at all. The other parameters shape the surface differently and it is worth being able to separate them: VOL OF VOL controls the CURVATURE (how pronounced the smile is — more vol of vol means fatter tails in both directions and a more convex smile); MEAN REVERSION SPEED controls the TERM STRUCTURE (how fast the smile flattens with maturity, since faster reversion means the vol distribution narrows more quickly); and LONG-RUN VARIANCE sets the overall LEVEL. That mapping — rho to skew, vol-of-vol to curvature, kappa to term structure, theta to level — is what makes Heston calibratable, since each parameter has a distinct signature.",
+      "technique": "Mapping Heston parameters to surface features",
+      "difficultyRationale": "Medium: the rho-to-skew link is the answer, and the full mapping is the depth."
+    },
+    {
+      "topicId": "implied-volatility",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Implied correlation derived from index and single-stock option prices is at a historic high. What does that typically indicate?",
+      "options": [
+        "Market stress — the market is pricing assets to move together, which is the crisis pattern",
+        "That dispersion trades are cheap to put on",
+        "That single-stock vol is unusually low",
+        "That the index is about to rise"
+      ],
+      "correctOption": 0,
+      "explanation": "High implied correlation is a stress signal. It is derived from the gap between index implied vol and the implied vols of the constituents: index variance is the weighted sum of constituent variances plus all the covariance terms, so given both you can back out the correlation the market is pricing. When it spikes, the market is paying up for the scenario where everything falls together — the crisis pattern, in which idiosyncratic differences stop mattering and one common factor drives everything. It typically rises sharply alongside VIX and is watched as a complementary indicator, since it can move even when the level of vol does not. For the DISPERSION trade (short index vol, long constituent vol, which is short correlation) high implied correlation means the trade is attractively priced — you are being paid a lot to be short correlation — but that is precisely because the risk of correlation going to 1 is elevated. Attractive pricing and elevated risk are the same fact, which is the standard shape of short-tail trades.",
+      "technique": "Implied correlation as a stress indicator",
+      "difficultyRationale": "Medium: the derivation and the dispersion link are both worth having."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A VaR model is backtested against 'clean' rather than 'actual' P&L. What is the difference and why does it matter?",
+      "options": [
+        "Clean P&L strips out fees, commissions and intraday trading, isolating the effect of market moves on a static book",
+        "Clean P&L excludes losses",
+        "Clean P&L is computed weekly rather than daily",
+        "There is no difference; the terms are interchangeable"
+      ],
+      "correctOption": 0,
+      "explanation": "Clean (or hypothetical) P&L revalues YESTERDAY'S positions at today's prices, with no intraday trading, no fees, no commissions and no new business. That is the right comparison for a VaR backtest, because VaR is a statement about what a STATIC portfolio would lose from market moves over the horizon — it never claimed to predict what the desk would earn from trading. Testing against actual P&L conflates model accuracy with trading performance: a desk could breach VaR because of an intraday position it opened and closed, which says nothing about whether the risk model is right. Basel requires both to be reported, with the clean series used for the formal exception count. FRTB extends the idea with the P&L attribution test, which compares the risk model's own predicted P&L against this same hypothetical series — same principle, higher statistical power because it uses every day rather than just the exceptions.",
+      "technique": "Clean versus actual P&L in backtesting",
+      "difficultyRationale": "Medium: the definition is the answer, and the reason it is the right comparison is the substance."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your firm computes market VaR, credit VaR and operational VaR separately. How should you combine them into a single number?",
+      "canonicalAnswer": "Carefully, and usually conservatively. Simple addition assumes perfect correlation and overstates risk; using a correlation matrix credits diversification that is poorly evidenced. The bigger problem is that the three loss distributions have very different SHAPES, so a single correlation cannot describe their dependence.",
+      "explanation": "THE OPTIONS. (1) SIMPLE ADDITION, which implicitly assumes correlation 1. Conservative, easy to explain, and what regulators generally require across risk types. (2) QUADRATIC AGGREGATION using an assumed correlation matrix: sqrt(sum of variances plus cross terms). Credits diversification, but the correlations between market, credit and operational losses are estimated from very little data and are least reliable in stress. (3) COPULA or full simulation of the joint distribution, which is the technically correct route and demands data nobody really has. WHY IT IS HARD, and this is the substance. The three distributions have fundamentally different SHAPES: market risk is roughly symmetric and moderately tailed; credit risk is heavily right-skewed with a long tail of default clusters; operational risk is extremely fat-tailed, dominated by rare enormous events (a rogue trader, a mis-selling settlement). A single correlation coefficient cannot describe the dependence between distributions with such different characters — you would need tail dependence, and there is no data to estimate it. THE FURTHER PROBLEM is that they are not independent in the way the arithmetic assumes: a market crash CAUSES credit losses, and stress raises the probability of operational failures. So the diversification credit is most overstated exactly in the scenarios the number exists to capture. THE PRACTICAL ANSWER: aggregate conservatively for capital, do the diversified calculation for internal insight into where risk actually sits, and rely on integrated STRESS SCENARIOS — which naturally produce correlated losses across all three — rather than on a correlation matrix.",
+      "technique": "Aggregating across risk types with incompatible distributions",
+      "difficultyRationale": "Hard: naming the shape mismatch and the causal linkage is well beyond the formula."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "VaR is quoted at 99% over one day. Roughly how many exceptions would you expect in one year of trading?",
+      "options": [
+        "About 2 or 3",
+        "About 1",
+        "About 10",
+        "About 25"
+      ],
+      "correctOption": 0,
+      "explanation": "About 2.5 — one percent of roughly 250 trading days. That single number is the anchor for every backtesting conversation, and it is worth having instantly: the binomial standard deviation is sqrt(250 x 0.01 x 0.99) = 1.57, so anywhere from 0 to about 5 exceptions is unremarkable, and Basel's green zone runs to 4 for exactly that reason. It also frames the opposite error, which is more common than people think: a model producing ZERO exceptions in a year is not conservative and well-calibrated, it is probably overstating risk and consuming capital unnecessarily. A good model breaches occasionally — that is what 99% means.",
+      "technique": "The expected exception count as a calibration anchor",
+      "difficultyRationale": "Easy: essential arithmetic, and the zero-exceptions point is the extension."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A trader complains that the VaR system charges them more risk than they believe they are running. How do you investigate?",
+      "canonicalAnswer": "Decompose their VaR: check the risk-factor mapping, the covariance assumptions, and the component VaR breakdown. Common causes are a position mapped to a proxy factor, correlations estimated over a window that does not reflect the position's actual behaviour, or a genuinely-hedged position whose hedge is not recognised by the model.",
+      "explanation": "WHERE TO LOOK, in order of how often it is the cause. (1) MAPPING. Is every position mapped to a sensible risk factor? An illiquid name proxied to a sector index will show the index's volatility, not its own, and a basis position can appear as a large outright. This is the most common cause and the cheapest to check. (2) NETTING AND HEDGES. Does the model recognise the hedge? If the position and its hedge map to different risk factors with an estimated correlation below 1, the model sees residual risk the trader believes is fully offset. Sometimes the trader is right (the hedge is genuinely tight and the correlation estimate is stale); sometimes the MODEL is right (there is real basis risk the trader is discounting). Resolving which is the substance of the conversation. (3) COMPONENT VaR. Decompose the desk's VaR by position — the components sum exactly to the total by Euler's theorem — and show the trader which positions are driving it. Very often the answer is a position they had not thought of as risky because it is small in notional but highly correlated with everything else. (4) THE WINDOW. Is the covariance estimated over a period that includes a stress the trader considers unrepresentative? That is a legitimate discussion, and the honest answer is that excluding inconvenient history is exactly how models come to understate risk. (5) LIQUIDITY AND HORIZON. If the position cannot be exited in the VaR horizon, the model may be understating rather than overstating. THE POSTURE that matters: treat it as a genuine investigation, not a defence. Traders often find real mapping bugs, and a risk function that cannot be challenged stops being believed — but the answer is sometimes that the model is right and the trader has an exposure they had not recognised.",
+      "technique": "Decomposing a disputed VaR number",
+      "difficultyRationale": "Medium: the ordered checklist is the value, and the posture point is what makes it a real answer."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which of these would INCREASE a portfolio's VaR while REDUCING its expected shortfall?",
+      "options": [
+        "Nothing straightforward — but buying deep out-of-the-money protection can raise measured VaR little while cutting ES substantially",
+        "Selling out-of-the-money options",
+        "Increasing leverage uniformly",
+        "Adding a perfectly correlated position"
+      ],
+      "correctOption": 0,
+      "explanation": "The interesting case is the reverse of the usual gaming problem. Buying deep out-of-the-money puts costs premium, which slightly worsens the everyday loss distribution and so can nudge VaR UP marginally, while truncating the far tail and cutting ES substantially — because ES averages the losses beyond the threshold and the protection caps exactly those. That asymmetry is precisely why ES is the better capital measure: it rewards genuine tail protection that VaR barely registers, and it penalises tail-selling that VaR cannot see at all. The mirror image is the classic gaming case: SELLING deep out-of-the-money options collects premium, lowers VaR, and raises ES. Being able to state both directions shows you understand that the two measures respond to different parts of the distribution rather than just being different quantiles.",
+      "technique": "How VaR and ES respond differently to tail protection",
+      "difficultyRationale": "Hard: requires reasoning about both measures moving in opposite directions."
+    },
+    {
+      "topicId": "var-risk-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is stressed VaR, and why does calculating it require a different data window rather than just a bigger multiplier?",
+      "canonicalAnswer": "It is the same VaR calculation calibrated to a continuous 12-month period of significant stress for the current portfolio — typically 2008. A multiplier cannot substitute because the stressed period has different CORRELATIONS and a different distribution shape, not merely a higher volatility.",
+      "explanation": "WHAT IT IS. Run your normal VaR model, but calibrate every input — volatilities and correlations — to a continuous 12-month window of significant financial stress, selected as the worst period for the CURRENT portfolio composition rather than a fixed historical date. The result is added to ordinary VaR, roughly doubling the charge. WHY A MULTIPLIER WOULD NOT DO. (1) CORRELATIONS differ. In stress, correlations converge toward 1, so the diversification credit in a calm-calibrated model largely disappears. A multiplier scales the whole number uniformly and cannot reproduce that — it preserves the diversification structure while inflating the level, which is exactly backwards. (2) The relative risk of DIFFERENT POSITIONS changes. A position that looks like a hedge under calm correlations may not be one in stress, so the stressed number reallocates risk across the book, not just scales it. A multiplier cannot do that either. (3) DISTRIBUTION SHAPE differs, with fatter tails and more skew. THE MOTIVATION, which is the point to lead with: pre-crisis VaR was PROCYCLICAL. Calibrated on the preceding calm period, it produced small numbers right before the crisis and spiked afterwards, so capital was lowest exactly when risk was highest and highest when the system could least afford to raise it. Anchoring half the charge to a fixed stressed window breaks that feedback loop. That is a regulatory design choice about system stability, not a claim that the stressed number is a better risk estimate.",
+      "technique": "Why stressed VaR needs recalibration, not rescaling",
+      "difficultyRationale": "Medium: the correlation argument is the discriminating one."
     }
   ]
 }
