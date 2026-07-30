@@ -6179,6 +6179,1196 @@
       "explanation": "Probability. For a continuous random variable the density f(x) is not itself a probability — f(x) can exceed 1 — but the AREA under it between two points is the probability of landing in that range. The total area is 1, which is the statement that some outcome must occur. This is the single most important idea when moving from discrete to continuous probability: sums become integrals and probabilities become areas. Two consequences worth noting: P(X = x) = 0 for any exact value, because a single point has zero width and hence zero area; and the expected value is a DIFFERENT integral, the integral of x*f(x), which weights each outcome by its value rather than just counting probability.",
       "technique": "Density versus probability",
       "difficultyRationale": "Easy: conceptual, and the P(X = x) = 0 point is the extension."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "In one sentence, what does it mean for a process X_0, X_1, X_2, ... to be a martingale?",
+      "canonicalAnswer": "Its expected next value, given everything known so far, equals its current value: E[X_{n+1} | information up to time n] = X_n.",
+      "explanation": "A martingale is the formal version of 'fair game'. The defining property is E[X_{n+1} | F_n] = X_n, where F_n is everything observed up to time n. Note what it does NOT say: it says nothing about the variance, and it does not require the increments to be independent or identically distributed. It only pins down the conditional mean.",
+      "technique": "Definition recall",
+      "difficultyRationale": "States the definition with no computation."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A symmetric random walk starts at S_0 = 5 and each step moves +1 or -1 with probability 1/2 each. What is E[S_100]?",
+      "canonicalAnswer": "5",
+      "explanation": "Each step has mean 0, so E[S_n] = S_0 for every n. Formally the walk is a martingale, and a martingale's expectation is constant in time: E[S_100] = E[S_0] = 5. The walk will almost certainly not BE at 5 after 100 steps (its standard deviation is sqrt(100) = 10) but 5 is where it sits on average.",
+      "technique": "Martingale property: constant expectation",
+      "difficultyRationale": "One-line application of E[X_n] = X_0; no stopping time involved."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "You play a fair game repeatedly and may quit whenever you like, using any strategy based only on what you have seen so far. Your stopping time is bounded (you must quit by round 100). What is your expected profit?",
+      "options": [
+        "Zero, whatever strategy you use",
+        "Positive, if you quit as soon as you are ahead",
+        "Negative, because of the risk of ruin",
+        "It depends on the size of your starting bankroll"
+      ],
+      "correctOption": 0,
+      "explanation": "This is the optional stopping theorem. If X_n is a martingale and T is a bounded stopping time, then E[X_T] = E[X_0] — no strategy that uses only past information can turn a fair game into a favourable one. 'Quit as soon as you are ahead' does beat the game, but only with an UNBOUNDED stopping time and unbounded losses along the way; that is exactly the condition the theorem rules out.",
+      "technique": "Optional stopping theorem",
+      "difficultyRationale": "Recognition of the theorem's conclusion; the distractors are the standard intuitive traps but no calculation is needed."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Is a random walk whose steps are +1 with probability 0.6 and -1 with probability 0.4 a martingale? Explain.",
+      "canonicalAnswer": "No. The expected step is +0.2, not 0, so E[S_{n+1} | S_n] = S_n + 0.2 > S_n. It is a submartingale (drifts upward), not a martingale.",
+      "explanation": "E[step] = (+1)(0.6) + (-1)(0.4) = 0.2. So E[S_{n+1} | F_n] = S_n + 0.2, which exceeds S_n. A process whose conditional expectation only ever goes UP is a submartingale; one that only goes down is a supermartingale. You can recover a martingale by subtracting the drift: S_n - 0.2n IS a martingale.",
+      "technique": "Checking the martingale property directly",
+      "difficultyRationale": "One expectation of a two-point distribution, then compare to the definition."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Standard Brownian motion W_t starts at W_0 = 0. What are E[W_9] and Var(W_9)?",
+      "canonicalAnswer": "E[W_9] = 0 and Var(W_9) = 9 (standard deviation 3).",
+      "explanation": "By definition W_t ~ N(0, t): mean zero, variance equal to the elapsed TIME, not the square of the time. So Var(W_9) = 9 and sd(W_9) = sqrt(9) = 3. The 'variance grows like t, so standard deviation grows like sqrt(t)' fact is the root of every square-root-of-time scaling rule in risk.",
+      "technique": "Brownian motion marginal distribution",
+      "difficultyRationale": "Reads two numbers straight off the definition."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which of these is NOT one of the defining properties of standard Brownian motion?",
+      "options": [
+        "Its paths are differentiable",
+        "W_0 = 0",
+        "Increments over disjoint time intervals are independent",
+        "W_t - W_s is normally distributed with mean 0 and variance t - s"
+      ],
+      "correctOption": 0,
+      "explanation": "Brownian paths are continuous everywhere but differentiable NOWHERE — that is precisely why ordinary calculus fails on them and Ito calculus exists. The other three are the definition: start at zero, independent increments, and Gaussian increments whose variance is the length of the interval.",
+      "technique": "Definition of Brownian motion",
+      "difficultyRationale": "Recall of a definition, with the one memorable pathology as the answer."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "In Ito calculus, what does (dW)^2 equal, and why does that matter?",
+      "canonicalAnswer": "(dW)^2 = dt. It matters because it is a first-order term, so second-derivative terms survive in Ito's lemma when they would vanish in ordinary calculus.",
+      "explanation": "Over a small interval dt, the Brownian increment dW has standard deviation sqrt(dt), so its square is of order dt — the same order as dt itself, not negligible against it. That single fact is what makes Ito's lemma differ from the ordinary chain rule: expanding f(W_t) to second order gives f'(W)dW + (1/2)f''(W)(dW)^2, and the last term does not disappear. It becomes (1/2)f''(W)dt. Every 'extra' term you see in Ito's lemma traces back to (dW)^2 = dt. The companion rules are (dt)^2 = 0 and dt*dW = 0.",
+      "technique": "Ito multiplication rules",
+      "difficultyRationale": "One rule to state, plus the reason it exists; no lemma is applied."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "For standard Brownian motion, what is Cov(W_2, W_5)?",
+      "canonicalAnswer": "2, since Cov(W_s, W_t) = min(s, t).",
+      "explanation": "Write W_5 = W_2 + (W_5 - W_2). The second piece is independent of W_2, so it contributes nothing to the covariance. That leaves Cov(W_2, W_2) = Var(W_2) = 2. In general Cov(W_s, W_t) = min(s, t) — the shared history is everything up to the earlier time. This decomposition trick (split the later value into 'what we already had' plus 'an independent new increment') is the workhorse for every Brownian covariance question.",
+      "technique": "Independent increments to compute covariance",
+      "difficultyRationale": "One decomposition step; the formula min(s,t) is standard."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A desk's 1-day 99% VaR is $2m. Under the standard regulatory assumption, what is its 10-day 99% VaR?",
+      "canonicalAnswer": "About $6.32m — 2m * sqrt(10) = 2 * 3.162 = $6.32m.",
+      "explanation": "Square-root-of-time scaling: VaR(T days) = VaR(1 day) * sqrt(T). It follows from variance being additive across independent days — variance scales with T, so standard deviation and hence VaR scale with sqrt(T). The assumption doing the work is that daily returns are independent and identically distributed with zero mean. It breaks down when returns are autocorrelated or volatility clusters, which is why the scaling understates risk in a trending or stressed market.",
+      "technique": "Square-root-of-time scaling",
+      "difficultyRationale": "One multiplication; the point is knowing it is sqrt(T) and not T."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The model-building (delta-normal) approach to VaR gives a poor answer for a portfolio of deep out-of-the-money options. Why?",
+      "options": [
+        "It linearises the portfolio, and option payoffs are strongly non-linear",
+        "It requires more historical data than is available for options",
+        "It cannot handle more than one risk factor at a time",
+        "It assumes zero correlation between risk factors"
+      ],
+      "correctOption": 0,
+      "explanation": "Delta-normal replaces the portfolio with its first-order sensitivity — value change is approximated as delta times the factor move. That is fine for a linear book of cash equities but wrong for options, whose gamma means the delta itself changes as the market moves. The usual fixes are a delta-gamma (quadratic) approximation, or abandoning the analytic route entirely for full revaluation under historical simulation or Monte Carlo.",
+      "technique": "Limitations of the linear VaR model",
+      "difficultyRationale": "Tests one named weakness of a named method; distractors are plausible but not the issue."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two positions each have a standalone 1-day VaR of $3m. Their returns are perfectly correlated. What is the portfolio VaR, and what would it be if they were perfectly negatively correlated?",
+      "canonicalAnswer": "$6m if perfectly positively correlated; $0 if perfectly negatively correlated.",
+      "explanation": "With normal returns, portfolio VaR combines like standard deviations: VaR_p = sqrt(V1^2 + V2^2 + 2*rho*V1*V2). At rho = +1 this collapses to V1 + V2 = 6, the no-diversification case. At rho = -1 it becomes |V1 - V2| = 0, a perfect hedge. Any rho in between gives something less than the sum — that gap is the diversification benefit. At rho = 0 you would get sqrt(9+9) = $4.24m.",
+      "technique": "Portfolio VaR and the diversification benefit",
+      "difficultyRationale": "The two corner cases of a formula, chosen so no arithmetic beyond addition is needed."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You roll a fair six-sided die. You may keep the number shown, or reroll once and must keep the second roll. What should your rule be, and what is your expected value under it?",
+      "canonicalAnswer": "Keep 4, 5 or 6; reroll on 1, 2 or 3. Expected value = 4.25.",
+      "explanation": "The value of rerolling is just the unconditional mean, 3.5. So keep the first roll exactly when it beats 3.5, i.e. when it is 4 or more. Then E = P(first roll >= 4) * E[first roll | >= 4] + P(first roll <= 3) * 3.5 = (1/2)(5) + (1/2)(3.5) = 2.5 + 1.75 = 4.25. This is the whole shape of optimal stopping in miniature: compute the value of continuing, and stop as soon as what is in front of you beats it.",
+      "technique": "Compare stopping value with continuation value",
+      "difficultyRationale": "A single threshold and one two-term expectation."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "In the classical secretary problem with n candidates seen in random order, you must hire on the spot with no recalls. What is the optimal strategy, and roughly what is the probability it lands the best candidate?",
+      "canonicalAnswer": "Reject the first n/e candidates (about 37%) outright, then hire the first one better than everyone seen so far. Success probability is about 1/e, roughly 37%.",
+      "explanation": "The first phase is pure information-gathering: you cannot hire, you are only setting a benchmark. The cutoff n/e balances two failure modes — look too briefly and your benchmark is weak, look too long and the best candidate has probably already gone by. Both the optimal cutoff fraction and the success probability converge to 1/e ~= 0.368 as n grows, which is the memorable part.",
+      "technique": "Threshold (look-then-leap) stopping rules",
+      "difficultyRationale": "Recall of a named result; the derivation is not required."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In an optimal stopping problem, you should stop at the current state when:",
+      "options": [
+        "The reward for stopping now is at least the expected reward from continuing optimally",
+        "The reward for stopping now exceeds the unconditional average reward",
+        "You have used up more than half of the available time",
+        "The current reward is the highest seen so far"
+      ],
+      "correctOption": 0,
+      "explanation": "This is the whole principle: at every state compare stop value against continuation value, where the continuation value already assumes you will behave optimally from then on. The other options are sometimes the RESULT of that comparison in specific problems (the secretary problem's rule really is 'best so far, after a cutoff') but none of them is the criterion itself.",
+      "technique": "The stopping principle / Bellman comparison",
+      "difficultyRationale": "Statement of a principle, one obviously stronger option among three specific rules."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You are offered a game where you flip a fair coin repeatedly, winning $1 per head and losing $1 per tail, and you may walk away at any moment. Ignoring any limits on time or bankroll, can a stopping rule make this game profitable in expectation?",
+      "canonicalAnswer": "Not with any bounded stopping rule — your expected profit stays zero. Only strategies allowing unbounded time and unbounded interim losses ('quit when $1 up') beat it, and those are not available in practice.",
+      "explanation": "Your running total is a martingale, and the optimal stopping theorem says E[X_T] = E[X_0] = 0 for any bounded stopping time T. The classic 'just wait until you are $1 up' does have expected profit $1, because a random walk is recurrent and will eventually reach +1 — but the expected TIME to get there is infinite and the intermediate drawdown is unbounded. That is exactly why martingale betting systems fail against real bankrolls.",
+      "technique": "Martingales and optional stopping",
+      "difficultyRationale": "Conceptual; the answer is the theorem plus the standard caveat."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You have 500 days of historical P&L for a portfolio. How do you read the 1-day 99% VaR off this data using historical simulation?",
+      "canonicalAnswer": "Rank the 500 daily losses worst-first and take the 5th worst — 1% of 500 = 5, so the 5th largest loss is the 99% quantile.",
+      "explanation": "Historical simulation applies each of the 500 historical factor moves to TODAY'S portfolio, giving 500 hypothetical P&Ls, then reads the quantile straight off the ranked list. At 99% over 500 scenarios you want the 5th worst. Note the estimate rests on a handful of observations — that thinness in the tail is the method's central weakness and the reason EVT exists.",
+      "technique": "Historical simulation quantile",
+      "difficultyRationale": "One percentage of a count; the concept is the point."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What is the main advantage of historical simulation VaR over the model-building approach?",
+      "options": [
+        "It makes no assumption about the shape of the return distribution",
+        "It requires less historical data",
+        "It is faster to compute for large portfolios",
+        "It automatically incorporates forward-looking market views"
+      ],
+      "correctOption": 0,
+      "explanation": "Historical simulation lets the data speak: fat tails, skew and the actual realised correlation structure are all baked into the scenarios without anyone specifying a distribution. The trade-offs run the other way on the other three — it needs MORE data, it is slower because it demands full revaluation of the book under every scenario, and it is purely backward-looking, which is exactly why it is paired with stress testing.",
+      "technique": "Comparing VaR methodologies",
+      "difficultyRationale": "One trade-off, with the distractors being the method's known costs."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What problem does extreme value theory solve that plain historical simulation does not?",
+      "canonicalAnswer": "It lets you estimate losses beyond the worst one in your sample, by fitting a parametric distribution to the tail rather than reading quantiles off a handful of observations.",
+      "explanation": "With 500 days of data, plain historical simulation simply cannot produce a loss larger than the worst day observed, and its 99.9% estimate would rest on essentially one point. EVT fits a generalised Pareto distribution to the exceedances over a high threshold, which both smooths the tail estimate and extrapolates past the sample maximum. The cost is that you are back to assuming a distributional form — just one chosen to describe tails rather than the whole return.",
+      "technique": "Motivation for EVT",
+      "difficultyRationale": "Conceptual, one idea, no fitting or formulas."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "In the peaks-over-threshold approach, what is a 'threshold exceedance', and what distribution is fitted to them?",
+      "canonicalAnswer": "An exceedance is the amount by which a loss exceeds a chosen high threshold u, i.e. the value (x - u) for each loss x > u. The generalised Pareto distribution is fitted to those amounts.",
+      "explanation": "You pick a high threshold u, throw away everything below it, and model only the excesses. The Pickands-Balkema-de Haan theorem is what justifies this: for a wide class of underlying distributions, the conditional distribution of the excess converges to a generalised Pareto as u grows. Its shape parameter xi is the headline output — xi > 0 means a heavy, power-law tail, which is what financial returns typically show. Choosing u is the practical art: too low and the asymptotic result does not apply, too high and you have almost no data left.",
+      "technique": "Peaks-over-threshold / GPD",
+      "difficultyRationale": "Defines two terms; no estimation is performed."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Let E be the expected number of fair coin flips needed to see the first head. Write a recursion for E by conditioning on the first flip, and solve it.",
+      "canonicalAnswer": "E = 1 + (1/2)(0) + (1/2)E, giving E = 2.",
+      "explanation": "You always pay for one flip, so start with the 1. With probability 1/2 it is a head and you are done, adding nothing more. With probability 1/2 it is a tail and — this is the crucial move — you are back in exactly the state you started in, so the remaining expected cost is E again. Hence E = 1 + E/2, so E/2 = 1 and E = 2. The whole method is: pay for one step, then ask which state you landed in.",
+      "technique": "Condition on the first step (self-referential state)",
+      "difficultyRationale": "Two states, one linear equation."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the expected number of rolls of a fair six-sided die to see your first 6? Set it up as a recursion rather than quoting the geometric formula.",
+      "canonicalAnswer": "E = 1 + (5/6)E, so (1/6)E = 1 and E = 6.",
+      "explanation": "Pay for one roll. With probability 1/6 you rolled a 6 and stop; with probability 5/6 you did not, and the situation is identical to the start, so you still expect E more rolls. That gives E = 1 + (5/6)E, hence E = 6. This reproduces the geometric mean 1/p, which is worth noticing: the geometric formula IS this recursion, already solved.",
+      "technique": "Condition on the first step",
+      "difficultyRationale": "Same one-equation structure as the coin case with a different p."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many binary strings of length 4 contain no two consecutive 1s?",
+      "canonicalAnswer": "8",
+      "explanation": "Let a_n be the count for length n. Condition on the FIRST character. If it is 0, the remaining n-1 characters are unconstrained apart from the same rule, giving a_{n-1}. If it is 1, the next must be 0, and then the remaining n-2 are free, giving a_{n-2}. So a_n = a_{n-1} + a_{n-2} — the Fibonacci recursion. With a_1 = 2 and a_2 = 3 we get a_3 = 5 and a_4 = 8. The transferable idea is that conditioning on the first step can leave you in a SMALLER version of the same problem, not just the same one.",
+      "technique": "Recursion on problem size",
+      "difficultyRationale": "A four-term recursion you could also verify by listing; the setup is the lesson."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "When solving a problem by defining states and writing recursions, what makes a choice of state variable correct?",
+      "options": [
+        "The future evolution depends only on the state, not on how you reached it",
+        "There are as few states as possible",
+        "Every state is reachable from every other state",
+        "The states can be ordered from best to worst"
+      ],
+      "correctOption": 0,
+      "explanation": "This is the Markov property, and it is the whole requirement: if two different histories leave you facing an identical future, they are the same state. Get it wrong — say, tracking only your current score when the number of turns remaining also matters — and your equations will be inconsistent. Fewness of states is a convenience, not a correctness condition, and neither full connectivity nor orderability is required.",
+      "technique": "Choosing a state variable",
+      "difficultyRationale": "Conceptual recall of what a state must satisfy."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "State the Markov property in one sentence.",
+      "canonicalAnswer": "Given the present state, the future is independent of the past: P(X_{n+1} = j | X_n = i, and all earlier states) = P(X_{n+1} = j | X_n = i).",
+      "explanation": "'Memorylessness': the current state contains everything relevant about the past. This is what makes the whole machinery work — one transition matrix describes the dynamics for all time. In practice you often ENFORCE it by enlarging the state: if tomorrow depends on the last two days, make the state the PAIR of the last two days and the property holds again.",
+      "technique": "Definition recall",
+      "difficultyRationale": "States a definition; no chain is analysed."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A two-state chain has P(rain tomorrow | rain today) = 0.6 and P(rain tomorrow | dry today) = 0.2. It is raining today. What is the probability it rains the day after tomorrow?",
+      "canonicalAnswer": "0.44",
+      "explanation": "Condition on tomorrow. Rain-then-rain: 0.6 * 0.6 = 0.36. Dry-then-rain: 0.4 * 0.2 = 0.08. Total 0.44. That sum is exactly one entry of the squared transition matrix, P^2 — 'multiply the matrix by itself' is the same operation as 'condition on the intermediate state and sum over it', which is worth seeing once before you trust the matrix algebra.",
+      "technique": "Two-step transition probability",
+      "difficultyRationale": "Two products and a sum over a two-state chain."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A stationary distribution pi of a Markov chain with transition matrix P satisfies:",
+      "options": [
+        "pi P = pi, with the entries of pi summing to 1",
+        "P pi = 0",
+        "pi = P^n for large n",
+        "Every entry of pi equals 1 divided by the number of states"
+      ],
+      "correctOption": 0,
+      "explanation": "Stationarity means the distribution reproduces itself after one step: start distributed as pi, and after one transition you are still distributed as pi. As a row vector that reads pi P = pi, so pi is a left eigenvector of P with eigenvalue 1, normalised to sum to one. The uniform distribution is stationary only in special cases (e.g. a doubly stochastic P), not in general.",
+      "technique": "Stationary distribution definition",
+      "difficultyRationale": "Recognition of an equation; distractors are the standard misremembering."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A bond has modified duration 6 and price $100. Yields rise by 25 basis points. Roughly what happens to the price?",
+      "canonicalAnswer": "It falls by about 1.5%, to roughly $98.50. dP/P = -D * dy = -6 * 0.0025 = -1.5%.",
+      "explanation": "Modified duration is the percentage price change per unit change in yield, with a minus sign: dP/P = -D_mod * dy. Here -6 * 0.0025 = -0.015, so a 1.5% fall, about $1.50 on $100. Two things to keep straight: duration is a LINEAR approximation, so it understates the gain when yields fall and overstates the loss when they rise (that curvature is convexity), and 25bp = 0.0025 in decimal, which is where most arithmetic slips happen.",
+      "technique": "Duration as a first-order price sensitivity",
+      "difficultyRationale": "One multiplication, provided the basis-point conversion is handled."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A portfolio is duration-hedged: its net duration is zero. Which risk does it still clearly carry?",
+      "options": [
+        "Non-parallel shifts in the yield curve",
+        "Any change in the general level of rates",
+        "Credit spread widening only",
+        "Nothing — a zero-duration portfolio is riskless"
+      ],
+      "correctOption": 0,
+      "explanation": "Duration measures exposure to a PARALLEL shift of the whole curve. Zero net duration neutralises that one scenario and nothing else: a portfolio long 2-year and short 10-year in duration-neutral size still loses money if the curve steepens or flattens. This is exactly why desks decompose curve risk into level, slope and curvature — in practice via a PCA of yield changes, whose first three components come out looking like those three shapes.",
+      "technique": "Limits of duration hedging / curve risk",
+      "difficultyRationale": "Conceptual, one distinction between parallel and non-parallel moves."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is a DV01 (or PV01), and how does it relate to duration?",
+      "canonicalAnswer": "DV01 is the change in a position's value for a 1 basis point change in yield, expressed in currency. DV01 = D_mod * price * 0.0001.",
+      "explanation": "Duration is a percentage sensitivity; DV01 is the same information in cash. For $100 of a bond with modified duration 6, DV01 = 6 * 100 * 0.0001 = $0.06 per basis point. Traders hedge in DV01 terms because you can add cash sensitivities straight across instruments of different sizes and prices, whereas durations have to be value-weighted before they can be combined.",
+      "technique": "Converting duration to a cash sensitivity",
+      "difficultyRationale": "One definition and one multiplication by 0.0001."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Under FRTB, what is the headline change in the risk measure used for the internal models approach, and why was it made?",
+      "canonicalAnswer": "VaR was replaced by expected shortfall (at 97.5% rather than 99%), because VaR says nothing about the size of losses beyond the cutoff and is not subadditive.",
+      "explanation": "VaR answers 'how bad is the loss I only exceed 1% of the time' and then stops — two books with the same VaR can have wildly different tails behind it. Expected shortfall averages the losses beyond the quantile, so tail severity shows up in the number. ES is also coherent, in particular subadditive, so combining two books can never look riskier than the sum of the parts. The 97.5% ES level was chosen to be broadly comparable in size to 99% VaR under normality, so the switch was not intended as a blanket capital increase on its own.",
+      "technique": "VaR vs expected shortfall under FRTB",
+      "difficultyRationale": "Recall of one regulatory change plus its stated motivation."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The FRTB boundary between the trading book and the banking book was tightened primarily to address which problem?",
+      "options": [
+        "Banks moving positions between books to attract the lower capital charge",
+        "Inconsistent accounting standards across jurisdictions",
+        "The difficulty of valuing illiquid positions",
+        "Double-counting of credit risk"
+      ],
+      "correctOption": 0,
+      "explanation": "Under Basel II the boundary was soft and the capital treatments differed sharply, so the same position could be parked wherever it was cheapest — regulatory arbitrage. FRTB imposes a presumptive assignment for each instrument type, requires supervisory approval to reclassify, and does not let a bank release capital by moving something across the line. The other three are all real issues but are handled elsewhere in the framework.",
+      "technique": "Motivation for the trading-book boundary",
+      "difficultyRationale": "One fact about why a rule exists."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What are 'liquidity horizons' in FRTB, and what problem do they address?",
+      "canonicalAnswer": "Different risk factors are assigned different assumed unwind periods (from 10 days up to 120 days), rather than a single 10-day holding period, to reflect that illiquid exposures cannot be exited quickly in stress.",
+      "explanation": "The pre-FRTB framework applied a uniform 10-day horizon and scaled everything by the square root of time, which quietly assumed you could exit any position within a fortnight. In stress that is false for, say, a bespoke credit or an emerging-market equity. FRTB assigns each risk-factor class a liquidity horizon — 10, 20, 40, 60 or 120 days — and builds the ES measure from overlapping horizon-specific pieces, so illiquid exposures attract more capital.",
+      "technique": "Liquidity-adjusted capital measures",
+      "difficultyRationale": "Definition plus the reason; no calculation."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Distinguish initial margin from variation margin in one or two sentences.",
+      "canonicalAnswer": "Variation margin is the daily exchange of cash covering the change in a position's mark-to-market value. Initial margin is a buffer posted up front to cover potential FUTURE moves between the last variation margin payment and the close-out of a defaulted counterparty.",
+      "explanation": "Variation margin looks backward and settles losses that have already happened, so it keeps current exposure near zero. Initial margin looks forward and covers the gap risk — if your counterparty defaults, you will not get today's variation margin and prices will keep moving over the days it takes to replace the trade. That window (typically 5 or 10 days) is the margin period of risk, and it is what initial margin is sized against.",
+      "technique": "Margin mechanics",
+      "difficultyRationale": "Two definitions, no numbers."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "CVA (credit valuation adjustment) on a derivative is best described as:",
+      "options": [
+        "The reduction in a derivative's value to reflect the counterparty's possible default",
+        "The capital a bank must hold against its own default risk",
+        "The interest cost of funding the collateral posted on a trade",
+        "The margin a clearing house requires at trade inception"
+      ],
+      "correctOption": 0,
+      "explanation": "CVA is the market value of counterparty credit risk: the risk-free value of the derivative less what it is actually worth given your counterparty might default while owing you money. Roughly, it is the expected positive exposure across time, weighted by default probability and loss given default, discounted back. Option 2 is DVA (the mirror image, your own default), option 3 is FVA, and option 4 is initial margin — the xVA family is a standard set of near-misses in interviews.",
+      "technique": "The xVA family",
+      "difficultyRationale": "One definition against three named neighbours."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A historical scenario stress test and a hypothetical scenario stress test differ in that:",
+      "options": [
+        "The historical one replays actual past market moves; the hypothetical one is constructed by risk managers",
+        "The historical one is probabilistic; the hypothetical one is not",
+        "The historical one covers only equities; the hypothetical one covers all asset classes",
+        "The historical one is required by regulators; the hypothetical one is optional"
+      ],
+      "correctOption": 0,
+      "explanation": "Historical scenarios take a real episode — October 1987, autumn 2008, March 2020 — and apply those factor moves to today's book. Their strength is internal consistency: the correlations really did hold together that way. Hypothetical scenarios are built to probe vulnerabilities that have never occurred, which is their strength and their weakness, since a plausible correlation structure has to be imposed by hand. Neither carries a probability, and regulators require both.",
+      "technique": "Scenario design",
+      "difficultyRationale": "One clean distinction."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Name the two broad sources of model risk in a pricing or risk model.",
+      "canonicalAnswer": "The model may be wrong (the specification or its assumptions do not describe reality), or the model may be used wrongly (applied outside its intended scope, fed bad or stale inputs, or implemented with errors).",
+      "explanation": "Supervisory guidance (SR 11-7 is the standard reference) splits it exactly this way, and the split matters because the controls differ. Fundamental error is addressed by validation: independent review of the theory, benchmarking against alternative models, backtesting. Misuse is addressed by governance: an inventory of models with documented limitations, input quality controls, and change management. A perfectly specified model fed last week's vol surface still produces a wrong number.",
+      "technique": "Taxonomy of model risk",
+      "difficultyRationale": "Recall of a two-way split."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A bank's VaR model produces 12 exceptions in a year where 2 or 3 were expected at 99% confidence. The most likely conclusion is:",
+      "options": [
+        "The model understates risk and should be investigated and recalibrated",
+        "The year was unusual and no action is needed",
+        "The confidence level should be lowered to 95%",
+        "The model is conservative and capital could be released"
+      ],
+      "correctOption": 0,
+      "explanation": "At 99% over roughly 250 trading days you expect about 2.5 exceptions. Twelve is far outside what chance explains — a Kupiec test would reject the model comfortably. In the Basel traffic-light framework this lands in the red zone, triggering a capital multiplier and remediation. Lowering the confidence level would only make exceptions more frequent by construction, and calling it bad luck is precisely the reasoning backtesting exists to prevent.",
+      "technique": "Backtesting exception counts",
+      "difficultyRationale": "Compares an observed count to an expected one; the arithmetic is 1% of 250."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Why is a model that has been calibrated to fit historical data perfectly a cause for concern rather than comfort?",
+      "canonicalAnswer": "Because it has probably been overfitted — it has learned the noise in the sample as well as the signal, so it will perform much worse out of sample.",
+      "explanation": "Any model with enough free parameters can be made to fit a fixed dataset arbitrarily well; the fit then measures flexibility rather than truth. The tell is a large gap between in-sample and out-of-sample performance. The defences are the usual ones — hold out data the model never saw, penalise complexity, and be honest about how many specifications were tried before this one was selected, since searching over a hundred variants and reporting the best is a form of overfitting that no single-model test will catch.",
+      "technique": "Overfitting as model risk",
+      "difficultyRationale": "One concept, stated and justified."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Why does the expected return of the underlying stock, mu, not appear in the Black-Scholes formula?",
+      "canonicalAnswer": "Because the option is priced by replication: a delta-hedged portfolio of stock and cash reproduces the payoff, and its cost is independent of mu. Equivalently, pricing takes place under the risk-neutral measure, where the drift is r regardless of mu.",
+      "explanation": "This is the single most-asked conceptual question about Black-Scholes. Set up a portfolio long one option and short delta shares; the dW terms cancel, so over the next instant the portfolio is riskless and must earn r or there is an arbitrage. The mu terms cancel in the same stroke. The practical consequence is that two people who disagree completely about whether a stock will rise must still agree on the option's price, provided they agree on its volatility — which is why volatility, not direction, is what options desks trade.",
+      "technique": "Replication and the disappearance of the drift",
+      "difficultyRationale": "Conceptual; the hedging argument is described rather than derived."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A risk-neutral probability of default backed out of bond spreads is typically higher than the historical default rate for the same rating. Why?",
+      "canonicalAnswer": "Because the spread also compensates investors for bearing default risk (and for illiquidity), not just for expected loss. Risk-neutral probabilities embed a risk premium, so they exceed real-world probabilities.",
+      "explanation": "Real-world probabilities answer 'how often does this actually happen'; risk-neutral probabilities answer 'what probability, if investors were indifferent to risk, would justify today's price'. Since investors are not indifferent — defaults cluster in bad states where money is most valuable — they demand extra yield, and that extra shows up as an inflated implied probability. The gap can be several times over for investment grade. Use real-world numbers for scenario analysis and expected loss; use risk-neutral numbers for valuing and hedging.",
+      "technique": "Real-world vs risk-neutral probabilities",
+      "difficultyRationale": "Conceptual, one explanation, no calculation."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Give an example of two variables with zero correlation that are clearly not independent.",
+      "canonicalAnswer": "Let X be symmetric about 0 (say uniform on [-1,1]) and Y = X^2. Then Cov(X,Y) = E[X^3] - E[X]E[X^2] = 0, but Y is completely determined by X.",
+      "explanation": "Correlation measures LINEAR association only. In this example the relationship is perfectly deterministic yet perfectly symmetric, so the linear component is exactly zero. The financial version matters more than the algebra: two assets can show near-zero correlation in normal markets and move together violently in a crash. Any risk framework that summarises dependence with a single correlation number is assuming that never happens, which is the motivation for copulas — they let you specify the dependence structure separately from the marginals, including tail dependence.",
+      "technique": "Correlation vs independence",
+      "difficultyRationale": "One standard counterexample."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What does a copula let you do?",
+      "options": [
+        "Specify the dependence structure between variables separately from their individual distributions",
+        "Estimate correlations more accurately from short samples",
+        "Convert any distribution into a normal distribution",
+        "Guarantee that a correlation matrix is positive semi-definite"
+      ],
+      "correctOption": 0,
+      "explanation": "Sklar's theorem says any joint distribution can be split into its marginals plus a copula capturing how they are coupled. That separation is the point: you can model each asset's tail behaviour realistically and then choose a dependence structure — Gaussian, Student-t, Clayton — independently. The choice matters enormously in the tail. A Gaussian copula has zero tail dependence, so joint extreme moves are asymptotically vanishing; a t-copula does not. Assuming the former for CDO tranches was a well-documented contributor to 2008 losses.",
+      "technique": "Sklar's theorem / what a copula is",
+      "difficultyRationale": "One definition with plausible neighbours."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two assets have volatilities 20% and 30% and correlation 0.5. What is the volatility of an equally weighted portfolio?",
+      "canonicalAnswer": "About 21.8%. Variance = 0.25(0.04) + 0.25(0.09) + 2(0.5)(0.5)(0.5)(0.2)(0.3) = 0.01 + 0.0225 + 0.015 = 0.0475, so vol = sqrt(0.0475) = 0.218.",
+      "explanation": "Var = w1^2 s1^2 + w2^2 s2^2 + 2 w1 w2 rho s1 s2. With w1 = w2 = 0.5: 0.25*0.04 = 0.01, 0.25*0.09 = 0.0225, and the cross term 2*0.5*0.5*0.5*0.2*0.3 = 0.015. Total 0.0475, square root 21.8%. Compare with the naive weighted average of the vols, 25% — the 3.2 points of difference is the diversification benefit, and it comes entirely from rho being below 1.",
+      "technique": "Two-asset portfolio variance",
+      "difficultyRationale": "One formula, three terms of arithmetic."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is volatility clustering, and what does it imply about a model that assumes constant volatility?",
+      "canonicalAnswer": "Large moves tend to be followed by large moves and quiet periods by quiet periods — volatility is persistent. A constant-volatility model will therefore understate risk in turbulent periods and overstate it in calm ones.",
+      "explanation": "Returns themselves are close to unforecastable, but their MAGNITUDES are strongly autocorrelated, which is the single most robust stylised fact in financial time series. EWMA and GARCH exist to capture it: both make today's variance forecast a weighted average of yesterday's forecast and yesterday's squared return, so a large shock raises the forecast and it decays back gradually. It is also why an unconditional volatility estimated over five years is the wrong input for a one-day VaR.",
+      "technique": "Stylised facts of return series",
+      "difficultyRationale": "One definition plus its immediate consequence."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Under EWMA with lambda = 0.94, yesterday's variance estimate was 0.0004 (2% daily vol) and yesterday's return was -3%. What is today's variance estimate?",
+      "canonicalAnswer": "0.0004296, i.e. a daily vol of about 2.07%. sigma^2 = 0.94(0.0004) + 0.06(0.0009) = 0.000376 + 0.000054 = 0.00043.",
+      "explanation": "EWMA: sigma_n^2 = lambda * sigma_{n-1}^2 + (1 - lambda) * r_{n-1}^2. Here 0.94 * 0.0004 = 0.000376 and 0.06 * (0.03)^2 = 0.06 * 0.0009 = 0.000054, summing to 0.00043, so vol = 2.07%. Note how little a single 1.5-sigma day moves the estimate — lambda = 0.94 (the RiskMetrics choice) puts 94% of the weight on history, which is what makes the series smooth but also slow to react.",
+      "technique": "EWMA variance update",
+      "difficultyRationale": "Two multiplications and a sum, with the formula given by the method's name."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The main way GARCH(1,1) differs from EWMA is that GARCH:",
+      "options": [
+        "Includes a long-run average variance that the forecast reverts towards",
+        "Uses squared returns rather than absolute returns",
+        "Requires no parameter estimation",
+        "Cannot be used for multi-day forecasts"
+      ],
+      "correctOption": 0,
+      "explanation": "GARCH(1,1) is sigma_n^2 = omega + alpha*r_{n-1}^2 + beta*sigma_{n-1}^2, and the omega term encodes a long-run variance V_L, with the forecast mean-reverting towards it at a rate set by alpha + beta. EWMA is the special case omega = 0 and alpha + beta = 1 — no mean reversion, so its multi-day forecast is just a flat line at today's level. Mean reversion is what makes GARCH term structures of volatility slope up when vol is low and down when vol is high.",
+      "technique": "GARCH vs EWMA",
+      "difficultyRationale": "One structural difference between two named models."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two fair six-sided dice are rolled. What is the probability the total is 5?",
+      "canonicalAnswer": "1/9",
+      "explanation": "There are 36 equally likely ordered outcomes. The ones totalling 5 are (1,4), (2,3), (3,2), (4,1) — four of them, so 4/36 = 1/9. The discipline that matters here is treating the dice as DISTINGUISHABLE. If you list unordered pairs you get {1,4} and {2,3}, conclude 2 out of 21, and are wrong, because those outcomes are not equally likely. Ordered outcomes are.",
+      "technique": "Enumerate equally likely ordered outcomes",
+      "difficultyRationale": "Four outcomes to list from a sample space of 36."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "State Bayes' theorem and say in words what each of the four pieces represents.",
+      "canonicalAnswer": "P(A|B) = P(B|A) P(A) / P(B). P(A) is the prior, P(B|A) the likelihood of the evidence if A holds, P(B) the total probability of the evidence, and P(A|B) the posterior.",
+      "explanation": "It follows in one line from the definition of conditional probability: both P(A|B)P(B) and P(B|A)P(A) equal P(A and B), so setting them equal and dividing gives the theorem. In practice the denominator is almost always expanded by the law of total probability, P(B) = P(B|A)P(A) + P(B|not A)P(not A), because that is the form where the numbers you are given actually slot in.",
+      "technique": "Statement of Bayes' theorem",
+      "difficultyRationale": "Recall of a formula and its vocabulary."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "The risk-free rate is 3%, the equity risk premium is 5%, and a stock has beta 1.4. What does CAPM say its expected return is?",
+      "canonicalAnswer": "10%. E[R] = 3% + 1.4 * 5% = 3% + 7% = 10%.",
+      "explanation": "CAPM: E[R_i] = r_f + beta_i (E[R_m] - r_f). Only the beta term appears — CAPM's claim is that idiosyncratic risk earns you nothing because it can be diversified away, so expected return depends solely on exposure to the market factor. Beta above 1 means the stock amplifies market moves and is compensated accordingly.",
+      "technique": "CAPM expected return",
+      "difficultyRationale": "One substitution into a two-term formula."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A fund returned 12% with volatility 20%. The risk-free rate is 2%. What is its Sharpe ratio?",
+      "canonicalAnswer": "0.5. (12% - 2%) / 20% = 10/20 = 0.5.",
+      "explanation": "Sharpe = (R_p - r_f) / sigma_p: excess return per unit of TOTAL volatility. Two things to keep straight. First, it is excess return, not raw return — a fund returning 12% when cash pays 11% has earned almost nothing for its risk. Second, the denominator is total volatility, which is why Sharpe is the right measure for a standalone portfolio; if the position is a small addition to a diversified book, the information ratio or a beta-adjusted measure is more appropriate.",
+      "technique": "Sharpe ratio",
+      "difficultyRationale": "One subtraction and one division."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "As you add more uncorrelated stocks to a portfolio, the portfolio's variance:",
+      "options": [
+        "Falls towards the average covariance between holdings, not to zero",
+        "Falls to zero in the limit",
+        "Stays roughly constant",
+        "Falls only if the stocks have equal weights"
+      ],
+      "correctOption": 0,
+      "explanation": "For an equally weighted portfolio of n assets, variance = (1/n)(average variance) + (1 - 1/n)(average covariance). The first term vanishes as n grows — that is the diversifiable, idiosyncratic part — but the second converges to the average covariance, which is the systematic floor no amount of diversification removes. It goes to zero only in the artificial case where the assets are genuinely uncorrelated with each other, which real equities are not. This decomposition is exactly why CAPM pays you for beta and not for total volatility.",
+      "technique": "Diversification and the systematic risk floor",
+      "difficultyRationale": "Conceptual, one limit; the formula is not required."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Write the first three terms of the Taylor series for e^x about x = 0, and use them to approximate e^0.1.",
+      "canonicalAnswer": "e^x = 1 + x + x^2/2 + ..., so e^0.1 = 1 + 0.1 + 0.005 = 1.105 (true value 1.10517).",
+      "explanation": "The general series is e^x = sum x^n / n!, so the terms are 1, x, x^2/2, x^3/6. At x = 0.1 the third term is already only 0.005 and the fourth is 0.00017, which is why two or three terms is plenty for small x. This is the workhorse expansion behind continuous compounding approximations and the log-return relation ln(1+r) ~= r.",
+      "technique": "Taylor series of e^x",
+      "difficultyRationale": "Recall of a standard series plus one substitution."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Use a series expansion to approximate ln(1.02) without a calculator, and say why the approximation is good here.",
+      "canonicalAnswer": "About 0.0198. ln(1+x) = x - x^2/2 + ..., so ln(1.02) ~= 0.02 - 0.0002 = 0.0198 (true value 0.019803).",
+      "explanation": "For small x the higher terms shrink fast: the x^2/2 correction is only 2 basis points here and the x^3/3 term is under 3 in the sixth decimal place. This is precisely the fact that lets you treat log returns and simple returns as interchangeable for small moves — a 2% simple return is a 1.98% log return — while warning you that they diverge for large ones. A 50% simple return is only a 40.5% log return.",
+      "technique": "Taylor series of ln(1+x)",
+      "difficultyRationale": "One standard expansion, two terms."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A function f has f'(a) = 0 and f''(a) > 0. What does that tell you about the point x = a?",
+      "options": [
+        "It is a local minimum",
+        "It is a local maximum",
+        "It is a point of inflection",
+        "Nothing can be concluded without more information"
+      ],
+      "correctOption": 0,
+      "explanation": "The first derivative vanishing makes a a stationary point; the second derivative being positive means the function is curving upwards there, so the stationary point sits at the bottom of a bowl — a local minimum. Negative f'' would give a maximum, and f''(a) = 0 is the genuinely inconclusive case (x^3 and x^4 both have f' = f'' = 0 at the origin and behave completely differently). This second-derivative test is what underlies every optimisation argument in portfolio theory.",
+      "technique": "Second derivative test",
+      "difficultyRationale": "Direct application of a standard test."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Write the definition of P(A | B), and say what it means geometrically.",
+      "canonicalAnswer": "P(A|B) = P(A and B) / P(B), defined when P(B) > 0. Geometrically you restrict the sample space to B and ask what fraction of it also lies in A.",
+      "explanation": "Conditioning is renormalisation: B becomes the new universe, so you divide by its probability to make the new probabilities sum to 1. Everything else follows from this one line — the multiplication rule P(A and B) = P(A|B)P(B), the law of total probability, and Bayes' theorem. When a conditional probability question feels slippery, writing this definition out explicitly and identifying what 'A and B' means is usually enough to unstick it.",
+      "technique": "Definition of conditional probability",
+      "difficultyRationale": "Recall plus the standard interpretation."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A fair die is rolled. Given that the result is even, what is the probability it is a 2?",
+      "canonicalAnswer": "1/3",
+      "explanation": "P(2 and even) = P(2) = 1/6, and P(even) = 1/2, so the ratio is (1/6)/(1/2) = 1/3. Or directly: conditioning on 'even' leaves the three outcomes {2, 4, 6}, still equally likely, so each has probability 1/3. Note the numerator — 'the result is 2 AND even' is just 'the result is 2', because 2 already implies even. Spotting that a joint event collapses to one of its parts is a small move that saves a lot of confusion in harder problems.",
+      "technique": "Restrict the sample space",
+      "difficultyRationale": "One ratio over a six-outcome space."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two cards are dealt from a standard 52-card deck without replacement. Given the first is an ace, what is the probability the second is also an ace?",
+      "canonicalAnswer": "3/51 = 1/17",
+      "explanation": "Once an ace is gone, 51 cards remain and only 3 are aces, so 3/51 = 1/17. The point of the exercise is what conditioning does to the sample space when sampling is without replacement: BOTH the count of favourable outcomes and the total shrink. Compare with the unconditional P(both aces) = (4/52)(3/51) = 1/221 — the conditional and joint probabilities answer different questions, and mixing them up is one of the most common errors under time pressure.",
+      "technique": "Conditioning with sampling without replacement",
+      "difficultyRationale": "One fraction after updating both counts."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You flip a biased coin 10 times; each flip is heads with probability 0.3. What is the expected number of heads, and what did you have to assume about the flips?",
+      "canonicalAnswer": "3. And you had to assume nothing — linearity of expectation does not require independence.",
+      "explanation": "Define X_i = 1 if flip i is heads, else 0. Then E[X_i] = 0.3 and the total is X = sum X_i, so E[X] = sum E[X_i] = 10 * 0.3 = 3. The second half of the question is the real content: E[X+Y] = E[X] + E[Y] holds for ANY random variables, dependent or not. That is what makes indicator decomposition so powerful — you can attack problems where the events are tangled together and computing the full distribution would be hopeless.",
+      "technique": "Indicator variables plus linearity",
+      "difficultyRationale": "One product, with the conceptual point stated rather than derived."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which of these identities requires X and Y to be independent?",
+      "options": [
+        "E[XY] = E[X]E[Y]",
+        "E[X + Y] = E[X] + E[Y]",
+        "E[3X] = 3E[X]",
+        "E[X + 5] = E[X] + 5"
+      ],
+      "correctOption": 0,
+      "explanation": "Only the product rule needs independence (strictly, uncorrelatedness is enough for this particular identity). Sums, scalar multiples and constant shifts are all pure linearity and hold universally. Keeping this straight matters: Var(X+Y) = Var(X) + Var(Y) also needs uncorrelatedness, because variance is built from a product term — the covariance — whereas expectation is not.",
+      "technique": "What linearity does and does not require",
+      "difficultyRationale": "Recognition of a single dependence assumption among four identities."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the determinant of the matrix [[3, 1], [2, 4]], and what does it tell you about the matrix?",
+      "canonicalAnswer": "10 (= 3*4 - 1*2). Since it is non-zero, the matrix is invertible and its columns are linearly independent.",
+      "explanation": "For [[a,b],[c,d]] the determinant is ad - bc. Geometrically it is the signed area of the parallelogram spanned by the columns, so determinant zero means the columns are collinear — the map squashes the plane onto a line and cannot be undone. That is exactly the condition for singularity. In risk work, a covariance matrix with determinant zero signals that one asset is an exact linear combination of the others, which is what breaks a portfolio optimiser.",
+      "technique": "2x2 determinant and singularity",
+      "difficultyRationale": "One formula with two products."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What does it mean for v to be an eigenvector of A with eigenvalue lambda?",
+      "canonicalAnswer": "Av = lambda v with v not the zero vector: applying A to v only stretches or shrinks it by the factor lambda, without changing its direction.",
+      "explanation": "Eigenvectors are the directions the transformation leaves alone up to scaling, which is why they are the natural coordinate system for the problem. This is the entire basis of PCA: the eigenvectors of a covariance matrix are the uncorrelated directions of variation, and each eigenvalue is the variance along its direction. Applied to yield-curve changes, the top three come out looking like level, slope and curvature — which is how a twenty-tenor curve gets reduced to three risk numbers.",
+      "technique": "Definition of eigenvalue/eigenvector",
+      "difficultyRationale": "Recall of one equation and its meaning."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A valid covariance matrix must be symmetric and positive semi-definite. What does positive semi-definiteness guarantee?",
+      "options": [
+        "No portfolio of the assets can have negative variance",
+        "All the correlations are positive",
+        "The matrix is invertible",
+        "All the assets have the same variance"
+      ],
+      "correctOption": 0,
+      "explanation": "Portfolio variance is w' Sigma w for weight vector w, and positive semi-definiteness says exactly that this quantity is never negative — for any weights at all. A matrix that fails the test is not a covariance matrix of anything, which is a real problem when correlations have been estimated pairwise from different sample periods or overridden by hand. Note that PSD allows a zero eigenvalue, so it does NOT imply invertibility: a zero-variance portfolio combination is permitted, it just means one asset is redundant.",
+      "technique": "Positive semi-definiteness of covariance matrices",
+      "difficultyRationale": "One property, stated in portfolio terms."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What are order statistics? Give the standard notation.",
+      "canonicalAnswer": "The sample values sorted into increasing order: X_(1) <= X_(2) <= ... <= X_(n), where X_(1) is the minimum and X_(n) is the maximum. The median is the middle order statistic.",
+      "explanation": "The parenthesised subscript is the convention that distinguishes the k-th SMALLEST value, X_(k), from the k-th observation drawn, X_k. Sorting destroys independence — the order statistics of an independent sample are strongly dependent on each other, since X_(1) <= X_(2) always — which is why their distributions have to be derived rather than assumed. They matter in risk because a historical-simulation VaR is nothing more than an order statistic of the P&L sample.",
+      "technique": "Definition and notation",
+      "difficultyRationale": "Recall of notation and one observation about dependence."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Three independent draws are taken from the uniform distribution on [0,1]. What is the expected value of the largest?",
+      "canonicalAnswer": "3/4",
+      "explanation": "P(max <= x) = P(all three <= x) = x^3, so the density of the max is 3x^2 on [0,1] and E[max] = integral of x * 3x^2 dx from 0 to 1 = 3/4. The general result is E[max of n uniforms] = n/(n+1), and by symmetry E[min] = 1/(n+1). The picture to remember: n draws divide [0,1] into n+1 gaps whose expected lengths are all equal, at 1/(n+1) each — every order statistic result on the uniform follows from that.",
+      "technique": "CDF of the maximum, then differentiate",
+      "difficultyRationale": "One CDF argument and one short integral."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "For n independent draws from a continuous distribution, what is P(the last draw is the largest of all n)?",
+      "options": [
+        "1/n",
+        "1/2",
+        "1/n!",
+        "(n-1)/n"
+      ],
+      "correctOption": 0,
+      "explanation": "By symmetry, every one of the n draws is equally likely to be the largest — nothing distinguishes them, since they are identically distributed and independent. So the probability is 1/n, with no calculation at all. (Continuity matters only in that it rules out ties.) This symmetry argument generalises: the probability that the draws arrive in any one specified order is 1/n!, and reaching for symmetry before integrating is the habit that makes order-statistic problems quick.",
+      "technique": "Symmetry over orderings",
+      "difficultyRationale": "One symmetry observation, no computation."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What are the two steps of a proof by induction, and what is each one doing?",
+      "canonicalAnswer": "The base case, showing the statement holds for the smallest n; and the inductive step, showing that if it holds for n then it holds for n+1. Together they propagate the truth from the base up through every n.",
+      "explanation": "The image is a ladder: the base case puts you on the first rung and the inductive step shows every rung leads to the next. Two failure modes are worth naming. Skipping the base case can 'prove' false statements — the step 'if n = n+1 then n+1 = n+2' is perfectly valid and the claim is nonsense. And the inductive step must work for EVERY n above the base, so a step that quietly assumes n >= 3 needs its base checked at 3.",
+      "technique": "Structure of induction",
+      "difficultyRationale": "Recall of a two-part structure."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Prove by induction that 1 + 2 + ... + n = n(n+1)/2.",
+      "canonicalAnswer": "Base: n = 1 gives 1 = 1(2)/2 = 1. Step: assume the sum to n is n(n+1)/2; then the sum to n+1 is n(n+1)/2 + (n+1) = (n+1)(n+2)/2, which is the formula at n+1. Done.",
+      "explanation": "The only algebra is factoring (n+1) out of n(n+1)/2 + (n+1) to get (n+1)(n/2 + 1) = (n+1)(n+2)/2. Notice the shape of the step: you add the new term to the assumed formula and manipulate until it matches the formula with n replaced by n+1. That target is known in advance, which is what makes inductive algebra tractable — you always know what you are steering towards. Gauss's pairing argument proves the same thing without induction, and it is worth knowing both.",
+      "technique": "Induction on a summation formula",
+      "difficultyRationale": "The standard first example; one factoring step."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "To prove a statement of the form 'if P then Q' by contradiction, you assume:",
+      "options": [
+        "P is true and Q is false, and derive an impossibility",
+        "P is false, and derive an impossibility",
+        "Q is true, and derive P",
+        "Q is false, and derive that P is false"
+      ],
+      "correctOption": 0,
+      "explanation": "The negation of 'P implies Q' is 'P and not Q', so that is what you assume, and reaching a contradiction rules it out. Option 4 describes the CONTRAPOSITIVE — proving 'not Q implies not P' — which is a different technique and a direct proof rather than a contradiction, though the two often look similar on the page. Being clear about which one you are doing keeps the write-up honest.",
+      "technique": "Proof by contradiction vs contrapositive",
+      "difficultyRationale": "Recognition of one logical form."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A bat and a ball cost $1.10 together. The bat costs $1.00 more than the ball. How much does the ball cost?",
+      "canonicalAnswer": "5 cents.",
+      "explanation": "Let the ball be x. Then the bat is x + 1.00 and the total is 2x + 1.00 = 1.10, so x = 0.05 and the bat is $1.05. The famous wrong answer is 10 cents, which fails the second condition — a $1.00 bat and a 10-cent ball differ by only 90 cents. This is the canonical test of whether you check an intuitive answer against the constraints before saying it out loud, which in an interview is the actual thing being assessed.",
+      "technique": "Set up the equation rather than trusting the first answer",
+      "difficultyRationale": "One linear equation; the difficulty is entirely in resisting the fast answer."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A patch of lily pads doubles in size every day and covers the whole lake on day 48. On which day does it cover half the lake?",
+      "canonicalAnswer": "Day 47.",
+      "explanation": "Run the doubling backwards one step: if it is full on day 48 and doubles daily, it was half on day 47. The tempting answer of day 24 comes from treating exponential growth as linear. The habit worth taking away is working backwards from the end state — for multiplicative processes the last step contains as much change as everything before it combined, which is also why a portfolio's worst day dominates its drawdown statistics.",
+      "technique": "Work backwards through an exponential process",
+      "difficultyRationale": "One backward step once you notice the growth is multiplicative."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You have two ropes. Each burns through in exactly one hour, but neither burns at a uniform rate, so half a rope is not half an hour. How do you measure 45 minutes?",
+      "canonicalAnswer": "Light rope A at both ends and rope B at one end simultaneously. Rope A is gone after 30 minutes; at that instant light B's other end too. B's remaining 30 minutes of rope now burns from both ends and takes 15 minutes. Total 45.",
+      "explanation": "The unlocking idea is that lighting both ends halves the TIME regardless of how unevenly the rope burns, because the two flames between them consume the whole rope and each minute of burning is being done twice over. Non-uniform burn rate makes lengths useless but leaves total burn time intact, so you work in time, not distance. The general pattern — find the one quantity the awkward constraint leaves untouched — is what makes this a standard interview question rather than a trick.",
+      "technique": "Identify the invariant the constraint preserves",
+      "difficultyRationale": "One insight, two steps, no arithmetic beyond halving."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Estimate how many haircuts are given in the UK in a year. Show your decomposition.",
+      "canonicalAnswer": "Roughly 400-600 million. About 67m people, average maybe 7-8 haircuts a year, giving 67m * 7.5 ~= 500m.",
+      "explanation": "The number is not the point; the decomposition is. Population is a fact you should know to one significant figure. Frequency is where judgement enters — short hair maintained monthly is 12 a year, long hair trimmed twice a year is 2, so a population average of 6-8 is defensible and you should SAY why you picked it. A useful sanity check runs the other way: 500m haircuts across maybe 40,000 salons is 12,500 a year each, or roughly 50 a working day, which is plausible for a multi-chair shop. Two independent routes landing in the same place is the strongest evidence a Fermi estimate can give.",
+      "technique": "Population x frequency, cross-checked from the supply side",
+      "difficultyRationale": "Two-factor decomposition with facts most people already hold."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "What makes a Fermi decomposition a good one?",
+      "options": [
+        "Each factor is something you can estimate to within a factor of 2 or 3",
+        "It uses as many factors as possible, so errors cancel",
+        "Every factor is a number you know exactly",
+        "It arrives at the answer in a single step"
+      ],
+      "correctOption": 0,
+      "explanation": "The whole method rests on breaking the unknown into pieces you have some real grip on, and on errors being roughly independent so they partially offset rather than compound. More factors is not automatically better — each one you cannot estimate well adds error, so stop splitting once the pieces are things you can actually judge. And demanding exact numbers misses the point: an estimate correct to an order of magnitude, delivered with the reasoning visible, is the deliverable.",
+      "technique": "Structuring an estimate",
+      "difficultyRationale": "Conceptual, one principle."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Distinguish funding liquidity risk from market (trading) liquidity risk.",
+      "canonicalAnswer": "Funding liquidity risk is the risk of not being able to meet cash obligations as they fall due. Market liquidity risk is the risk that a position cannot be sold quickly without moving the price against you.",
+      "explanation": "One is about your balance sheet, the other about the market for your assets — and the danger is that they reinforce each other. A funding squeeze forces you to sell; forced selling into a thin market realises a worse price; the loss erodes capital and tightens funding further. That feedback loop is the liquidity spiral, and it is why a firm can be solvent on paper and fail anyway. Northern Rock and LTCM are the standard case studies, from opposite ends of the loop.",
+      "technique": "The two liquidity risks and their interaction",
+      "difficultyRationale": "Two definitions plus the link between them."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A $50m position trades with a bid-ask spread of 10 basis points. Under the standard cost-of-liquidation measure, what does it cost to unwind?",
+      "canonicalAnswer": "$25,000 — half the spread on the full notional: 0.5 * 0.0010 * 50,000,000.",
+      "explanation": "Mid-price is the fair mark, so selling at the bid costs you half the spread. The standard formula is cost = 0.5 * s * V, giving 0.0005 * 50m = $25,000. Two caveats that matter more than the arithmetic. This assumes you can hit the quoted spread for the whole size, which is exactly what fails when the position is large relative to normal volume — real unwind cost includes market impact on top. And spreads widen in stress, so the right input for a liquidity-adjusted VaR is a stressed spread, often the 99th percentile of the observed spread distribution rather than today's.",
+      "technique": "Cost-of-liquidation from the bid-ask spread",
+      "difficultyRationale": "One multiplication, with the halving as the only trap."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A standard deck is shuffled. What is the probability the BOTTOM card is an ace?",
+      "canonicalAnswer": "1/13 — the same as for any other position.",
+      "explanation": "There are 4 aces in 52 cards, so 4/52 = 1/13. No conditioning, no working through the other 51 cards. The reason is symmetry: a shuffle makes all 52! orderings equally likely, so every position is exchangeable with every other, and the bottom card is as likely to be an ace as the top one. Recognising exchangeability is what turns a page of casework into a single line, and it is the whole point of this topic.",
+      "technique": "Exchangeability of positions after a shuffle",
+      "difficultyRationale": "One symmetry observation; the arithmetic is 4/52."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "An urn holds 10 balls, 3 of them red. Balls are drawn one at a time without replacement. What is the probability the THIRD ball drawn is red?",
+      "canonicalAnswer": "3/10",
+      "explanation": "Same as the first. You could condition on how many reds appeared in the first two draws and sum three cases, and you would get 3/10 after some work — but the symmetry argument gets there immediately. Since the balls are drawn in a uniformly random order, each of the 10 balls is equally likely to occupy position 3, and 3 of them are red. The habit to build: when a question asks about the k-th draw without replacement, check whether position even matters before computing anything.",
+      "technique": "Symmetry over draw order",
+      "difficultyRationale": "Direct application of the shortcut the topic is named for."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many rolls of a fair six-sided die do you expect to need before you have seen all six faces?",
+      "canonicalAnswer": "14.7. It is 6 * (1 + 1/2 + 1/3 + 1/4 + 1/5 + 1/6) = 6 * 2.45 = 14.7.",
+      "explanation": "Break the wait into stages. Once you hold k distinct faces, the chance the next roll is new is (6-k)/6, so the expected wait for the next new face is 6/(6-k) — a geometric. Summing over k = 0..5 gives 6/6 + 6/5 + 6/4 + 6/3 + 6/2 + 6/1 = 6 * H_6. The general answer is n * H_n ~= n ln n. Note the shape: the first five faces take about 8.7 rolls between them and the LAST one alone takes 6, which is the whole intuition for why collecting the final coupon dominates.",
+      "technique": "Sum of geometric waiting times",
+      "difficultyRationale": "One standard decomposition and a six-term harmonic sum."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "For a coupon collector problem with n equally likely coupon types, the expected number of draws to collect them all grows like:",
+      "options": [
+        "n log n",
+        "n",
+        "n^2",
+        "2^n"
+      ],
+      "correctOption": 0,
+      "explanation": "The exact answer is n * H_n where H_n is the n-th harmonic number, and H_n ~= ln n + 0.577, so the growth is n log n. The intuition for the extra log factor is that the final few coupons are individually very slow — the last one alone takes n draws in expectation. For n = 100 that is about 519 draws, comfortably more than the 100 a linear guess would suggest but nowhere near quadratic.",
+      "technique": "Asymptotic growth of the collector time",
+      "difficultyRationale": "Recall of one asymptotic result."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What does a === b (mod n) mean, and what is 17 mod 5?",
+      "canonicalAnswer": "a === b (mod n) means n divides a - b, equivalently a and b leave the same remainder on division by n. 17 mod 5 = 2.",
+      "explanation": "Congruence partitions the integers into n residue classes, and the useful fact is that addition and multiplication respect the classes: you may reduce mod n at any point in a calculation without changing the final answer. That is what keeps numbers small — to find 17 * 23 mod 5 you can reduce first to 2 * 3 = 6 === 1, rather than multiplying out to 391. Division is the operation that does NOT carry over cleanly, which is why modular inverses need separate treatment.",
+      "technique": "Definition of congruence",
+      "difficultyRationale": "Definition plus one remainder."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "X is uniform on [0, 10]. What are E[X] and P(X > 7)?",
+      "canonicalAnswer": "E[X] = 5 and P(X > 7) = 0.3.",
+      "explanation": "For a uniform on [a,b], the mean is the midpoint (a+b)/2 = 5, and probabilities are proportional to length: the interval (7,10] has length 3 out of 10, so 0.3. Also worth carrying: Var = (b-a)^2/12 = 100/12 = 8.33, so the standard deviation is about 2.89. Note that P(X > 7) and P(X >= 7) are identical here — for any continuous distribution a single point has probability zero, which is not true for discrete ones.",
+      "technique": "Uniform distribution facts",
+      "difficultyRationale": "Two direct reads from the definition."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "For a normal distribution, roughly what fraction of the probability lies within one standard deviation of the mean?",
+      "options": [
+        "68%",
+        "50%",
+        "90%",
+        "95%"
+      ],
+      "correctOption": 0,
+      "explanation": "The 68-95-99.7 rule: about 68% within one standard deviation, 95% within two, 99.7% within three. The numbers worth memorising alongside it are the two-tailed quantiles used in risk work — 1.96 for 95% and 2.576 for 99% — and their one-tailed counterparts, 1.645 and 2.326, which are the ones VaR actually uses. Confusing the one- and two-tailed values is a common and expensive slip.",
+      "technique": "Normal distribution rules of thumb",
+      "difficultyRationale": "Recall of a standard rule."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many ways can a committee of 3 be chosen from 10 people?",
+      "canonicalAnswer": "120. C(10,3) = (10*9*8)/(3*2*1) = 720/6 = 120.",
+      "explanation": "Order does not matter on a committee, so this is a combination. Compute it as the falling product 10*9*8 divided by 3! to remove the double-counting of the 6 orderings of each committee. If order DID matter — say the three roles were chair, secretary and treasurer — you would stop at 720, the permutation count P(10,3). Deciding whether order matters before you pick a formula is the entire skill.",
+      "technique": "Combinations vs permutations",
+      "difficultyRationale": "One binomial coefficient computed directly."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many distinct 3-letter arrangements can be made from the 5 letters A, B, C, D, E, using each at most once?",
+      "canonicalAnswer": "60. There are 5 choices for the first letter, 4 for the second, 3 for the third: 5*4*3 = 60.",
+      "explanation": "Order matters here, so this is a permutation: P(5,3) = 5!/(5-3)! = 120/2 = 60. Compare with the committee version, C(5,3) = 10 — exactly 60/3! , since each set of three letters can be arranged in 3! = 6 ways. That factor of 3! IS the difference between the two formulas, and seeing it explicitly once is more useful than memorising both.",
+      "technique": "Permutations via the multiplication principle",
+      "difficultyRationale": "Three factors multiplied."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You are flipping a fair coin until you get heads. You have flipped 5 tails in a row. How many MORE flips do you expect to need?",
+      "canonicalAnswer": "2 — exactly the same as at the start.",
+      "explanation": "The geometric distribution is memoryless: P(X > m + n | X > m) = P(X > n). The coin has no record of the five tails, so your expected remaining wait is unchanged at 1/p = 2. This is the formal refutation of the gambler's fallacy, and it is worth stating clearly because the intuition that a head is 'due' is very persistent. Among discrete distributions the geometric is the ONLY memoryless one (the exponential is its continuous counterpart).",
+      "technique": "Memorylessness",
+      "difficultyRationale": "One property applied; the answer is the unconditional mean."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Roughly how many comparisons does binary search need to find an item in a sorted list of one million entries?",
+      "canonicalAnswer": "About 20, since log2(1,000,000) is about 20.",
+      "explanation": "Each comparison halves the remaining range, so the count is log2(n). The number to anchor on is 2^10 = 1024 ~= 10^3, so a thousand items takes about 10 steps and a million takes about 20. That anchor also handles a billion (30) instantly. The contrast with linear search — 500,000 comparisons on average — is the reason logarithmic complexity is worth caring about, and the same halving logic underlies bisection root-finding in numerical work.",
+      "technique": "Logarithmic complexity, anchored on 2^10 ~= 10^3",
+      "difficultyRationale": "One log evaluated from a memorised anchor."
+    },
+    {
+      "topicId": "black-scholes",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "List the five inputs to the Black-Scholes formula for a European call, and say which one is not directly observable.",
+      "canonicalAnswer": "Spot price S, strike K, time to expiry T, risk-free rate r, and volatility sigma. Volatility is the only one not directly observable.",
+      "explanation": "Four of the five are contractual or quoted; sigma is the future volatility of the underlying over the option's life, which nobody can observe. That asymmetry is the reason the market works backwards — take the traded price, invert the formula, and quote the sigma that reproduces it. That is implied volatility, and it is why options are quoted in vol terms rather than in currency. (Dividend yield q is a sixth input for dividend-paying underlyings, entering as a downward adjustment to the drift on S.)",
+      "technique": "Black-Scholes inputs",
+      "difficultyRationale": "Recall of five inputs plus one observation about which is special."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A fair coin is flipped four times. What is the probability that all four flips give the same result?",
+      "canonicalAnswer": "1/8. Two favourable sequences (HHHH, TTTT) out of 2^4 = 16.",
+      "explanation": "The sample space has 2^4 = 16 equally likely sequences and exactly two of them are constant, so 2/16 = 1/8. An alternative that scales better: the first flip can be anything, and each of the remaining three must match it, giving (1/2)^3 = 1/8 with no enumeration at all. Fixing an arbitrary first outcome and only counting the constrained rest is a habit worth building — it turns exponential enumeration into a short product.",
+      "technique": "Enumerate sequences, or fix the first outcome and constrain the rest",
+      "difficultyRationale": "Sixteen outcomes with two favourable; the shortcut is one product."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Three people each independently pick a day of the week at random. What is the probability they all pick different days?",
+      "canonicalAnswer": "30/49, about 0.61. It is (7 * 6 * 5) / 7^3 = 210/343.",
+      "explanation": "Total outcomes 7^3 = 343. For all-different, the first person has 7 choices, the second must avoid one day so has 6, the third must avoid two so has 5: 210. Hence 210/343 = 30/49 ~= 0.61. Written the other way, the probability is 1 * (6/7) * (5/7), which is the same calculation with the denominators distributed — and that form is the one that generalises straight into the birthday problem.",
+      "technique": "Sequential counting with shrinking choices",
+      "difficultyRationale": "Three factors over a three-factor total."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A factory has two machines. Machine A makes 70% of output with a 1% defect rate; machine B makes 30% with a 4% defect rate. A defective item is found. What is the probability it came from machine B?",
+      "canonicalAnswer": "About 63%. P(B|defect) = (0.30)(0.04) / [(0.30)(0.04) + (0.70)(0.01)] = 0.012 / 0.019 = 0.632.",
+      "explanation": "Numerator is the joint probability of the hypothesis and the evidence; denominator is the total probability of the evidence across all hypotheses. Thinking in counts is often faster: out of 10,000 items, machine A makes 7,000 with 70 defects and machine B makes 3,000 with 120 defects, so 120 of the 190 defects are B's — 63%. Note the flip: B makes a MINORITY of the output but a MAJORITY of the defects, because a four-times-higher defect rate more than offsets a smaller share.",
+      "technique": "Bayes with two sources, via joint counts",
+      "difficultyRationale": "Two products, one sum, one division."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the odds form of Bayes' theorem, and why is it convenient?",
+      "canonicalAnswer": "Posterior odds = prior odds x likelihood ratio. It is convenient because the denominator P(evidence) cancels, so you never have to compute it.",
+      "explanation": "Divide Bayes' theorem for hypothesis H by the same expression for not-H: the P(evidence) terms cancel, leaving P(H|E)/P(notH|E) = [P(H)/P(notH)] x [P(E|H)/P(E|notH)]. Evidence enters only through the likelihood ratio, so updates just multiply — and independent pieces of evidence multiply their ratios together. Worked example: prior odds 1:1, evidence three times more likely under H, so posterior odds 3:1, i.e. probability 3/4. Converting back is odds/(1+odds).",
+      "technique": "Odds form / likelihood ratio",
+      "difficultyRationale": "Recall of a rearrangement plus one two-step example."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You start with $20 and bet $1 at a time on a fair coin, stopping when you reach $50 or $0. What is the probability you reach $50?",
+      "canonicalAnswer": "2/5. In the fair case the probability of hitting N before 0 from k is k/N = 20/50.",
+      "explanation": "For a fair game the answer is simply the fraction of the way you already are. The quickest justification is a martingale one: your wealth has constant expectation, so 20 = 50p + 0(1-p) and p = 0.4. The point most people miss is that expected final wealth being $20 does not make the outcome benign — you go broke 60% of the time. Fair in expectation is not the same as safe.",
+      "technique": "Gambler's ruin, fair case (k/N)",
+      "difficultyRationale": "One substitution into the fair-game formula."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A gambler plays a FAIR game against a casino with unlimited money, betting $1 a time and never voluntarily stopping. What happens to them eventually, and why?",
+      "canonicalAnswer": "They go broke with probability 1. The target N is effectively infinite, so the survival probability k/N tends to 0.",
+      "explanation": "Take the fair-game result P(reach N before 0) = k/N and let N grow without bound: it goes to zero for any finite starting bankroll k. The asymmetry is entirely about the barriers, not the odds — the gambler has an absorbing barrier at 0 and the casino effectively does not. A symmetric random walk is recurrent, so it visits every level eventually, including zero, and zero is the one level you cannot leave. This is the cleanest statement of why unlimited play with limited capital is fatal even with no house edge, and it generalises directly to leverage and margin calls.",
+      "technique": "Limiting behaviour of the ruin probability",
+      "difficultyRationale": "One limit of a formula, stated conceptually."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "London has about 8 million residents and a human head carries at most about 150,000 hairs. Show that two Londoners have exactly the same number of head hairs.",
+      "canonicalAnswer": "The possible hair counts are 0 to 150,000 — at most 150,001 pigeonholes — and there are 8,000,000 people. Since 8,000,000 > 150,001, some count is shared by at least two people.",
+      "explanation": "The pigeonholes are the possible VALUES, not the people, which is the step that takes a moment to see. Note how much slack there is: 8,000,000 / 150,001 is about 53, so the generalised pigeonhole principle actually guarantees some hair count shared by at least 53 Londoners. The argument needs no data about how hair counts are distributed — it is a proof, not an estimate.",
+      "technique": "Pigeonhole with values as the holes",
+      "difficultyRationale": "One comparison of two counts once the holes are identified."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The generalised pigeonhole principle says that if n items are placed into k boxes, then some box contains at least:",
+      "options": [
+        "The ceiling of n/k items",
+        "Exactly n/k items",
+        "n - k items",
+        "Two items, whenever n > 1"
+      ],
+      "correctOption": 0,
+      "explanation": "If every box held fewer than the ceiling of n/k, the total would fall short of n. The ceiling matters: 10 items in 3 boxes guarantees some box with at least 4, not 3.33. 'Exactly n/k' is wrong because the principle bounds the MAXIMUM box from below and says nothing about any particular box — an even split is possible but not guaranteed. The basic principle is just the case k = n - 1.",
+      "technique": "Generalised pigeonhole",
+      "difficultyRationale": "Recall of one bound, with rounding as the only subtlety."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A $25m equity position has an annualised volatility of 16%. Assuming 250 trading days and zero mean, what is its 1-day 95% VaR?",
+      "canonicalAnswer": "About $416,000. Daily vol = 16% / sqrt(250) = 1.012%; VaR = 1.645 * 0.01012 * 25,000,000 = $416,000.",
+      "explanation": "Two steps, and the first is where the errors happen. Converting annual to daily volatility divides by sqrt(250) ~= 15.8, NOT by 250 — variance scales with time, so volatility scales with its square root. That gives 1.012% a day. Then apply the 95% one-tailed normal quantile 1.645: 1.66% of $25m, about $416k. A useful sanity anchor is that 16% annual vol is almost exactly 1% a day, which makes this kind of estimate fast in an interview.",
+      "technique": "Annual-to-daily volatility conversion, then delta-normal VaR",
+      "difficultyRationale": "Two steps, each one operation, with the sqrt conversion as the trap."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "In a historical stress test of the 2008 crisis, why do you apply the 2008 factor MOVES to today's portfolio rather than simply looking up what the firm lost in 2008?",
+      "canonicalAnswer": "Because the question is what TODAY'S book would lose. The 2008 P&L reflects the positions held then, which may bear no resemblance to current exposures.",
+      "explanation": "A stress test is a statement about the current portfolio, so the historical episode supplies only the scenario — the set of factor moves — and today's positions supply the sensitivity. This is the same revaluation logic as historical simulation VaR, just with a hand-picked episode instead of a rolling window. It also explains a common practical headache: risk factors that did not exist in 2008 have no historical move to apply, so they have to be proxied, and how you proxy them can dominate the answer.",
+      "technique": "Scenario applied to current positions",
+      "difficultyRationale": "Conceptual, one distinction, no computation."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A single-factor sensitivity stress test — shock one risk factor and hold the others fixed — has which main weakness?",
+      "options": [
+        "Real stress episodes move many factors together, so it misses the joint effect",
+        "It is too computationally expensive to run daily",
+        "It cannot be applied to non-linear positions",
+        "It requires a full historical dataset for every factor"
+      ],
+      "correctOption": 0,
+      "explanation": "Single-factor shocks are cheap, easy to interpret and good for limit-setting, but they say nothing about combinations — and the losses that hurt come from equities falling while credit widens, correlations go to one and liquidity disappears, all at once. That is what multi-factor historical and hypothetical scenarios are for. The method's virtues are the opposite of the distractors: it is cheap, handles non-linearity fine because it revalues the book, and needs no history at all.",
+      "technique": "Single-factor vs multi-factor scenarios",
+      "difficultyRationale": "One weakness identified among plausible alternatives."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the remainder when 2^10 is divided by 7? Do it without computing 1024.",
+      "canonicalAnswer": "2. Since 2^3 = 8 === 1 (mod 7), 2^10 = 2^9 * 2 = (2^3)^3 * 2 === 1^3 * 2 = 2.",
+      "explanation": "Find a small power that reduces to 1 and the rest collapses. Here 2^3 = 8 leaves remainder 1 mod 7, so powers of 2 cycle with period 3 and you only need the exponent mod 3: 10 = 3*3 + 1, so 2^10 behaves like 2^1, giving 2. Checking directly, 1024 = 7*146 + 2. The general strategy for any 'a^n mod m' question is the same — find the cycle length of a modulo m, then reduce the exponent by it.",
+      "technique": "Reduce the exponent using the cycle of powers",
+      "difficultyRationale": "One small power found, one exponent reduced."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two fair dice are rolled. What is the probability the first die shows a strictly higher number than the second?",
+      "canonicalAnswer": "5/12",
+      "explanation": "Split the 36 outcomes into three groups: first higher, second higher, and equal. The first two are mirror images of each other, so they have the same probability. Ties are the 6 doubles, probability 6/36 = 1/6. That leaves 1 - 1/6 = 5/6 to be shared equally, so each side gets 5/12. Enumerating the 15 favourable pairs gives the same answer with five times the work — spotting the mirror symmetry and subtracting the tie case is the technique.",
+      "technique": "Symmetry between mirrored events, minus the tie case",
+      "difficultyRationale": "One symmetry observation plus the probability of a tie."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A fair coin is flipped 5 times. What is the probability of getting at least one head?",
+      "canonicalAnswer": "31/32. It is 1 - P(no heads) = 1 - (1/2)^5 = 1 - 1/32.",
+      "explanation": "'At least one' has many favourable cases (exactly one head, exactly two, and so on) but its complement has exactly one: all tails, probability (1/2)^5 = 1/32. Subtract from 1 to get 31/32. The rule of thumb is to check the complement whenever a question says 'at least one' — the complement of 'at least one X' is always the single clean event 'no X at all', regardless of how many trials there are.",
+      "technique": "Complementary counting on 'at least one'",
+      "difficultyRationale": "One complement and one fifth power."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is close-out netting, and why does it reduce counterparty exposure?",
+      "canonicalAnswer": "On a counterparty's default, all trades under the master agreement are terminated and collapsed into a single net amount owed one way. Exposure becomes the net mark-to-market rather than the sum of the positive-value trades.",
+      "explanation": "Without netting, a defaulted counterparty's administrator could enforce the trades that are in their favour while leaving you to claim on the rest as an unsecured creditor — 'cherry-picking'. An ISDA master agreement prevents that by making every trade a single contract. Concretely, if you are up $100m on one swap and down $90m on another with the same counterparty, exposure is $10m rather than $100m. This is also why netting sets, not individual trades, are the unit for CVA and for regulatory exposure calculations — and why netting enforceability in the counterparty's jurisdiction is a legal question with a direct capital consequence.",
+      "technique": "Netting sets and exposure measurement",
+      "difficultyRationale": "One definition plus a two-trade example."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Write the general risk-neutral pricing formula for a derivative paying X at time T, and say what each part does.",
+      "canonicalAnswer": "V_0 = e^{-rT} E^Q[X], where E^Q is the expectation under the risk-neutral measure Q and e^{-rT} discounts at the risk-free rate.",
+      "explanation": "Two ingredients: take the expected payoff under Q, then discount it at r. What makes it work is that the same rate r appears in both places — assets drift at r under Q, and discounting is also at r, so the discounted price process is a martingale. That martingale property IS the no-arbitrage condition, which is the content of the fundamental theorem of asset pricing. Everything else is machinery for evaluating that expectation: Black-Scholes does it in closed form for a lognormal underlying, binomial trees do it by backward induction, and Monte Carlo does it by averaging simulated payoffs.",
+      "technique": "Risk-neutral pricing formula",
+      "difficultyRationale": "Recall of one formula plus what each factor is doing."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Five cards are dealt from a shuffled standard deck. What is the expected number of aces among them?",
+      "canonicalAnswer": "5/13, about 0.385. Each card has probability 4/52 = 1/13 of being an ace, and 5 * (1/13) = 5/13.",
+      "explanation": "Let X_i indicate that the i-th card dealt is an ace. By symmetry each has E[X_i] = 4/52, so the total is 5 * 4/52 = 5/13. The important part is what you did NOT need: the cards are dealt WITHOUT replacement, so the indicators are dependent — knowing card 1 is an ace lowers the chance for card 2. Linearity does not care. Trying to do this by summing k * P(exactly k aces) over k = 0..4 with hypergeometric probabilities gets the same answer after a great deal more work.",
+      "technique": "Indicator variables with dependent trials",
+      "difficultyRationale": "One product; the point is recognising dependence is irrelevant."
     }
   ]
 }

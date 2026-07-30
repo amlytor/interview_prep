@@ -90,10 +90,11 @@ nothing leaves your machine at all.
 
 Seed content lives in `src/data/studyNotes.json` (47 authored notes, whose
 `prereqs` arrays define the knowledge graph) and `src/data/seedQuestions.json`
-(500 authored questions), merged with the original starter bank for 518 seeded
-questions across the taxonomy. Every topic has at least six questions and a
-note of 1,900–6,900 characters. Topics you add yourself live in your browser
-alongside your progress, not in these files.
+(604 authored questions), merged with the original starter bank for 622 seeded
+questions across the taxonomy. Every topic has at least six questions — and,
+with one exception, at least four EASY ones, so no topic opens with its
+hardest problem — plus a note of 1,900–6,900 characters. Topics you add
+yourself live in your browser alongside your progress, not in these files.
 
 The two lowest topics — **Maths toolkit** (summation notation, logs and
 exponentials, series) and **Calculus refresher** (what a derivative and an
@@ -286,7 +287,7 @@ src/
   types.ts              Core data model (Question, Attempt, SrsState, StudyNote, ...)
   data/
     studyNotes.json      47 authored study notes + the prerequisite graph (source of truth)
-    seedQuestions.json   500 authored seed questions (source of truth)
+    seedQuestions.json   604 authored seed questions (source of truth)
   lib/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files
