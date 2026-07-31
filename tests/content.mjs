@@ -124,6 +124,21 @@ check("every topic (bar fixed-income) has 4+ easy questions", noRamp.length === 
 const noExample = notes.filter((n) => !/##+\s*worked example/i.test(n.body)).map((n) => n.topicId);
 check("every note carries a worked example", noExample.length === 0, noExample.join(", "));
 
+// A note has to keep pace with its question bank. Tripling the banks without
+// touching the notes once left combinatorics with 30 questions on a 2,200-word
+// note that never named the multiplication principle — someone reading it cold
+// was being asked things it had never covered. This is a crude proxy for that,
+// but it catches the specific regression: questions added, note left alone.
+const MIN_CHARS_PER_QUESTION = 100;
+const thinNotes = notes
+  .map((n) => [n.topicId, Math.round(n.body.length / Math.max(1, counts[n.topicId] ?? 0))])
+  .filter(([, density]) => density < MIN_CHARS_PER_QUESTION);
+check(
+  `every note has ${MIN_CHARS_PER_QUESTION}+ characters per question it backs`,
+  thinNotes.length === 0,
+  thinNotes.map(([t, d]) => `${t}=${d}`).join(", "),
+);
+
 // The narrower topics have their own, lower target. fixed-income is exempt —
 // deliberately deprioritised, so it keeps only the OTHER_FLOOR guarantee.
 const SHALLOW_TARGET = 18;

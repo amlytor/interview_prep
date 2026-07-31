@@ -93,7 +93,7 @@ Seed content lives in `src/data/studyNotes.json` (47 authored notes, whose
 (1,191 authored questions), merged with the original starter bank for 1,209
 seeded questions across the taxonomy. Every topic has at least six questions — and,
 with one exception, at least four EASY ones, so no topic opens with its
-hardest problem — plus a note of 2,100–8,000 characters. Every note ends on a
+hardest problem — plus a note of 4,300–8,000 characters. Every note ends on a
 fully worked example: the steps, the arithmetic, and what to notice about the
 answer, not just the formula. Topics you add yourself live in your browser
 alongside your progress, not in these files.
@@ -104,7 +104,10 @@ and the broad quantitative foundations. The narrower single-technique topics
 (pigeonhole, coupon collector, the counting shortcuts) target 18, because
 15–20 genuinely exhausts what there is to ask. Both targets are now met.
 `tests/content.mjs` encodes the split and fails the build if any topic drops
-below its own floor, so the judgement is checked rather than remembered.
+below its own floor, so the judgement is checked rather than remembered. It
+also enforces a minimum note density (characters per question backed), which
+exists because the banks were once tripled without touching the notes —
+leaving learners asked things their own note had never covered.
 
 The two lowest topics — **Maths toolkit** (summation notation, logs and
 exponentials, series) and **Calculus refresher** (what a derivative and an
