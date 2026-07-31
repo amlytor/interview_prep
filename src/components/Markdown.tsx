@@ -25,12 +25,20 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
   const out: ReactNode[] = [];
   // One combined regex; alternation order sets the precedence.
   //
-  // The math branch consumes backslash-escaped characters as a unit, so a
-  // literal dollar sign inside math ("$\$3.50$", used for currency amounts)
-  // doesn't terminate the span early. Without that, the closing delimiter was
-  // read as the escaped "$", leaving KaTeX to render a lone backslash and the
-  // rest of the line to be re-scanned out of phase.
-  const pattern = /(`[^`]+`)|(\$(?:[^$\n\\]|\\[^\n])+\$)|(\*\*[^*]+\*\*)|(\*[^*\n]+\*)/g;
+  // Dollar signs are load-bearing here because notes are full of currency
+  // amounts, and two rules keep them from being read as math delimiters:
+  //
+  //   \$   is matched FIRST, as its own token, so an escaped dollar in prose
+  //        ("a die roll for \$1m vs a million rolls for \$1") can never open
+  //        or close a span. Written bare, those two dollars used to bracket
+  //        the sentence between them and render it as maths.
+  //   $..$ consumes backslash-escaped characters as a unit, so a literal
+  //        dollar INSIDE math ("$\$3.50$") doesn't terminate the span early.
+  //        Without that the closing delimiter was read as the escaped "$",
+  //        leaving KaTeX a lone backslash and re-scanning the rest of the
+  //        line out of phase.
+  const pattern =
+    /(`[^`]+`)|(\\\$)|(\$(?:[^$\n\\]|\\[^\n])+\$)|(\*\*[^*]+\*\*)|(\*[^*\n]+\*)/g;
   let last = 0;
   let match: RegExpExecArray | null;
   let k = 0;
@@ -40,6 +48,8 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
     const key = `${keyPrefix}-${k++}`;
     if (token.startsWith("`")) {
       out.push(<code key={key}>{token.slice(1, -1)}</code>);
+    } else if (token === "\\$") {
+      out.push("$");
     } else if (token.startsWith("$")) {
       out.push(<MathTex key={key} tex={token.slice(1, -1)} display={false} />);
     } else if (token.startsWith("**")) {

@@ -177,6 +177,25 @@ check("the note shows a worked example",
 check("its math renders", (await page.locator(".katex").count()) > 0);
 check("with no KaTeX errors", (await page.locator(".katex-error").count()) === 0);
 
+// --- Currency dollars are text, not math delimiters ------------------------
+// Notes are full of "$1m"-style amounts. Two on one line used to bracket the
+// prose between them and render it as maths; the fix is that Markdown.tsx
+// matches "\$" as its own token before it can act as a delimiter. This asserts
+// the rendered OUTPUT, so it fails if either the escape or the tokenizer
+// regresses.
+await page.getByRole("button", { name: /All topics/ }).click();
+await page.waitForSelector(".topic-card");
+await page
+  .locator(".topic-card")
+  .filter({ has: page.locator(".topic-card-title", { hasText: "Optimal stopping" }) })
+  .click();
+await page.waitForSelector(".katex, .md-math-block, h3");
+const noteText = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+check("an escaped dollar renders as a dollar",
+  noteText.includes("for $1m is not the same as a million rolls for $1 each"),
+  noteText.slice(noteText.indexOf("one roll of a die"), noteText.indexOf("one roll of a die") + 110));
+check("and its math still renders", (await page.locator(".katex-error").count()) === 0);
+
 check("no runtime errors", errors.length === 0, errors.slice(0, 3).join(" | "));
 
 await browser.close();
