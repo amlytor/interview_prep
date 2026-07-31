@@ -196,6 +196,24 @@ check("an escaped dollar renders as a dollar",
   noteText.slice(noteText.indexOf("one roll of a die"), noteText.indexOf("one roll of a die") + 110));
 check("and its math still renders", (await page.locator(".katex-error").count()) === 0);
 
+// --- Formula tables in notes render as tables --------------------------------
+// The markdown renderer is deliberately minimal, so a pipe table added to a
+// note used to fall through to the paragraph branch and display as literal
+// pipes. This asserts the parsed structure, not just that something rendered.
+await page.getByRole("button", { name: /All topics/ }).click();
+await page.waitForSelector(".topic-card");
+await page
+  .locator(".topic-card")
+  .filter({ has: page.locator(".topic-card-title", { hasText: "Combinatorics" }) })
+  .click();
+await page.waitForSelector(".md-content");
+check("a note's pipe table renders as a real table", (await page.locator(".md-table").count()) > 0);
+check("its header cells are parsed",
+  (await page.locator(".md-table th").count()) >= 2,
+  String(await page.locator(".md-table th").count()));
+check("no raw pipe separator leaks into the text",
+  !(await page.locator(".md-content").innerText()).includes("|---"));
+
 check("no runtime errors", errors.length === 0, errors.slice(0, 3).join(" | "));
 
 await browser.close();

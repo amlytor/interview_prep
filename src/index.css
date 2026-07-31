@@ -937,6 +937,28 @@ select:focus {
   padding: 4px 0;
 }
 
+/* Formula tables in study notes. Scrolls inside its own box so a wide table
+   never makes the page scroll sideways on a phone. */
+.md-table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 12px 0 18px;
+  font-size: 0.94em;
+  max-width: 100%;
+}
+.md-table th,
+.md-table td {
+  border: 1px solid var(--gray-200);
+  padding: 7px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.md-table th {
+  background: var(--gray-50, #f7f8fa);
+  font-weight: 600;
+}
+
 .math-inline .katex {
   font-size: 1.02em;
 }

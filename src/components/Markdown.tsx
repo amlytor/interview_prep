@@ -131,12 +131,48 @@ export function Markdown({ source }: { source: string }) {
       continue;
     }
 
+    // Pipe table: a header row, a |---|---| separator, then body rows. Study
+    // notes use these for formula summaries (the four sampling cases, Greek
+    // sign conventions) where a 2-D layout is the clearest form. Without this
+    // the rows fall through to the paragraph branch and render as literal
+    // pipes joined into one line.
+    if (trimmed.startsWith("|") && /^\|[\s:|-]+\|$/.test(lines[i + 1]?.trim() ?? "")) {
+      const cells = (row: string) =>
+        row.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      const head = cells(trimmed);
+      i += 2; // skip the header and the separator
+      const body: string[][] = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) body.push(cells(lines[i++]));
+      blocks.push(
+        <table className="md-table" key={key++}>
+          <thead>
+            <tr>
+              {head.map((c, n) => (
+                <th key={n}>{renderInline(c, `th${key}-${n}`)}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {body.map((row, r) => (
+              <tr key={r}>
+                {row.map((c, n) => (
+                  <td key={n}>{renderInline(c, `td${key}-${r}-${n}`)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>,
+      );
+      continue;
+    }
+
     // Paragraph: consecutive non-blank, non-special lines joined together.
     const buf: string[] = [];
     while (
       i < lines.length &&
       lines[i].trim() !== "" &&
       !lines[i].trim().startsWith("$$") &&
+      !lines[i].trim().startsWith("|") &&
       !/^#{1,6}\s/.test(lines[i].trim()) &&
       !/^[-*]\s+/.test(lines[i].trim())
     ) {
