@@ -100,6 +100,11 @@ function defaultData(): AppData {
   };
 }
 
+/** A brand-new bank, for callers that need to start over. */
+export function freshData(): AppData {
+  return defaultData();
+}
+
 /** Map a v1 topic array (display labels) to v2 topic ids, dropping unknowns. */
 function migrateTopics(topics: unknown): TopicId[] {
   if (!Array.isArray(topics)) return [];
@@ -237,6 +242,36 @@ async function readStored(): Promise<AppData | null> {
   }
 }
 
+// localStorage is only touched to migrate off it, but every access has to be
+// guarded: when a browser is set to block site data for an origin, the property
+// itself throws SecurityError rather than returning an empty store. Unguarded,
+// that rejected loadData() and left the app on its loading screen forever —
+// a hang with nothing on screen to explain it. Storage being unavailable should
+// cost you persistence, not the app.
+function readLocal(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocal(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Nothing to fall back to; the caller is already on a failure path.
+  }
+}
+
+function removeLocal(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Ditto — if it can't be read it can't mislead us later either.
+  }
+}
+
 /**
  * Move a localStorage payload into IndexedDB, then reclaim the space.
  *
@@ -251,7 +286,7 @@ async function readStored(): Promise<AppData | null> {
  */
 async function retireLocalCopy(migrated: AppData): Promise<void> {
   const written = await saveData(migrated);
-  if (written && (await readStored()) !== null) localStorage.removeItem(STORAGE_KEY_V2);
+  if (written && (await readStored()) !== null) removeLocal(STORAGE_KEY_V2);
 }
 
 export async function loadData(): Promise<AppData> {
@@ -272,19 +307,19 @@ export async function loadData(): Promise<AppData> {
   }
 
   // 2. A pre-IndexedDB install: v2 data still sitting in localStorage.
-  const rawV2 = localStorage.getItem(STORAGE_KEY_V2);
+  const rawV2 = readLocal(STORAGE_KEY_V2);
   if (rawV2) {
     try {
       const migrated = normalizeCurrent(JSON.parse(rawV2) as AppData);
       await retireLocalCopy(migrated);
       return migrated;
     } catch {
-      localStorage.setItem(`${STORAGE_KEY_V2}_corrupt_backup_${Date.now()}`, rawV2);
+      writeLocal(`${STORAGE_KEY_V2}_corrupt_backup_${Date.now()}`, rawV2);
     }
   }
 
   // 3. v1 data present → migrate it forward (v1 key is left in place as backup).
-  const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
+  const rawV1 = readLocal(STORAGE_KEY_V1);
   if (rawV1 && !rawV2) {
     try {
       const migrated = migrateV1toV2(JSON.parse(rawV1) as Record<string, unknown>);
@@ -332,8 +367,8 @@ export async function clearStoredData(): Promise<void> {
   } catch (err) {
     console.error("QuantPrep couldn't clear its saved data.", err);
   }
-  localStorage.removeItem(STORAGE_KEY_V2);
-  localStorage.removeItem(STORAGE_KEY_V1);
+  removeLocal(STORAGE_KEY_V2);
+  removeLocal(STORAGE_KEY_V1);
 }
 
 // ---------------------------------------------------------------------------

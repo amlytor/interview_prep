@@ -13,7 +13,7 @@ import type {
 } from "../types";
 import type { TopicId } from "./topics";
 import { registerCustomTopics, slugifyTopic } from "./topics";
-import { clearStoredData, exportToFile, importFromFile, loadData, saveData } from "./storage";
+import { clearStoredData, exportToFile, freshData, importFromFile, loadData, saveData } from "./storage";
 import { applyTrickleCredit, scheduleAfterAttempt } from "./srs";
 import { useAutoBackup } from "./backup";
 import type { AutoBackup } from "./backup";
@@ -79,6 +79,12 @@ interface StoreValue {
   // Continuous backup to a file on disk. Lives here rather than in the Settings
   // page so auto-saving keeps running wherever you are in the app.
   backup: AutoBackup;
+  /**
+   * True once a save has failed — the browser is refusing to store anything,
+   * so this session is memory-only. Surfaced as a banner rather than left in
+   * the console: silently not saving is the worst way for this app to fail.
+   */
+  saveFailed: boolean;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -101,13 +107,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    void loadData().then((loaded) => {
-      if (cancelled) return;
-      // Seed the display-name registry before the first render, so custom
-      // topics never flash their raw slug.
-      registerCustomTopics(loaded.customTopics);
-      setInitial(loaded);
-    });
+    void loadData()
+      // A rejection here would leave the loading screen up forever with nothing
+      // on it to explain why. loadData guards the failures it knows about; this
+      // catches the ones it doesn't, and starts the app on a fresh bank rather
+      // than a permanent spinner. Whatever was stored is untouched — nothing
+      // overwrites it until a save succeeds.
+      .catch((err) => {
+        console.error("QuantPrep couldn't load your saved data; starting fresh.", err);
+        return freshData();
+      })
+      .then((loaded) => {
+        if (cancelled) return;
+        // Seed the display-name registry before the first render, so custom
+        // topics never flash their raw slug.
+        registerCustomTopics(loaded.customTopics);
+        setInitial(loaded);
+      });
     return () => {
       cancelled = true;
     };
@@ -125,8 +141,9 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
   // useMemo (not useEffect) so it lands before children render.
   useMemo(() => registerCustomTopics(data.customTopics), [data.customTopics]);
 
+  const [saveFailed, setSaveFailed] = useState(false);
   useEffect(() => {
-    void saveData(data);
+    void saveData(data).then((ok) => setSaveFailed(!ok));
   }, [data]);
 
   const backup = useAutoBackup(data);
@@ -408,6 +425,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
       importData,
       resetAllData,
       backup,
+      saveFailed,
     }),
     [
       data,
@@ -431,6 +449,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
       importData,
       resetAllData,
       backup,
+      saveFailed,
     ],
   );
 

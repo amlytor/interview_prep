@@ -8,12 +8,22 @@ import { AI_TASKS, AI_TASK_HINTS, AI_TASK_LABELS } from "../types";
 import { requestPersistentStorage, storageReport } from "../lib/storage";
 import type { StorageReport } from "../lib/storage";
 
-/** Bytes as something readable; null when the browser won't say. */
-function formatBytes(bytes: number | null): string {
-  if (bytes === null) return "an unknown amount";
+/** Bytes as something readable. */
+function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
+/**
+ * The usage sentence. Either figure can be missing — Safari has withheld the
+ * quota at times, and a browser with storage switched off reports neither — so
+ * each case gets its own wording rather than "of about an unknown amount".
+ */
+function usageSentence(report: StorageReport): string {
+  if (report.usage === null) return "This browser won't say how much storage is in use.";
+  if (report.quota === null) return `Using ${formatBytes(report.usage)}.`;
+  return `Using ${formatBytes(report.usage)} of about ${formatBytes(report.quota)} available.`;
 }
 
 const CUSTOM_MODEL = "__custom__";
@@ -513,9 +523,7 @@ export function SettingsPage() {
           Export regularly.
         </p>
         <p className="muted storage-usage">
-          {storage
-            ? `Using ${formatBytes(storage.usage)} of about ${formatBytes(storage.quota)} available.`
-            : "Measuring storage…"}{" "}
+          {storage ? usageSentence(storage) : "Measuring storage…"}{" "}
           {storage?.persisted ? (
             <span className="storage-persisted">Protected from browser cleanup.</span>
           ) : (

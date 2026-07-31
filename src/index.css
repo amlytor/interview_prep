@@ -724,6 +724,11 @@ select:focus {
   color: var(--gray-500);
 }
 
+.empty-state h3 {
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
+
 /* Storage usage line in Settings. */
 .storage-usage {
   margin-top: -4px;
@@ -754,11 +759,6 @@ select:focus {
   min-height: 100vh;
   color: var(--gray-500);
   font-size: 15px;
-}
-
-.empty-state h3 {
-  color: var(--gray-700);
-  margin-bottom: 8px;
 }
 
 .spinner {

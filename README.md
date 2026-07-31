@@ -365,7 +365,7 @@ npm run test:e2e   # end-to-end suites (build first)
 ```
 
 `npm run test:e2e` drives a real browser against the production build. It starts
-the preview server and a mock OpenAI-compatible provider, then runs six
+the preview server and a mock OpenAI-compatible provider, then runs seven
 suites. `content` comes first and needs no browser at all — it reads the seed
 JSON directly and checks referential integrity, question depth per topic, an
 easy entry point everywhere, and that no note has fallen behind the bank it
@@ -377,5 +377,8 @@ grading round-trip through a non-Anthropic endpoint, asserting the exact wire
 format), `backup` (auto-save to a real file handle, debouncing, reconnect after
 permission lapses, and the unsupported-browser fallback), and `diagnostic` (the
 streak's day arithmetic, spoiler-free staging, calibration reaching the
-generation prompt, and the diagnosis chat end to end). Needs a browser once — `npx playwright install chromium` — or set
+generation prompt, and the diagnosis chat end to end), and `resilience` (what
+happens when the browser refuses to store anything — blocked site data, a
+denied IndexedDB, or both: the app has to boot, stay usable, and say out loud
+that it isn't saving). Needs a browser once — `npx playwright install chromium` — or set
 `CHROMIUM_PATH` to one you already have.
