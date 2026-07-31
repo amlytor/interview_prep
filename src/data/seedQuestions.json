@@ -6558,11 +6558,11 @@
       "topicId": "counterparty-margin",
       "difficulty": "easy",
       "type": "free_text",
-      "prompt": "Distinguish initial margin from variation margin in one or two sentences.",
-      "canonicalAnswer": "Variation margin is the daily exchange of cash covering the change in a position's mark-to-market value. Initial margin is a buffer posted up front to cover potential FUTURE moves between the last variation margin payment and the close-out of a defaulted counterparty.",
-      "explanation": "Variation margin looks backward and settles losses that have already happened, so it keeps current exposure near zero. Initial margin looks forward and covers the gap risk — if your counterparty defaults, you will not get today's variation margin and prices will keep moving over the days it takes to replace the trade. That window (typically 5 or 10 days) is the margin period of risk, and it is what initial margin is sized against.",
-      "technique": "Margin mechanics",
-      "difficultyRationale": "Two definitions, no numbers."
+      "prompt": "What is a collateral haircut, and why is one applied?",
+      "canonicalAnswer": "A haircut is a percentage discount applied to the market value of posted collateral, so £100m of a bond might count as £95m. It covers the risk that the collateral itself falls in value during the time it takes to liquidate it after a default.",
+      "explanation": "The haircut sizes the gap between what collateral is worth today and what it will fetch when you actually need to sell it. So it scales with the asset's volatility and liquidity: cash in the same currency takes none, government bonds a few percent, corporate bonds or equities considerably more. Two further points matter. Haircuts are procyclical — they widen exactly when markets are stressed, forcing borrowers to post more at the worst moment, which is a documented amplifier of funding spirals. And a haircut on collateral denominated in a different currency from the exposure includes an FX component on top of the asset risk.",
+      "technique": "Collateral valuation and haircuts",
+      "difficultyRationale": "One definition plus the reason haircuts vary by asset."
     },
     {
       "topicId": "counterparty-margin",
@@ -7040,11 +7040,11 @@
       "topicId": "liquidity-risk",
       "difficulty": "easy",
       "type": "free_text",
-      "prompt": "Distinguish funding liquidity risk from market (trading) liquidity risk.",
-      "canonicalAnswer": "Funding liquidity risk is the risk of not being able to meet cash obligations as they fall due. Market liquidity risk is the risk that a position cannot be sold quickly without moving the price against you.",
-      "explanation": "One is about your balance sheet, the other about the market for your assets — and the danger is that they reinforce each other. A funding squeeze forces you to sell; forced selling into a thin market realises a worse price; the loss erodes capital and tightens funding further. That feedback loop is the liquidity spiral, and it is why a firm can be solvent on paper and fail anyway. Northern Rock and LTCM are the standard case studies, from opposite ends of the loop.",
-      "technique": "The two liquidity risks and their interaction",
-      "difficultyRationale": "Two definitions plus the link between them."
+      "prompt": "Which of these count as high-quality liquid assets under the LCR, and which does not: central bank reserves, government bonds, investment-grade corporate bonds, own-issued bank bonds?",
+      "canonicalAnswer": "Central bank reserves and government bonds are Level 1 HQLA. Investment-grade corporate bonds can qualify as Level 2 with a haircut and a cap. Own-issued bank bonds do NOT qualify at all.",
+      "explanation": "The tiering follows how reliably an asset can be turned into cash in a stress. Level 1 counts at full value with no cap; Level 2A takes a 15% haircut; Level 2B more, and Level 2 combined is capped at 40% of the buffer. The exclusion of own-issued and other banks' paper is the important one, and the logic is correlation: assets issued by the banking sector lose value precisely in a banking crisis, so a buffer built from them is not a buffer. The same reasoning rules out any asset the bank has already pledged.",
+      "technique": "HQLA eligibility under the LCR",
+      "difficultyRationale": "Four items to classify, with the exclusion carrying the reasoning."
     },
     {
       "topicId": "liquidity-risk",
@@ -8211,6 +8211,1308 @@
       "explanation": "With T observations you can estimate a matrix of rank at most T-1, so a 300x300 matrix from 200 observations has at least 101 zero eigenvalues by construction. It is positive SEMI-definite and therefore a valid correlation matrix, but it cannot be inverted — which breaks mean-variance optimisation, Mahalanobis distances, and anything else needing the precision matrix. Worse, the zero eigenvalues correspond to portfolios the estimate claims have exactly zero variance, and an unconstrained optimiser will find them and take an enormous position. The fix is to reduce dimension (a factor model) or regularise (shrinkage), not to gather a little more data.",
       "technique": "Rank deficiency when T < N",
       "difficultyRationale": "Requires the rank bound and its concrete consequence, rather than a general statement that the estimate is noisy."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Name the three pillars of the Basel framework and say in one line what each does.",
+      "canonicalAnswer": "Pillar 1 sets minimum capital requirements by formula. Pillar 2 is supervisory review, where regulators assess risks Pillar 1 misses and can require more capital. Pillar 3 is market discipline through mandated public disclosure.",
+      "explanation": "The structure matters because most interesting risks live outside Pillar 1. Interest rate risk in the banking book, concentration risk, business risk and reputational risk have no Pillar 1 formula at all — they are handled through the ICAAP under Pillar 2, where the bank makes its own case and the supervisor sets an add-on. Pillar 3 exists on the theory that comparable disclosure lets counterparties and investors price a bank's risk, which is why the disclosure templates are prescribed in detail rather than left to the bank.",
+      "technique": "The three-pillar structure",
+      "difficultyRationale": "Recall of a framework, with the point being what falls outside Pillar 1."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Under FRTB, model approval is granted or withdrawn at the level of:",
+      "options": [
+        "The individual trading desk",
+        "The whole bank",
+        "The legal entity",
+        "The risk factor class"
+      ],
+      "correctOption": 0,
+      "explanation": "Desk-level approval is one of FRTB's structural changes. Under the previous regime approval was firm-wide, so a single failing business could jeopardise the whole internal-model permission — and supervisors were correspondingly reluctant to withdraw it. Desk-level granularity makes the sanction usable: a desk that fails its P&L attribution test or its backtest falls back to the standardised approach on its own, without disturbing the rest of the bank. It also forces banks to define desks formally, with a documented business strategy and a single head, which was itself a change in practice.",
+      "technique": "Desk-level model approval",
+      "difficultyRationale": "One structural fact, with the reason it matters as the substance."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Describe the FRTB standardised approach's three components.",
+      "canonicalAnswer": "A sensitivities-based method (delta, vega and curvature risk aggregated across prescribed risk classes using supervisory risk weights and correlations), a default risk charge, and a residual risk add-on for exotic payoffs the sensitivities method cannot capture.",
+      "explanation": "The sensitivities-based method is the bulk of it and is risk-sensitive in a way its predecessor was not: banks supply their own delta and vega sensitivities, but the risk weights and correlations are set by the supervisor, so two banks with the same book get the same number. Curvature captures gamma-type risk through a pair of prescribed up and down shocks rather than a second derivative. The default risk charge covers jump-to-default, which a sensitivities framework misses entirely. The residual add-on is a crude notional-based charge for anything genuinely exotic. The whole thing matters even to banks using internal models, because FRTB requires the standardised number to be computed alongside as a floor and a fallback.",
+      "technique": "Structure of the FRTB standardised approach",
+      "difficultyRationale": "Three components with distinct purposes; a good answer says why each exists."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does FRTB require the standardised approach to be computed even by banks with internal model approval?",
+      "canonicalAnswer": "As a floor and a fallback: it provides a comparable benchmark across banks, guards against internal models producing implausibly low capital, and gives an immediately available number if desk-level model approval is withdrawn.",
+      "explanation": "The pre-crisis problem was that internal-model capital varied enormously across banks holding essentially identical portfolios — supervisory studies found multiples of difference — which destroyed comparability and invited optimisation. The standardised calculation restores a common yardstick and lets supervisors see the ratio of modelled to standardised capital for each bank. It is also operationally necessary: a desk that fails its P&L attribution test moves to standardised capital immediately, and it can only do so if the calculation is already running. The cost is that banks must maintain two full calculation stacks in parallel, which is a large part of FRTB's implementation expense.",
+      "technique": "Role of the standardised floor",
+      "difficultyRationale": "Requires the comparability motivation plus the operational reason, not just 'as a floor'."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain how the FRTB expected shortfall measure combines different liquidity horizons.",
+      "canonicalAnswer": "ES is computed for the full set of risk factors at a 10-day horizon, then separately for progressively narrower subsets containing only the factors with longer horizons, and the results are combined as the square root of a sum of squared incremental terms.",
+      "explanation": "The construction gives every risk factor an ES contribution scaled to its own liquidity horizon without requiring a full joint model at five different horizons. Concretely you compute ES with all factors shocked over 10 days, then with only the 20-day-and-longer factors shocked, then only 40-day-and-longer, and so on, and aggregate the incremental pieces in quadrature. The effect is that an illiquid exposure attracts capital as though it took 120 days to exit while a liquid one is capitalised over 10. It is deliberately conservative — the square-root aggregation assumes no diversification benefit between horizon buckets — and that conservatism was part of why the industry pushed back on the calibration.",
+      "technique": "Liquidity-horizon-adjusted ES",
+      "difficultyRationale": "Requires the nested-subset construction, which is the part most summaries omit."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A desk fails its P&L attribution test. Walk through what the test measures and what happens next.",
+      "canonicalAnswer": "It compares the risk-theoretical P&L produced by the risk model against the hypothetical P&L from the front-office pricing model, using the two metrics of a Spearman correlation and a Kolmogorov-Smirnov test on the distribution of differences. A desk in the amber zone pays a capital surcharge; a desk in the red zone must use the standardised approach until it passes again.",
+      "explanation": "The test asks whether the risk model actually describes the same portfolio the traders are pricing — a question backtesting cannot answer, because a risk model can miss whole risk factors and still produce roughly the right number of exceptions. The commonest cause of failure is exactly that: the front office prices with factors (a full vol surface, a basis, a specific curve) that the risk system proxies away. So the remediation is usually to enrich the risk model rather than to recalibrate it. Note the incentive this creates: aligning the two models is expensive, and for some desks the cheaper answer is simply to accept standardised capital, which is a rational outcome the framework anticipates.",
+      "technique": "P&L attribution test mechanics and consequences",
+      "difficultyRationale": "Requires both metrics, the three-zone outcome, and the diagnosis of the typical root cause."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish actual P&L, hypothetical P&L and risk-theoretical P&L, and say which is used for backtesting.",
+      "canonicalAnswer": "Actual P&L is what the desk really made, including intraday trading, fees and new deals. Hypothetical P&L holds positions fixed at end of day and revalues them with the next day's market data. Risk-theoretical P&L is what the risk model predicts for those same fixed positions. Backtesting uses hypothetical P&L (and, under FRTB, actual P&L as well).",
+      "explanation": "The distinction exists because VaR is a statement about a STATIC portfolio held for one day, so testing it against actual P&L conflates model error with the desk's intraday trading and fee income — a desk can trade its way out of a breach, or into one, for reasons the model never claimed to predict. Hypothetical P&L isolates the model. FRTB requires backtesting against both: hypothetical to test the model, actual to catch the case where a desk's real results diverge from the static assumption. Risk-theoretical P&L is the third series and belongs to the attribution test rather than the backtest.",
+      "technique": "The three P&L series",
+      "difficultyRationale": "Three similar concepts whose differences determine which test each supports."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the FRTB default risk charge, and why is it computed separately from expected shortfall?",
+      "canonicalAnswer": "It capitalises jump-to-default risk — the loss from an issuer defaulting outright — separately from the ES measure, which is calibrated to continuous market moves. It is computed from default probabilities and loss-given-default with prescribed correlations, over a one-year horizon at 99.9%.",
+      "explanation": "The two risks have different shapes. ES is built from a distribution of price moves observed over a stressed period, and a continuous-move model cannot represent a name gapping to recovery value overnight — a credit position can look almost riskless on spread volatility right up to the default. Separating them also avoids double counting: FRTB explicitly removes credit spread migration from the default charge and default from the spread charge. The one-year 99.9% calibration deliberately mirrors the banking-book credit framework, so that the same exposure is capitalised comparably whichever book it sits in — which was one of the boundary problems FRTB set out to fix.",
+      "technique": "Default risk charge versus ES",
+      "difficultyRationale": "Requires the argument that a continuous-move measure cannot represent a jump, plus the double-counting concern."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does FRTB calibrate expected shortfall to a stressed period rather than to recent data?",
+      "canonicalAnswer": "To remove procyclicality. A measure calibrated on recent data falls in calm markets, releasing capital exactly when risk is building, and spikes in a crisis, forcing deleveraging at the worst moment.",
+      "explanation": "The 2008 experience was that VaR-based capital reached its lowest just before the crisis and its highest during it, so the framework demanded least capital when it was most needed and most when raising it was impossible. Stressed calibration breaks that loop by anchoring the measure to a fixed historical period of significant stress relevant to the bank's portfolio. The cost is responsiveness — a stressed-period calibration will not react to a genuinely new risk — which is why it sits alongside a current-period backtest rather than replacing it. The same procyclicality argument drives the countercyclical capital buffer and the floors on margin models.",
+      "technique": "Procyclicality and stressed calibration",
+      "difficultyRationale": "Requires articulating the feedback loop, not just naming the calibration."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under FRTB, a risk factor has fewer than 24 real price observations a year. What follows, and why is the threshold defined in terms of real prices?",
+      "canonicalAnswer": "It becomes a non-modellable risk factor and is capitalised through a separate stressed-scenario add-on rather than inside the ES model. Real prices are required because a factor with no observable transactions cannot be modelled credibly, only interpolated.",
+      "explanation": "The modellability criteria require at least 24 real price observations a year with no 90-day gap, where a real price means an actual transaction, a committed quote, or a price from a third-party vendor backed by a transaction. The point of the definition is to stop banks from claiming modellability on the basis of their own marks or of interpolated curve points, which is precisely what made some pre-crisis models unfalsifiable. NMRF capital is punitive and non-diversifiable across factors, which has real business consequences: it has made some bespoke and long-dated products uneconomic to hold, which is arguably the framework working as intended.",
+      "technique": "Non-modellable risk factors",
+      "difficultyRationale": "Requires the observability criterion and its intended behavioural effect."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under the previous regime, market risk capital included both VaR and stressed VaR. What was the effect of adding them together?",
+      "canonicalAnswer": "It roughly doubled market risk capital, because the two are summed with no diversification benefit — the framework assumed the current-period and stressed-period losses could occur together.",
+      "explanation": "The sum is deliberately conservative and was a direct response to 2008, when VaR calibrated on the preceding calm period proved far too low. The structure has an odd property worth understanding: because stressed VaR is fixed to a historical window, it does not fall when the bank reduces risk in ways that only recent data would reflect, so the marginal capital cost of a position depends on how it would have behaved in 2008 rather than how it behaves now. FRTB resolves this more cleanly by using a single stressed-calibrated ES rather than adding two numbers together.",
+      "technique": "VaR plus stressed VaR aggregation",
+      "difficultyRationale": "Requires seeing the no-diversification assumption in the addition and its consequence for marginal capital."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A bank wants to move a position from the trading book to the banking book to reduce capital. Under FRTB, what stops it?",
+      "canonicalAnswer": "Reclassification requires supervisory approval, is expected to be rare, and — crucially — any capital benefit is disallowed: the bank must hold a permanent Pillar 1 capital add-on equal to the reduction. There is also a presumptive list assigning instruments to a book by type.",
+      "explanation": "Removing the incentive is the whole design. Under Basel II the boundary was defined by trading intent, which is unobservable and self-declared, so positions migrated to whichever book was cheaper — in 2008 illiquid credit sat in the trading book on the strength of a claimed intent to trade, attracting light capital for what was in substance a hold-to-maturity credit exposure. FRTB replaces intent with a presumptive assignment by instrument type, requires documented justification and approval to deviate, and neutralises the arbitrage by pinning the capital benefit at zero. The residual issue is internal risk transfers between the books, which FRTB regulates separately through prescribed hedging structures.",
+      "technique": "The trading book boundary and its anti-arbitrage design",
+      "difficultyRationale": "Requires knowing the specific mechanism (the capital add-on) that removes the incentive, not just that approval is needed."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the leverage ratio, and why does a risk-insensitive measure sit alongside a risk-weighted framework?",
+      "canonicalAnswer": "Tier 1 capital divided by total exposure, with no risk weighting — a minimum of 3% under Basel III. It exists as a backstop against risk weights being wrong or gamed, since a risk-weighted framework can be satisfied by a very large balance sheet of assets that models say are safe.",
+      "explanation": "Every risk-weighted requirement depends on the risk weights being right, and before 2008 they demonstrably were not: AAA-rated structured credit and sovereign exposures carried near-zero weights and produced enormous losses. A leverage ratio cannot be optimised by model choice because it ignores models entirely. The design tension is real and acknowledged: a binding leverage ratio penalises low-risk, low-margin business such as repo and government bond market-making, which is why the constraint is set as a backstop rather than as the primary requirement, and why several jurisdictions temporarily excluded central bank reserves from it in 2020.",
+      "technique": "The leverage ratio as a model-independent backstop",
+      "difficultyRationale": "Requires both the rationale and the acknowledged distortion it creates."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Under the Basel traffic-light backtesting framework applied to 250 days at 99%, the red zone begins at:",
+      "options": [
+        "10 exceptions",
+        "5 exceptions",
+        "8 exceptions",
+        "15 exceptions"
+      ],
+      "correctOption": 0,
+      "explanation": "Zero to four exceptions is green (multiplier stays at 3.00), five to nine is amber with an add-on rising from 0.40 to 0.85, and ten or more is red, where the multiplier goes to 4.00 and the supervisor will normally question the model's continued approval. The thresholds come from the binomial distribution: with an expected 2.5 exceptions, ten is far enough into the tail that chance is not a credible explanation, while five is ambiguous — hence a graduated penalty rather than a cliff.",
+      "technique": "Traffic-light zones",
+      "difficultyRationale": "Recall of a threshold, with the statistical reasoning behind the graduation."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the capital floor in the finalised Basel III package, and what problem does it address?",
+      "canonicalAnswer": "An output floor setting a bank's total risk-weighted assets at no less than 72.5% of what the standardised approaches would produce. It addresses the excessive variability in modelled RWAs across banks holding similar portfolios.",
+      "explanation": "Supervisory benchmarking exercises found that banks given identical hypothetical portfolios produced risk-weighted assets differing by a factor of two or more, which meant capital ratios were not comparable across institutions — undermining both market discipline and the level playing field. The floor caps how much benefit any internal model can deliver, regardless of how sophisticated it is. It is contentious for a defensible reason: it weakens the incentive to invest in better risk measurement, since beyond a point better models buy no capital relief. The counterargument is that comparability and a hard limit on model optimism are worth that cost.",
+      "technique": "The output floor and RWA variability",
+      "difficultyRationale": "Requires the specific problem (RWA variability across banks) rather than a generic 'prudence' answer."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is CVA capitalised separately under Basel III, and what did the crisis reveal about it?",
+      "canonicalAnswer": "Because roughly two thirds of counterparty credit losses in 2008 came from CVA mark-to-market moves rather than from actual defaults, and the pre-crisis framework capitalised only default risk. Basel III added a CVA capital charge for the volatility of the adjustment itself.",
+      "explanation": "Before the crisis a bank held capital against a counterparty actually failing. What happened instead was that counterparty credit spreads widened enormously, CVA reserves had to be increased, and the resulting accounting losses were very large even where no counterparty defaulted at all — monoline insurers being the canonical case. The charge capitalises that spread volatility. It also created a live hedging problem: banks hedge CVA with credit default swaps, which reduces the accounting volatility but introduces its own basis and, under some frameworks, was not recognised as a hedge for capital purposes — a mismatch that itself became a source of risk-management distortion.",
+      "technique": "CVA risk capital",
+      "difficultyRationale": "Requires the empirical finding about the composition of crisis losses, which is the whole justification."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish the countercyclical capital buffer from the capital conservation buffer.",
+      "canonicalAnswer": "The capital conservation buffer is a fixed 2.5% of risk-weighted assets that banks must hold above the minimum and can draw down in stress, with restrictions on distributions as it depletes. The countercyclical buffer is variable, set by national authorities between 0% and 2.5% according to where the credit cycle stands.",
+      "explanation": "Both exist to make capital usable rather than merely present, but they answer different questions. The conservation buffer is always on and creates a graduated zone above the hard minimum, so a bank that dips into it faces automatic constraints on dividends and bonuses rather than a sudden breach. The countercyclical buffer is a macroprudential tool — raised when credit growth looks excessive, released in a downturn — and its purpose is to build capital in good times specifically so it can be released to support lending in bad ones. Whether banks will actually use buffers when permitted is the open empirical question; evidence from 2020 suggests reluctance, because markets read buffer usage as distress.",
+      "technique": "Basel III buffers",
+      "difficultyRationale": "Two similar-sounding buffers with genuinely different purposes and mechanics."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Your bank's FRTB standardised capital is 1.8 times its internal model number. Give three legitimate reasons for a gap that large.",
+      "canonicalAnswer": "Prescribed supervisory correlations are more conservative than realised ones, so the standardised approach grants less diversification benefit; the residual risk add-on charges exotic positions on notional regardless of their actual risk; and curvature shocks are calibrated conservatively, penalising options books more than a simulated distribution would.",
+      "explanation": "A large gap is expected by design and is not by itself evidence of a problem in either calculation. The dominant driver is usually diversification: the standardised approach applies fixed correlations within and across risk classes and prescribes low or zero cross-class recognition, whereas an internal model uses estimated correlations that are typically higher. Second is any exotic book, where the residual add-on is a blunt notional charge. Third is optionality, since curvature is measured with prescribed shocks rather than a fitted distribution. What SHOULD prompt investigation is the reverse case or a ratio that moves sharply without a change in the book — and the ratio is itself a supervisory diagnostic for exactly that reason.",
+      "technique": "Reconciling standardised and modelled capital",
+      "difficultyRationale": "Requires identifying structural sources of divergence rather than assuming one number is wrong."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the ICAAP, and how does it differ from the Pillar 1 calculation?",
+      "canonicalAnswer": "The Internal Capital Adequacy Assessment Process is the bank's own assessment of all material risks and the capital needed against them, reviewed by the supervisor under Pillar 2. Unlike Pillar 1 it is not formulaic — the bank must identify its own risks, quantify them with its own methods, and justify the result.",
+      "explanation": "Pillar 1 covers credit, market and operational risk by prescribed formula. The ICAAP covers everything else and everything Pillar 1 measures badly: interest rate risk in the banking book, concentration, pension risk, business and strategic risk, and the bank's own stress testing. The supervisor's review (the SREP in Europe) can impose an additional capital requirement on top of Pillar 1. The practical significance is that for many banks the binding constraint is a Pillar 2 add-on rather than the Pillar 1 minimum, so the quality of the ICAAP argument has a direct capital consequence — which makes it a genuinely important document rather than a compliance exercise.",
+      "technique": "Pillar 2 and the ICAAP",
+      "difficultyRationale": "Requires understanding what falls outside Pillar 1 and why the ICAAP is often the binding constraint."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is an internal risk transfer under FRTB, and why does the framework regulate it so tightly?",
+      "canonicalAnswer": "A transfer of risk between the banking book and the trading book, or between trading desks, executed internally rather than with an external counterparty. FRTB regulates it because without controls it is a route to shifting positions into whichever book carries lower capital.",
+      "explanation": "The economics are real — a bank genuinely may want to hedge banking-book credit or rate risk through its trading desk, which has the market access. The problem is that an internal trade moves capital treatment without moving any risk out of the firm. FRTB's answer is structural: internal risk transfers of interest rate risk must be executed through a dedicated notional trading desk, credit and equity risk transfers are recognised only if backed by an exactly offsetting external transaction, and the transfers must be documented and priced at market. The underlying principle is that capital relief requires risk to have actually left the institution.",
+      "technique": "Internal risk transfers and the book boundary",
+      "difficultyRationale": "Requires seeing why an internally offsetting trade is not risk reduction at firm level."
+    },
+    {
+      "topicId": "basel-frtb",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In one sentence each, name the problem that Basel I, Basel II, Basel 2.5 and Basel III were each responding to.",
+      "canonicalAnswer": "Basel I: inconsistent and inadequate capital across international banks. Basel II: crude risk weights that ignored real differences in credit quality. Basel 2.5: trading book capital that proved far too low in 2008. Basel III: too little high-quality capital, excessive leverage, and no liquidity standard at all.",
+      "explanation": "Reading the sequence as a series of responses is more useful than memorising the contents. Basel I imposed a common standard but with four crude risk buckets that made a loan to a blue-chip corporate and one to a weak one identical. Basel II introduced risk sensitivity through ratings and internal models, and simultaneously created the model-arbitrage problem. Basel 2.5 was the emergency patch — stressed VaR and the incremental risk charge — bolted onto a trading book framework that had failed. Basel III addressed the capital stack itself (more common equity, deductions tightened), added the leverage ratio and the LCR and NSFR, and set in train the work that became FRTB. Each fix created the conditions for the next problem, which is the honest summary of financial regulation.",
+      "technique": "The Basel sequence as a chain of responses",
+      "difficultyRationale": "Requires the causal thread through four regimes rather than a list of features."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Why does a stress test result carry no probability, and how should that change the way it is used?",
+      "canonicalAnswer": "Because the scenario is chosen, not sampled — nobody knows how likely a 300bp rate shock combined with a 30% equity fall is. So the result is used for capacity and contingency planning ('could we survive this, and what would we do') rather than for expected-loss or capital-allocation arithmetic.",
+      "explanation": "VaR answers 'how bad is a 1-in-100 day' and therefore carries a frequency you can backtest. A stress test answers 'what happens IF' and carries no frequency at all, which is a feature: it lets you examine events with no historical precedent, which is precisely where a probability estimate would be fiction anyway. The practical consequence is that stress results should drive limits, contingency funding plans and board discussion, and should not be blended with probabilistic measures into a single number — averaging a conditional loss with an unconditional one produces something that means nothing.",
+      "technique": "Conditional versus probabilistic risk measures",
+      "difficultyRationale": "Conceptual, but requires drawing the consequence for how the output is used."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A stress scenario is described as \"internally consistent\". What does that mean?",
+      "options": [
+        "The factor moves in it could plausibly occur together, given how markets behave",
+        "It uses the same risk factors as the VaR model",
+        "It produces a loss larger than VaR",
+        "It has been approved by the risk committee"
+      ],
+      "correctOption": 0,
+      "explanation": "A scenario shocking equities down 40% while leaving credit spreads and implied volatility unchanged is not internally consistent — those things move together, and the scenario would materially understate the loss on a real book. Consistency is the main advantage of historical scenarios, since the combination actually happened. For hypothetical scenarios it has to be imposed deliberately, either by conditioning the other factors on the shocked one using estimated relationships, or by expert judgement, and the fact that the relationships used are themselves estimated from normal times is a known weakness.",
+      "technique": "Scenario consistency",
+      "difficultyRationale": "One definition, with the standard failure case as the illustration."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you use conditional expectation to fill in the unshocked factors of a hypothetical scenario?",
+      "canonicalAnswer": "Treat the shocked factors as given and compute the conditional mean of the remaining factors under the estimated joint distribution: for jointly normal factors, E[Y | X = x] = mu_Y + Sigma_YX * Sigma_XX inverse * (x - mu_X).",
+      "explanation": "This is the standard way to make a partial scenario complete and consistent. You specify the few moves you care about — equities down 30% — and let the estimated covariance structure imply the rest. Two limitations that must be stated with the answer. The relationship is estimated from history, mostly from ordinary periods, so it will understate the co-movement that occurs in the very stress you are modelling; and it produces a conditional MEAN, not a stressed outcome, so the filled-in factors are central estimates rather than adverse ones. In practice the conditional expectation is a starting point that is then overridden by judgement where the analyst believes the relationship breaks.",
+      "technique": "Conditional expectation for scenario completion",
+      "difficultyRationale": "Requires the conditional normal formula and the caveat that it is calibrated on the wrong regime."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Describe how you would choose historical stress scenarios for a book that is mostly short-dated FX options.",
+      "canonicalAnswer": "Pick episodes where the relevant risk factors — spot FX and implied volatility — moved most violently together: the 2015 Swiss franc de-peg, the 1992 ERM crisis, August 2015 for the renminbi, March 2020. The selection should be driven by the book's own sensitivities, not by a generic list of famous crises.",
+      "explanation": "The mistake is to run the standard set of equity-crash scenarios against every book. A short-dated FX options book is dominated by gamma and vega on specific pairs, so the scenarios that matter are ones with a large spot gap and a volatility spike — and the de-peg is the sharpest example, since EURCHF moved roughly 30% in minutes and volatility markets stopped functioning. Two extensions worth mentioning: for a short-gamma book the LARGEST loss may come from a gap rather than a trend, so the scenario should be specified as an instantaneous move; and scenarios should include the liquidity dimension, because in that episode the book could not be rehedged at any quoted price.",
+      "technique": "Portfolio-driven scenario selection",
+      "difficultyRationale": "Requires mapping a specific book's sensitivities onto relevant historical episodes rather than reciting a standard list."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a sensitivity ladder (or shock grid), and what does it show that a single stress scenario does not?",
+      "canonicalAnswer": "A table of P&L at a range of shock sizes — say spot at -30%, -20%, -10%, 0, +10%, +20% — often crossed with a second factor such as implied volatility. It shows the SHAPE of the exposure, revealing non-linearity, discontinuities and the worst point, which a single scenario cannot.",
+      "explanation": "A single scenario gives one number and implicitly suggests that risk grows monotonically with the size of the shock. For an options book that is often false: a short butterfly loses most at a moderate move and less at an extreme one, and a barrier option's P&L jumps at the barrier. The grid exposes those features directly, and the two-dimensional version (spot against vol) is standard on any options desk precisely because the worst cell is frequently not at a corner. It is also the natural tool for setting limits, since it shows where the exposure becomes unacceptable rather than only whether one chosen scenario is survivable.",
+      "technique": "Shock grids and non-monotone exposure",
+      "difficultyRationale": "Requires knowing that the worst case need not be at the largest shock."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How would you incorporate second-round effects into a stress test, and why do they matter more than the initial shock?",
+      "canonicalAnswer": "Model the feedback: the initial loss triggers margin calls, forced deleveraging, further price falls, funding withdrawal and further losses. It matters because in real crises the amplification through these channels typically exceeds the direct mark-to-market impact of the original shock.",
+      "explanation": "A standard stress test is a one-step revaluation and treats the firm as a price-taker facing an exogenous move. Real episodes are endogenous: LTCM, 2008 and the 2022 LDI crisis were all cases where the forced response to the first loss caused most of the damage. Modelling it requires stepping outside a single-firm framework — you need assumptions about who else holds correlated positions, how quickly they are forced to sell, and what market depth is available. Regulators approach this through system-wide exercises with common scenarios and, more recently, exploratory scenarios that model the reaction function of non-bank participants. The honest caveat is that these models are far less reliable than the first-round calculation, so their output is used directionally.",
+      "technique": "Feedback and amplification in stress testing",
+      "difficultyRationale": "Requires reasoning about endogenous system dynamics rather than a single-firm revaluation."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your stress test shows a £500m loss, well within capital. Name three ways that result could still be misleading.",
+      "canonicalAnswer": "The scenario may omit the risk factor that actually matters; the book may be assumed static when in reality positions cannot be exited at the assumed prices; and the calculation may rely on model prices that break down in the stressed conditions being modelled.",
+      "explanation": "Each failure is a different kind of blind spot. Omission is the commonest and the hardest to fix, because scenarios are chosen from imagination and history — this is what reverse stress testing is for. The static-book assumption cuts both ways: it ignores management action that would reduce the loss, and it ignores that liquidity may make even the intended actions impossible, which is usually the larger error. Model breakdown is subtle: the pricing models used to revalue the book are calibrated to normal markets, so a stressed revaluation of an exotic position may be using a correlation or volatility surface that would not exist in that scenario. A serious stress report states which of these apply.",
+      "technique": "Critiquing a stress result",
+      "difficultyRationale": "Open-ended; a good answer names structurally different failure modes rather than three versions of one."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a liquidity stress test, and how does it differ from a solvency stress test?",
+      "canonicalAnswer": "A liquidity stress test projects cash inflows and outflows under stress to see whether the firm can meet obligations as they fall due, over horizons from overnight to several months. A solvency stress test asks whether assets still exceed liabilities. A firm can pass one and fail the other.",
+      "explanation": "The two failure modes are genuinely different and firms usually die of the liquidity one first. A solvency test revalues the balance sheet; a liquidity test models behaviour — deposit run-off rates, drawdown of committed facilities, margin calls, loss of secured funding, and the haircuts applied to the assets you would monetise. Northern Rock was solvent on paper when it failed. The LCR is the standardised version of a 30-day liquidity stress test, with prescribed run-off assumptions, and the NSFR is its structural one-year counterpart. Internally, firms run their own with more granular and usually more severe assumptions.",
+      "technique": "Liquidity versus solvency stress testing",
+      "difficultyRationale": "Requires distinguishing two frameworks and knowing that behavioural assumptions dominate the liquidity one."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a reverse stress test you find the firm becomes non-viable if a single counterparty defaults while credit spreads widen 300bp. What do you do with that finding?",
+      "canonicalAnswer": "Assess whether the combination is remote enough to accept; if not, reduce the exposure, hedge the concentration, or hold capital and contingent funding against it. Either way the finding is escalated and the decision documented, because it is now a known vulnerability rather than an unknown one.",
+      "explanation": "The output of reverse stress testing is a decision, not a number. The value is that it converts an implicit vulnerability into an explicit one that someone has to accept or remove — and that acceptance is a governance act with a name attached to it. In this case the finding also identifies a concentration that ordinary stress testing missed, because a scenario-driven test would only have found it if someone had thought to combine those two shocks. It is common for reverse stress testing to surface exposures nobody was tracking, which is precisely why supervisors require it.",
+      "technique": "Acting on reverse stress test findings",
+      "difficultyRationale": "Tests whether the candidate treats the output as actionable governance rather than as a report."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why do supervisors run the same stress scenario across many banks simultaneously?",
+      "canonicalAnswer": "To get comparability — a common scenario makes results across banks meaningful — and to assess system-wide capital adequacy rather than each firm in isolation.",
+      "explanation": "If every bank chose its own scenarios, the results would be incomparable and each firm would naturally choose scenarios it survives. A common scenario removes both problems and lets supervisors rank vulnerability across the system. The system-wide view also catches something no individual test can: if every bank's plan under stress is to sell the same assets and cut the same lending, the aggregate response makes the scenario worse than any single firm assumed. The trade-off is that a single prescribed scenario invites banks to optimise against it, so supervisors vary scenarios year to year and increasingly add exploratory ones without capital consequences.",
+      "technique": "Concurrent supervisory stress testing",
+      "difficultyRationale": "Requires the system-level rationale, not just comparability."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is scenario severity calibration, and how do you decide how severe a hypothetical scenario should be?",
+      "canonicalAnswer": "It is the choice of shock magnitudes. The usual anchors are historical extremes for each factor, a target return period (a 1-in-25-year move), or the point at which the firm's capacity is genuinely tested — severe enough to be informative, plausible enough to be taken seriously.",
+      "explanation": "Too mild and the exercise is theatre; too extreme and the business dismisses it and no action follows. Anchoring on history is the most defensible starting point — take the worst observed move for each factor over a long window — but it must be adjusted for factors whose history is short or whose regime has changed, and it cannot capture combinations that have never occurred. A useful discipline is to state the severity in comparable terms across factors, for instance calibrating every shock to the same estimated return period, so the scenario is not accidentally extreme in one dimension and mild in another. Regulatory scenarios typically target something in the region of a 1-in-25-year severity, which is deliberately less extreme than the 99.9% capital quantile.",
+      "technique": "Calibrating scenario severity",
+      "difficultyRationale": "Requires several calibration anchors and the practical point about consistency across factors."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A risk manager proposes assigning probabilities to stress scenarios so they can be combined with VaR into a single number. Argue against it.",
+      "canonicalAnswer": "The probabilities would be invented — the whole reason scenarios are used is that these events are too rare or too unprecedented for their likelihood to be estimated. Blending an invented probability with an estimated one produces a number whose error is unknowable, and it destroys the conditional information the scenario carried.",
+      "explanation": "The value of a stress test is precisely that it says 'if X, then loss Y' without any claim about how likely X is — that statement is verifiable and useful to a decision-maker. Attaching a subjective probability makes the output look more rigorous while making it less reliable, and it invites the failure mode where a low assigned probability lets a large exposure be dismissed. There is a legitimate related practice worth acknowledging: scenario probabilities ARE used in some economic capital frameworks, and central banks do publish scenario likelihoods. The defensible version keeps the conditional loss as the headline and treats any probability as an explicitly subjective overlay, rather than aggregating the two into one figure that hides which is which.",
+      "technique": "Why conditional and unconditional measures should not be merged",
+      "difficultyRationale": "Requires arguing a position while fairly acknowledging the practices that cut the other way."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A stress test assumes management takes no action. Is that conservative?",
+      "canonicalAnswer": "Not necessarily. It is conservative in ignoring hedges and de-risking that would reduce the loss, but optimistic in ignoring that forced actions — margin calls met by selling, funding withdrawn — can make things worse, and that the assumed exit prices may not exist.",
+      "explanation": "The static assumption is a modelling convenience, not a conservative choice, and treating it as automatically prudent is a common error. Two corrections pull in opposite directions. Realistic management action reduces the loss, and supervisors allow banks to model it provided the actions are documented, credible and actually available in the scenario — which rules out 'we would raise equity' in a system-wide crisis. Forced action increases the loss, through exactly the deleveraging spiral the static model omits. A well-constructed stress test states which actions are assumed and shows the result both with and without them.",
+      "technique": "Management actions in stress scenarios",
+      "difficultyRationale": "Requires recognising that the assumption errs in both directions, which most answers miss."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you stress test a correlation assumption, given correlation is not a price?",
+      "canonicalAnswer": "Re-run the portfolio valuation with the correlation matrix replaced by a stressed one — typically all correlations pushed towards 1 for same-direction exposures, or towards the values observed in a historical crisis — and report the change in P&L or VaR.",
+      "explanation": "The most informative version is deliberately crude: set every pairwise correlation to 1 and see what the book loses. That is the 'no diversification' case, and for a portfolio whose risk framework depends heavily on offsetting positions it is often startling. More refined versions use a crisis-period correlation matrix, or shock the first eigenvalue upward to represent a market where everything loads on one factor. Two practical notes: the stressed matrix must still be positive semi-definite, so naive entry-by-entry edits need repairing; and for options books correlation is a priced input, so a correlation stress moves valuations directly rather than only the risk measure.",
+      "technique": "Stressing the dependence structure",
+      "difficultyRationale": "Requires a concrete procedure plus the PSD constraint that makes naive versions invalid."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which of these is the strongest evidence that a firm's stress testing programme is actually working?",
+      "options": [
+        "Scenario results have changed a limit, a hedge or a business decision",
+        "The programme covers every risk factor in the firm's inventory",
+        "Scenarios are refreshed quarterly and approved by the board",
+        "The worst scenario loss is comfortably within available capital"
+      ],
+      "correctOption": 0,
+      "explanation": "Everything else is process. Coverage, refresh frequency and board approval are necessary and easy to demonstrate, which is exactly why they are poor evidence of effectiveness — a programme can satisfy all three and change nothing. A loss comfortably within capital may simply mean the scenarios are too mild. The one observable that distinguishes a real programme is whether its output has ever led to a different decision, and it is the first thing a good supervisor asks for.",
+      "technique": "Evaluating a stress testing programme",
+      "difficultyRationale": "Requires distinguishing process compliance from effectiveness."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a sensitivity stress test on volatility, and why is a vol shock specified differently from a spot shock?",
+      "canonicalAnswer": "It shocks implied volatility while holding spot fixed, to isolate vega. It is specified differently because volatility is quoted in absolute points and is bounded below at zero, so shocks are usually additive (plus 10 vol points) or relative with a floor, rather than a simple percentage.",
+      "explanation": "A 30% relative shock to a 10-vol asset is 3 points, and to an 80-vol asset is 24 points — the same relative move means completely different things, so vol scenarios are commonly specified in absolute points for that reason. The scenario should also respect the term structure and the skew: volatility spikes are concentrated in short maturities and in downside strikes, so a parallel shift of the whole surface understates the effect on a short-dated downside book and overstates it for long-dated. Serious vol stress tests shock the surface non-parallel, which is why the risk system needs the surface as a set of factors rather than a single number.",
+      "technique": "Specifying volatility shocks",
+      "difficultyRationale": "Requires knowing why the shock convention differs and that a parallel surface shift is inadequate."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is it a mistake to build a stress scenario purely by taking the worst historical move of each risk factor?",
+      "canonicalAnswer": "Because the worst moves did not occur on the same day, and combining them produces a scenario far more extreme — and far less plausible — than anything that has happened. It also ignores that some factors move in offsetting directions in real crises.",
+      "explanation": "Taking each factor's worst observed move independently and applying them together implicitly assumes perfect correlation across every factor simultaneously, in whatever direction hurts most. That is not a 1-in-25-year scenario but something with no meaningful return period at all, and it will be dismissed by the business precisely because it is implausible. It also misrepresents real crises, where flight to quality means government bonds RALLY while credit and equities fall — a worst-case-everything scenario would shock rates upward and miss that offset. The disciplined alternative is to pick a coherent narrative and derive consistent factor moves from it.",
+      "technique": "Why worst-case-per-factor is not a scenario",
+      "difficultyRationale": "Requires recognising the implicit correlation assumption and that real crises contain offsets."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Design a stress test for a book that is long credit, short equity index and long volatility. What is the scenario that hurts most?",
+      "canonicalAnswer": "Not a crash — the short equity and long volatility legs profit in a crash while the long credit leg loses, so the book is partly hedged. The worst scenario is a slow, grinding rally with falling volatility: credit gains little, the equity short bleeds, and the long volatility position loses to both a falling surface and time decay.",
+      "explanation": "The instructive part is that the intuitive scenario is the wrong one. Each leg has to be examined for what it loses on, and then you look for a state of the world in which several lose together. Here all three legs are, in different ways, positioned for trouble, so the scenario that hurts is the absence of trouble — a common profile for a book constructed defensively. Two extensions worth naming: a credit-specific idiosyncratic event that hits the long credit leg without moving the index would be painful and would not appear in any macro scenario, and the long volatility position's carry cost means the loss accumulates with TIME as well as with prices, so the scenario needs a duration attached, not just a set of moves.",
+      "technique": "Identifying the worst scenario from position structure",
+      "difficultyRationale": "Requires reasoning leg by leg to a counterintuitive answer, rather than applying a standard crash scenario."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What role does stress testing play in setting risk limits, as opposed to monitoring them?",
+      "canonicalAnswer": "Stress results size the limits: a position limit should be set so that the loss under the firm's chosen severe scenarios remains within risk appetite. VaR and sensitivity limits then monitor day-to-day adherence.",
+      "explanation": "The distinction matters because the two measures answer different questions. A VaR limit controls normal-conditions variability and can be monitored daily, but it says nothing about capacity to absorb a severe event — a book can sit comfortably within VaR limits and still be unable to survive a scenario the firm regards as plausible. Working backwards from scenario loss to position size makes the limit framework connected to risk appetite rather than to a statistical artefact. In practice both are used together, with stress-based caps on concentrations and tail-sensitive exposures, and VaR or sensitivity limits for ongoing control.",
+      "technique": "Stress testing in limit setting",
+      "difficultyRationale": "Requires separating the sizing role from the monitoring role."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your firm ran a pandemic scenario in 2019 and it looked nothing like what happened in 2020. Does that mean the exercise was worthless?",
+      "canonicalAnswer": "No. The value of scenario work is largely in the preparation — knowing which exposures are sensitive to which factors, having the data and the process ready, and having rehearsed the decisions — and that transfers even when the specific scenario is wrong.",
+      "explanation": "Scenarios are almost never right in detail, and treating predictive accuracy as the success criterion misunderstands the exercise. What a 2019 pandemic scenario would have produced is a mapping from a shock to the firm's vulnerable exposures, a working set of models and data feeds, and a management team that had already had the argument about what it would do. In March 2020 that preparation is worth far more than a correct forecast, because the binding constraint in a real crisis is the speed of analysis and decision-making, not the availability of a matching scenario. The reasonable criticism is different and worth conceding: if the scenario had led to no action at all, then it really was theatre.",
+      "technique": "What stress testing is actually for",
+      "difficultyRationale": "Requires defending the exercise on the right grounds while conceding the legitimate criticism."
+    },
+    {
+      "topicId": "stress-testing",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you stress test a portfolio for a risk factor that has no history at all — say a newly listed instrument or a novel regulatory event?",
+      "canonicalAnswer": "Use judgement anchored on analogues: find the closest instrument or episode with history, apply its extreme moves with a conservative multiplier, and state the analogy explicitly as an assumption. Where no analogue exists, size the shock from first principles — what is the maximum economically possible move.",
+      "explanation": "The first-principles route is often more defensible than a forced analogy. A bond cannot lose more than its recovery-adjusted value; a currency peg can break by at most the distance to its free-float estimate; a position's loss is bounded by its notional plus any leverage. Anchoring on those bounds gives a scenario you can defend without pretending to have estimated a distribution. The essential discipline either way is to write down the assumption and its basis, because the number's credibility rests entirely on the reasoning rather than on data. FRTB's non-modellable risk factor regime is the regulatory version of the same problem, and its answer is likewise a judgement-based stressed scenario rather than a model.",
+      "technique": "Stressing factors without history",
+      "difficultyRationale": "Requires proposing a defensible method where the usual data-driven approach is unavailable."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Daily volatility is 1.2%. What is the annualised volatility, assuming 252 trading days?",
+      "canonicalAnswer": "About 19%. 1.2% * sqrt(252) = 1.2 * 15.87 = 19.0%.",
+      "explanation": "Variance is additive over independent periods, so volatility scales with the square root of time: annual = daily * sqrt(252). The number worth memorising is sqrt(252) = 15.87, close enough to 16 for mental arithmetic — which gives the useful shortcut that 1% daily is about 16% annual. Going the other way, divide: 20% annual volatility is 20/16 = 1.25% a day. The assumption doing the work is that daily returns are independent; volatility clustering means they are not independent in magnitude, though the scaling remains approximately right for volatility itself.",
+      "technique": "Square-root-of-time annualisation",
+      "difficultyRationale": "One multiplication, with sqrt(252) as the fact to hold."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In GARCH(1,1), sigma_n^2 = omega + alpha*r^2 + beta*sigma^2, what does a fitted alpha + beta very close to 1 tell you?",
+      "options": [
+        "Volatility shocks are highly persistent and decay very slowly",
+        "The model has failed to converge",
+        "Volatility is close to constant",
+        "The long-run variance is close to zero"
+      ],
+      "correctOption": 0,
+      "explanation": "Alpha plus beta is the persistence: the speed at which a volatility forecast reverts to its long-run level is governed by (alpha+beta)^k over k days, so a value of 0.99 means a shock's influence decays with a half-life of about 69 days. Typical equity estimates sit between 0.95 and 0.99, which is why volatility regimes persist for months. If the sum reaches or exceeds 1 the process is non-stationary — the long-run variance omega/(1-alpha-beta) is undefined — which is the IGARCH case and, not coincidentally, exactly what EWMA is.",
+      "technique": "Persistence in GARCH",
+      "difficultyRationale": "One parameter interpretation, with the boundary case connecting GARCH to EWMA."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A GARCH(1,1) fit gives omega = 0.000004, alpha = 0.05, beta = 0.93. Today's volatility is 2%. What does the model forecast for volatility in 20 days' time?",
+      "canonicalAnswer": "About 1.83% a day. Long-run variance is 0.000004/0.02 = 0.0002, and the 20-day-ahead forecast is V_L + (alpha+beta)^20 * (current variance - V_L) = 0.0002 + 0.668(0.0002) = 0.000334, so sigma = 1.83%.",
+      "explanation": "The forecast formula is E[sigma_{n+k}^2] = V_L + (alpha+beta)^k (sigma_n^2 - V_L): today's variance decays geometrically towards the long-run level. Here V_L = omega/(1 - alpha - beta) = 0.000004/0.02 = 0.0002, so the long-run daily volatility is 1.41%. Today's variance is 0.0004, twice the long-run level. With alpha+beta = 0.98, the decay factor over 20 days is 0.98^20 = 0.668, so the forecast variance is 0.0002 + 0.668(0.0002) = 0.000334 and the volatility is 1.83%. Note the shape: variance mean-reverts, not volatility, and the reversion is slow — after 20 days two thirds of the excess remains. This is what produces the term structure of volatility, and it is why implied volatility curves slope downward when spot volatility is elevated.",
+      "technique": "Multi-day GARCH volatility forecasting",
+      "difficultyRationale": "Requires the mean-reversion formula and care that it applies to variance rather than volatility."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a leverage effect in volatility modelling, and which model family captures it?",
+      "canonicalAnswer": "Negative returns raise future volatility more than positive returns of the same size. Asymmetric GARCH models capture it — GJR-GARCH adds a term that only activates for negative returns, and EGARCH models log-variance with an asymmetric shock term.",
+      "explanation": "Plain GARCH uses the SQUARED return, so it cannot distinguish a 3% fall from a 3% rise, yet the asymmetry is one of the most robust features of equity data. GJR-GARCH adds gamma * r^2 * I(r < 0), so downside shocks get alpha + gamma while upside gets alpha alone. The name comes from one explanation — a price fall raises a firm's debt-to-equity ratio and hence the riskiness of the equity — though the effect is larger than leverage alone can account for, and a volatility-feedback story (higher expected volatility depresses prices) explains part of it. Either way it is the statistical counterpart of the equity volatility skew, and a model without it will misprice downside options.",
+      "technique": "Asymmetric volatility models",
+      "difficultyRationale": "Requires naming the model modification and connecting it to the options skew."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is realised volatility, and what advantage does it have over a GARCH estimate?",
+      "canonicalAnswer": "Realised volatility is computed by summing squared intraday returns over a day, giving a nearly model-free measurement of that day's volatility. Its advantage is that it uses intraday information, so it MEASURES volatility rather than inferring it from a model fitted to daily data.",
+      "explanation": "A daily GARCH estimate extracts one noisy observation per day — the squared return — and smooths it with a model. Realised volatility built from, say, five-minute returns uses roughly 78 observations a day and estimates that day's volatility far more precisely, turning an unobservable latent variable into something close to observable. That is what makes HAR and other realised-volatility models forecast better than daily GARCH. The complication is microstructure noise: as the sampling frequency rises, bid-ask bounce and discrete pricing bias the estimate upward, which is why five minutes rather than five seconds is the conventional compromise, and why realised kernels and two-scale estimators exist to correct it.",
+      "technique": "Realised volatility from intraday data",
+      "difficultyRationale": "Requires the information argument plus awareness of the microstructure limit on sampling frequency."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why do we model volatility rather than returns, given both are unobservable in advance?",
+      "canonicalAnswer": "Because volatility is predictable and returns are not. Return autocorrelations are near zero, but squared or absolute return autocorrelations are large and decay slowly, so there is genuine forecastable structure in volatility and almost none in direction.",
+      "explanation": "This asymmetry is the empirical foundation of the whole topic. If returns were forecastable to any useful degree the forecast would be arbitraged away, which is essentially the efficient markets argument; volatility forecastability survives because knowing that tomorrow will be turbulent does not tell you which way to trade. The practical consequences run through everything: option pricing needs a volatility forecast and not a direction forecast, risk management is a volatility-forecasting exercise, and the persistence of volatility means a single number estimated over five years is the wrong input for tomorrow.",
+      "technique": "Predictability of second moments",
+      "difficultyRationale": "Requires the contrast between return and squared-return autocorrelation, and why the asymmetry survives arbitrage."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Set up the maximum likelihood estimation of a GARCH(1,1) model on daily returns.",
+      "canonicalAnswer": "Assume r_t is conditionally normal with mean zero and variance sigma_t^2, recursively generated by the GARCH equation. The log-likelihood is the sum over t of -0.5*[ln(2*pi) + ln(sigma_t^2) + r_t^2/sigma_t^2], maximised numerically over omega, alpha and beta subject to positivity and alpha + beta < 1.",
+      "explanation": "The recursion is the key structural point: sigma_t^2 depends on sigma_{t-1}^2, so the likelihood must be built forward through the sample from a starting value — usually the unconditional sample variance — and every parameter change re-runs the whole recursion. Three practical notes. The constant term ln(2*pi) can be dropped since it does not affect the maximiser. Financial returns are fatter-tailed than the normal even after conditioning, so a Student-t conditional distribution usually fits better, though Gaussian quasi-maximum-likelihood remains consistent. And the likelihood surface is often flat in omega, so alpha and beta are estimated far more precisely than the implied long-run variance — which is why variance targeting, fixing V_L at the sample variance and estimating only alpha and beta, is common practice.",
+      "technique": "GARCH maximum likelihood",
+      "difficultyRationale": "Requires the recursive likelihood construction plus the practical estimation issues."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean for a time series to be stationary, and why does it matter for volatility modelling?",
+      "canonicalAnswer": "Weak stationarity means the mean, variance and autocovariances do not change over time. It matters because estimation and forecasting rely on the past being informative about the future — if the process drifts, sample statistics estimate nothing stable.",
+      "explanation": "Returns are usually treated as stationary; prices plainly are not, which is why every model in this area is built on returns. Within a GARCH model, stationarity of the variance process requires alpha + beta < 1, and that condition is exactly what gives a finite long-run variance for the forecast to revert to. When the estimate comes out at or above 1 you have an IGARCH process with no long-run level, and multi-day forecasts become a flat extrapolation of today. The practical warning is that apparent non-stationarity is often structural breaks in disguise — a regime change looks like a unit root to a test — and the two call for different responses.",
+      "technique": "Stationarity and its role in variance forecasting",
+      "difficultyRationale": "Requires connecting an abstract property to the concrete alpha+beta<1 condition."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Implied volatility is 22% and your GARCH model forecasts 18% realised over the same horizon. Name three explanations before concluding the option is expensive.",
+      "canonicalAnswer": "A variance risk premium — implied systematically exceeds realised as compensation for bearing volatility risk; a horizon or measurement mismatch between the two figures; and the possibility that the market is pricing a known forthcoming event the historical model cannot see.",
+      "explanation": "The variance risk premium is the biggest and most systematic of the three: implied volatility exceeds subsequent realised volatility most of the time, by a few points on average, because option sellers demand compensation for a position that loses badly in crashes. So a 4-point gap is close to normal and is not by itself a signal. The mismatch problem is mundane but common — implied volatility is risk-neutral, forward-looking over the option's exact life, and quoted on a specific strike, while a GARCH forecast is real-world and horizon-averaged. The event explanation is the one a model can never supply: an earnings date, an election or a central bank meeting inside the option's life raises implied volatility legitimately. Only after clearing all three does 'expensive' become a defensible conclusion.",
+      "technique": "Comparing implied and forecast volatility",
+      "difficultyRationale": "Requires knowing the variance risk premium is the default explanation rather than a mispricing."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a volatility term structure, and what shape does it take when spot volatility is unusually high?",
+      "canonicalAnswer": "The curve of expected average volatility against horizon. When spot volatility is high the term structure slopes DOWNWARD, because mean reversion pulls the longer-horizon average back towards the long-run level.",
+      "explanation": "The mechanism is the GARCH forecast formula: each day's forecast decays geometrically towards V_L, so the AVERAGE over a longer window is closer to V_L than today's value is. With current daily volatility at 2% and a long-run level of 1.4%, the one-month average forecast might be 1.8% and the one-year average 1.5%. In calm markets the curve slopes upward for the same reason. The observable counterpart is the implied volatility term structure, which shows exactly this behaviour — inverting in crises and upward-sloping in quiet markets — and calendar spread trades are expressions of a view on its shape.",
+      "technique": "Term structure of volatility from mean reversion",
+      "difficultyRationale": "Requires deriving the shape from the mean-reversion property rather than memorising it."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is a 60-day rolling window volatility estimate a poor input for a 1-day VaR, even though it is unbiased?",
+      "canonicalAnswer": "Because it gives equal weight to a shock from 59 days ago and one from yesterday, so it responds slowly to regime changes and jumps twice per shock — once on entry, once on exit from the window.",
+      "explanation": "Unbiasedness is the wrong criterion here: you want the best estimate of TOMORROW'S volatility, which is a conditional forecasting problem, not an unbiased estimate of an average. Volatility clustering means recent observations are far more informative, so equal weighting discards the signal. The double-jump behaviour — the ghost feature — means the estimate moves for reasons unrelated to current conditions, which is unacceptable for a measure driving limits. EWMA fixes both by decaying the weights geometrically, and GARCH adds mean reversion on top. The 60-day window survives mainly because it is simple to explain and audit.",
+      "technique": "Why equal weighting is the wrong estimator",
+      "difficultyRationale": "Requires distinguishing unbiased estimation from conditional forecasting."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Your GARCH model is fitted on daily closing prices for an asset that trades across time zones. What bias does that introduce, and how would you address it?",
+      "canonicalAnswer": "Close-to-close returns for a non-synchronous asset miss overnight moves and misattribute them to the next day, producing spurious autocorrelation and understated or misattributed volatility. Fix it by using synchronised snapshot times across assets, or by using range-based or realised estimators that use intraday data.",
+      "explanation": "The problem is worst in multi-asset work: if you correlate a European close with a US close, the European price reflects information from before the US session and the measured correlation is biased downward, since part of the co-movement shows up on different calendar days. That understates portfolio risk. The standard fixes are to snapshot all assets at a common time even if it is not any market's close, to use overlapping multi-day returns and adjust, or to move to intraday data. Range-based estimators such as Parkinson or Garman-Klass, which use the high and low, are also more efficient than close-to-close for a given sample and partly sidestep the issue.",
+      "technique": "Non-synchronous trading and measured volatility",
+      "difficultyRationale": "Requires identifying a data artefact and knowing it biases correlation as well as volatility."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a range-based volatility estimator, and why is it more efficient than one built on closing prices?",
+      "canonicalAnswer": "It estimates volatility from the intraday high and low rather than from close-to-close returns — the Parkinson estimator uses (ln(H/L))^2 scaled by 1/(4 ln 2). It is more efficient because the range uses information about the whole path, not just its endpoints.",
+      "explanation": "A close-to-close return of zero is entirely consistent with a day that moved 5% in each direction, and a squared-return estimator records that day as having no volatility at all. The high and low capture what actually happened in between, which is why Parkinson's estimator has roughly five times the efficiency of the squared close-to-close return for the same sample. Garman-Klass adds the open and close for further gains. The limitations are practical: the theory assumes continuous observation, so a discretely observed high and low understate the true range, and the estimators handle overnight gaps badly since the range excludes the jump from previous close to open.",
+      "technique": "Parkinson and Garman-Klass estimators",
+      "difficultyRationale": "Requires the efficiency argument and the assumptions that limit it in practice."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you test whether a volatility model is adequate, once it is fitted?",
+      "canonicalAnswer": "Standardise the returns by the fitted conditional volatility and examine the residuals: they should have no remaining autocorrelation in their squares (Ljung-Box on squared standardised residuals), and their distribution should match the assumed conditional distribution.",
+      "explanation": "The logic is that a good volatility model removes all the predictable heteroskedasticity, so what is left should look like independent draws. If squared standardised residuals still show autocorrelation, the model has not captured all the clustering — perhaps it needs a longer lag structure or an asymmetric term. If the residuals are still fat-tailed relative to a normal, the conditional distribution assumption is wrong and a Student-t is indicated, though that does not invalidate the volatility dynamics themselves. A sign bias test on the residuals checks specifically for an uncaptured leverage effect. Comparing information criteria across specifications complements these but does not replace them, because a model can win on AIC while still leaving structure in the residuals.",
+      "technique": "Diagnostic testing of fitted volatility models",
+      "difficultyRationale": "Requires the standardised-residual construction and knowing which diagnostic detects which deficiency."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the VIX measuring, and why is it not simply the implied volatility of an at-the-money S&P option?",
+      "canonicalAnswer": "It measures the market's expected 30-day volatility implied by a whole strip of S&P 500 options weighted by 1/K^2, not a single option. That construction gives a model-free estimate of the risk-neutral expected VARIANCE, independent of any option pricing model.",
+      "explanation": "A single at-the-money implied volatility is a Black-Scholes inversion, so it inherits that model's assumptions and reflects one point on the smile. The variance-swap replication result says that expected variance under the risk-neutral measure equals an integral of option prices across all strikes weighted by 1/K^2, which is what the VIX formula approximates with the strikes actually listed. The practical consequences: the VIX is sensitive to the whole surface, so it rises when the skew steepens even with at-the-money volatility unchanged, and because out-of-the-money puts carry heavy weight it is particularly responsive to demand for crash protection. It is also a risk-neutral expectation, so it sits above expected realised volatility by the variance risk premium.",
+      "technique": "Model-free implied variance",
+      "difficultyRationale": "Requires the variance-swap replication argument, not just a description of the index."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A series of daily returns shows near-zero autocorrelation at all lags, but its ABSOLUTE values show autocorrelation of 0.2 that decays over months. What does this indicate?",
+      "options": [
+        "Volatility clustering with long memory",
+        "A unit root in the return series",
+        "A data error, since the two cannot both be true",
+        "Predictable returns that the market has not arbitraged"
+      ],
+      "correctOption": 0,
+      "explanation": "Unforecastable direction alongside strongly forecastable magnitude is the defining signature of financial return series, and the slow decay of the absolute-return autocorrelation — hyperbolic rather than exponential — is what is meant by long memory in volatility. It is entirely consistent with market efficiency, since knowing that tomorrow will be volatile does not tell you which way to trade. It also motivates models such as FIGARCH and HAR, which reproduce the slow decay better than a standard GARCH whose autocorrelation dies exponentially.",
+      "technique": "Long memory in volatility",
+      "difficultyRationale": "Requires recognising the joint pattern as a stylised fact rather than a contradiction."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What are the three lines of defence, and where does model validation sit?",
+      "canonicalAnswer": "First line is the business that owns and takes the risk; second line is independent risk management and compliance, which challenges it; third line is internal audit, which checks that the first two work. Model validation sits in the second line.",
+      "explanation": "The point of the structure is independence. A model developed and validated by the same team is not validated, because the reviewer shares the developer's assumptions and has an interest in the outcome. Placing validation in the second line gives it a separate reporting line to the CRO, its own budget and the authority to restrict a model's use. Two practical qualifiers: validation must have the technical depth to actually challenge the model, otherwise independence buys nothing, and audit's role is deliberately narrow — it checks that validation happened properly, not whether the model is right.",
+      "technique": "Governance structure for model risk",
+      "difficultyRationale": "Recall of a standard structure, with the reason independence matters."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A model is used far outside the range of data it was calibrated on. This is best described as:",
+      "options": [
+        "A model use failure rather than a model specification failure",
+        "A calibration error",
+        "An implementation bug",
+        "Acceptable, provided the model is mathematically correct"
+      ],
+      "correctOption": 0,
+      "explanation": "The model may be perfectly specified and correctly implemented and still produce nonsense outside its intended domain — the failure is in how it was applied, not in what it is. That is why a model inventory records each model's approved scope and limitations, and why a change of use requires re-approval just as a change of methodology does. The distinction matters because the remedies differ entirely: a specification problem is fixed by the quant team, a use problem is fixed by controls and governance.",
+      "technique": "Use failure versus specification failure",
+      "difficultyRationale": "One classification, with the remedy as the discriminating consequence."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What belongs in a model inventory, and why do supervisors insist on one?",
+      "canonicalAnswer": "Every model in use, with its owner, purpose, approved scope, methodology, key assumptions and known limitations, validation status and date, materiality tier, and dependencies on other models. Supervisors insist because you cannot manage risk in models you have not enumerated.",
+      "explanation": "The unglamorous parts do the work. Recording approved SCOPE is what makes use-failure detectable. Recording DEPENDENCIES matters because models feed each other — a volatility surface model feeds pricing which feeds VaR which feeds capital — so a flaw propagates, and without the dependency map nobody knows how far. Materiality tiering is what makes the whole thing feasible: a large bank has thousands of models and cannot validate them all to the same depth, so effort is allocated by exposure and complexity. The recurring supervisory finding is not that inventories are missing but that they are incomplete — spreadsheets and end-user computing tools that make real decisions and were never registered as models.",
+      "technique": "Model inventory contents and purpose",
+      "difficultyRationale": "Requires identifying which inventory fields are load-bearing rather than listing everything."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is benchmarking in model validation, and what does it establish that backtesting does not?",
+      "canonicalAnswer": "Benchmarking prices or forecasts the same positions with an independent alternative model and compares. It establishes whether the model's output is defensible relative to reasonable alternatives, which backtesting cannot do when outcomes are rare, slow to arrive, or unobservable.",
+      "explanation": "Backtesting needs realised outcomes, and for many models they are unavailable in useful quantity — a 99.9% capital model, a long-dated exotic's price, a lifetime credit loss forecast. Benchmarking sidesteps that by asking a different question: does an independently built model agree? A large discrepancy does not tell you which is right, but it does tell you the output is not robust to modelling choices, and that is itself the quantity you want for a model reserve. The benchmark must be genuinely independent — a re-implementation of the same methodology tests the code, not the model — and the comparison should span the range of positions, since models typically agree at the money and diverge in the wings.",
+      "technique": "Benchmarking as a validation technique",
+      "difficultyRationale": "Requires knowing when backtesting is unavailable and what benchmarking substitutes for it."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a model reserve, and how would you size one for an exotic options book?",
+      "canonicalAnswer": "A deduction from reported value held against the uncertainty in the model used to price it. Size it by repricing the book across a range of defensible models and calibrations and taking a conservative point in the resulting distribution of values — typically the difference between the chosen model's price and a prudent percentile.",
+      "explanation": "The essential move is to convert model uncertainty into a spread of prices rather than a single alternative. Reprice with a local volatility model, a stochastic volatility model and a jump model, all calibrated to the same market quotes; the spread across them is the model uncertainty for that book, and it is often material for path-dependent and barrier products where the models agree on vanillas by construction and disagree on everything else. Two further points: the reserve should release as positions mature or as the market provides observable prices, and the calibration dimension matters as much as the model dimension, since the same model calibrated to different instrument sets can produce materially different exotic prices.",
+      "technique": "Sizing model uncertainty reserves",
+      "difficultyRationale": "Requires a concrete procedure that turns model choice into a price distribution."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A desk's model is recalibrated daily and always fits market prices almost exactly. Is that reassuring?",
+      "canonicalAnswer": "No. A model that reprices the market perfectly every day may simply have enough free parameters to fit anything, in which case it has no predictive content and its hedge ratios are unreliable even though its prices look right.",
+      "explanation": "Fitting the market is necessary but nearly costless for a sufficiently flexible model — local volatility, for example, fits every vanilla by construction. What distinguishes a good model is the STABILITY of its calibrated parameters over time and the quality of the hedges it implies. If the calibrated parameters jump around daily, the model is absorbing market movement into parameters that are supposed to be structural, which is a warning sign: your delta comes from those parameters, so it is being computed from something that will be different tomorrow. The diagnostics that matter are parameter stability, out-of-sample pricing of instruments not used in calibration, and hedge performance measured as the P&L of a delta-hedged position.",
+      "technique": "Calibration fit versus model quality",
+      "difficultyRationale": "Requires recognising that fit and predictive validity are different, and naming the diagnostics that separate them."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Two banks price the same exotic and differ by 8% of notional. Neither can be shown wrong. How should each treat that fact?",
+      "canonicalAnswer": "As a measurement of model uncertainty for that product. Each should hold a reserve reflecting the dispersion, review whether its own calibration and model choice are defensible, and treat the position as one whose value is a range rather than a number.",
+      "explanation": "The disagreement is information: it says the product's value is not determined by observable market prices plus no-arbitrage, but depends on modelling choices about which reasonable people differ. That is exactly what a model reserve exists for, and 8% of notional is large enough to be material to P&L and to any decision to trade. The secondary implications are practical. A position marked with that much uncertainty should not be used to book day-one profit without a reserve — recognising the full spread as revenue at inception is the classic failure, and IFRS 13's restriction on day-one gains for level 3 instruments addresses it. And if the two banks trade with each other on the strength of the disagreement, both are booking a profit from the same trade, which is only possible if at least one is wrong.",
+      "technique": "Interpreting price dispersion as model uncertainty",
+      "difficultyRationale": "Requires treating a disagreement as data rather than as a problem to resolve, plus the accounting consequence."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does model risk differ for a machine learning model compared with a parametric financial model?",
+      "canonicalAnswer": "The failure modes shift from wrong assumptions to opaque behaviour: overfitting is easier and harder to detect, the model may key on spurious features, its behaviour outside the training distribution is unpredictable, and its reasoning cannot be inspected the way a closed-form model's can.",
+      "explanation": "A Black-Scholes model has assumptions you can list and challenge one by one. A gradient-boosted model has no such list, so validation shifts to empirical technique: rigorous out-of-time and out-of-sample testing, stability analysis across periods, feature importance and partial dependence to see what it is actually keying on, and adversarial or edge-case testing. Two risks are specific to this class. Data leakage produces spectacular backtest performance from information unavailable at decision time, and it is common enough that a suspiciously good result should be assumed to be leakage until proven otherwise. And where the model touches customers, opaque features can encode protected characteristics indirectly, which is a regulatory exposure with no analogue in derivatives pricing.",
+      "technique": "Validating machine learning models",
+      "difficultyRationale": "Requires mapping familiar model-risk concepts onto a class where the usual assumption-based challenge does not apply."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between a model being conservative and a model being right, and why does the distinction matter for capital?",
+      "canonicalAnswer": "A conservative model deliberately errs in one direction; a right model is unbiased. The distinction matters because conservatism in a risk measure is not free — it distorts pricing, hedging and capital allocation, and it can be exploited.",
+      "explanation": "Conservatism is often treated as automatically prudent, and for a capital number it broadly is. But the same model usually feeds decisions where bias is harmful: an overstated risk figure makes a genuinely good trade look unattractive, misallocates limits, and produces hedge ratios that are wrong in a known direction. It also creates a perverse dynamic, since traders learn where the model is conservative and structure positions that look expensive to the model and cheap in reality, or vice versa. The disciplined approach is to keep the model unbiased and apply conservatism explicitly and visibly as a reserve or an add-on, so that everyone can see how much of the number is measurement and how much is prudence.",
+      "technique": "Where to put conservatism",
+      "difficultyRationale": "Requires arguing that a seemingly safe choice has costs, and proposing where the buffer belongs instead."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is model monitoring, and what would you monitor for a VaR model in production?",
+      "canonicalAnswer": "Ongoing checks that a model still performs as validated. For a VaR model: exception counts and their clustering, P&L attribution quality, input data completeness and staleness, the stability of calibrated parameters and correlations, coverage of the book by mapped risk factors, and the ratio of modelled to standardised capital.",
+      "explanation": "Validation is a point-in-time assessment; monitoring is what catches the model going stale as the book and the market change. The most valuable indicators are usually about INPUTS rather than outputs — a risk factor that stopped updating, a growing share of positions being proxied, a new product mapped to an approximate factor — because those degrade the model silently while the headline number continues to look reasonable. Exception clustering matters as much as the count, since three exceptions in one week and three spread over a year point at different problems. Thresholds should be defined in advance with an escalation path, otherwise monitoring produces a dashboard nobody acts on.",
+      "technique": "Ongoing model monitoring",
+      "difficultyRationale": "Requires naming input-side indicators, which are the ones that catch silent degradation."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Give an example of a model whose widespread use changed the thing it was modelling.",
+      "canonicalAnswer": "Portfolio insurance in 1987: the model prescribed selling futures as the market fell, and because many participants ran it simultaneously, the selling itself drove the fall it was hedging against. Black-Scholes-implied hedging and the Gaussian copula in CDO markets are further examples.",
+      "explanation": "This is performativity — the model does not just describe the market, it participates in it. Portfolio insurance is the cleanest case, because the strategy's own execution supplied the liquidity shock that made it fail, and the effect only exists because the model was widely adopted. The general lesson for a risk manager is that a model calibrated on data from before its own adoption may not describe the world after, and that positions which are crowded carry a risk that no single-firm model can see — everyone's hedge is the same trade, and it will be attempted simultaneously. That is one of the strongest arguments for stress scenarios built around forced deleveraging rather than around price moves alone.",
+      "technique": "Performativity and crowded models",
+      "difficultyRationale": "Requires a concrete example plus the generalisation about crowded positions."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your firm buys a vendor model whose internals you cannot inspect. How do you validate it?",
+      "canonicalAnswer": "Validate what you can observe: test it on known cases with analytic answers, benchmark it against an independent model, sensitivity-test its behaviour across the input space for implausible outputs or discontinuities, review the vendor's own documentation and validation evidence, and confirm the vendor's change-management process.",
+      "explanation": "Black-box status reduces what you can do but does not remove the obligation — the firm using the model owns its risk regardless of who built it. Behavioural testing is the core of it: sweep each input across its plausible range and check monotonicity and smoothness where theory demands them, and test limiting cases where the answer is known analytically. Two governance points to add. Vendor change management matters because an update can change your numbers overnight, so you need notice and the ability to test before adoption. And concentration is a systemic issue in its own right: if most of the market uses the same vendor model, its flaws are correlated across firms and will not be discovered by anyone's independent check.",
+      "technique": "Validating third-party models",
+      "difficultyRationale": "Requires adapting validation technique to the case where the internals are unavailable."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A pricing model and a risk model value the same position differently. Which is wrong, and what do you do?",
+      "canonicalAnswer": "Neither is necessarily wrong — they may legitimately differ in granularity, since risk models often use fewer factors deliberately. But the difference must be quantified, explained and bounded, because an unexplained gap means the risk model is measuring a different portfolio from the one the firm actually holds.",
+      "explanation": "The correct first move is decomposition: reprice with the risk model's factors under the pricing model to separate factor-coverage differences from methodology differences. A gap explained by the risk model omitting a factor is a known simplification to be documented, monitored, and capitalised if material. A gap that cannot be attributed is the dangerous case, and it usually means one implementation has a defect. This is precisely what FRTB's P&L attribution test institutionalises — it compares risk-theoretical and hypothetical P&L and penalises desks where they diverge — and it is worth noting the incentive that creates, since the cheapest way to pass is sometimes to simplify the front-office model rather than enrich the risk model.",
+      "technique": "Reconciling pricing and risk models",
+      "difficultyRationale": "Requires a decomposition procedure and the judgement that a difference is not automatically an error."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is a model's data more often the source of failure than its mathematics?",
+      "canonicalAnswer": "Because mathematics is checked once and stays checked, while data arrives every day and can be stale, missing, misaligned, revised, or drawn from a changed source — and the model will produce a plausible-looking number regardless.",
+      "explanation": "The asymmetry is about detectability. A wrong formula usually produces obviously wrong output and is caught in testing; a stale price feed produces a number that is merely slightly wrong, every day, and can persist for months. Common failure modes worth naming: a curve that stopped updating and holds its last value, timezone misalignment across regions, a corporate action not applied so a price series shows a spurious jump, survivorship bias in a backtest universe, and vendor methodology changes applied retroactively so history silently changes underneath a model. The controls are unglamorous — staleness checks, cross-source reconciliation, completeness monitoring, and versioned data snapshots so a calculation can be reproduced exactly.",
+      "technique": "Data quality as the dominant model risk",
+      "difficultyRationale": "Requires the detectability argument plus concrete failure modes."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the value of a model that is known to be wrong but is used consistently by everyone?",
+      "canonicalAnswer": "It is a common language. Black-Scholes implied volatility is the standard example: nobody believes the assumptions, but because everyone inverts the same formula, a quoted volatility is unambiguous and comparable across strikes, maturities and counterparties.",
+      "explanation": "The model is doing a translation job rather than a predictive one. Quoting an option at 22 vol conveys far more than quoting it at £3.40, because the volatility number is comparable across instruments in a way the price is not, and the mapping from price to volatility is one-to-one so no information is lost. The same applies to yield to maturity for bonds and to spread for credit. The danger is forgetting which job the model is doing: a quoting convention says nothing about hedging, so using Black-Scholes deltas because you use Black-Scholes quotes is exactly the mistake the volatility smile warns against.",
+      "technique": "Models as quoting conventions",
+      "difficultyRationale": "Requires separating a model's translation role from its predictive role."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which finding in a model validation report should trigger the most urgent action?",
+      "options": [
+        "The model has been used for two years on a product type outside its approved scope",
+        "The model's documentation is out of date",
+        "The model's assumptions include constant volatility",
+        "The model has not been revalidated within its scheduled period"
+      ],
+      "correctOption": 0,
+      "explanation": "Use outside approved scope means the firm has been taking decisions on numbers nobody has ever assessed for that purpose, and it has been doing so for two years — the positions, the P&L and any capital derived from them are all in question immediately. The others are real findings but bounded: stale documentation and an overdue revalidation are process failures with no immediate evidence that any number is wrong, and a constant-volatility assumption is a known limitation of many models that may be perfectly acceptable within scope. Ranking findings by what is already exposed, rather than by how bad they sound, is the substance of the question.",
+      "technique": "Triaging validation findings",
+      "difficultyRationale": "Requires ranking by realised exposure rather than by severity of description."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is parameter uncertainty, and how does it differ from the risk the model is measuring?",
+      "canonicalAnswer": "Parameter uncertainty is the error in the estimated inputs — volatilities, correlations, default probabilities — as distinct from the variability those parameters describe. It is second-order risk: uncertainty about the distribution rather than uncertainty within it.",
+      "explanation": "A VaR of £5m computed from an estimated volatility carries two distinct uncertainties: the loss may exceed £5m because that is what a 1% tail means, and the £5m may itself be wrong because the volatility was estimated from a finite sample. The second is routinely ignored, yet for correlations estimated from short samples it can dominate. Quantifying it means putting a distribution on the parameters — through the bootstrap, a Bayesian posterior, or simply repricing at the ends of a confidence interval — and reporting the resulting range. The general point is that a risk number without an error bar invites false precision, and the error bar is usually much wider than anyone expects.",
+      "technique": "Estimation error as second-order risk",
+      "difficultyRationale": "Requires distinguishing two levels of uncertainty that are easily conflated."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A quant proposes replacing a simple model with a more sophisticated one that fits the data better. What questions should validation ask?",
+      "canonicalAnswer": "Does it fit better OUT of sample, not just in sample? How many additional parameters, and are they identifiable and stable? Are its hedge ratios better, not just its prices? Is anyone able to understand and challenge it? And what does it do at the edges where the simple model was at least predictable?",
+      "explanation": "Better in-sample fit is nearly guaranteed by extra flexibility and is therefore not evidence of anything. The questions that discriminate are about generalisation and robustness. Parameter identifiability matters because a model whose parameters are not pinned down by the calibration instruments will have unstable ones, and unstable parameters produce unstable hedges. Comprehensibility is a genuine criterion rather than a concession to weaker colleagues: a model nobody outside the developer can challenge has no effective validation, and the resulting concentration of knowledge is itself an operational risk. The honest framing is that sophistication has costs, and it must earn them.",
+      "technique": "Evaluating a proposed model upgrade",
+      "difficultyRationale": "Requires distinguishing in-sample fit from evidence of improvement, plus the non-technical criteria."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A strategy has a Sharpe ratio of 2.5 in backtest. What is your first hypothesis, and how would you test it?",
+      "canonicalAnswer": "That the result is an artefact — lookahead bias, survivorship bias, unrealistic transaction costs, or selection from many tested variants. Test by re-running on strictly point-in-time data with realistic costs, and by asking how many strategies were tried before this one.",
+      "explanation": "A Sharpe of 2.5 is far above what liquid strategies sustain, so the prior strongly favours an artefact. Lookahead is the commonest and sneakiest: using a price, a fundamental figure or an index membership that was not knowable at the decision time — index constituents and restated financials are classic sources. Costs are routinely understated, and a strategy trading frequently can lose its entire edge to a realistic spread and impact model. The multiple-testing question is the one people resist: if 200 variants were tried, the best one's in-sample Sharpe tells you almost nothing, and the deflated Sharpe ratio adjusts for exactly that. The order of testing matters — check the data pipeline before admiring the result.",
+      "technique": "Diagnosing an implausible backtest",
+      "difficultyRationale": "Requires prioritising among several artefacts and knowing that the number of trials is part of the evidence."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you tier a model inventory by materiality, and what changes between tiers?",
+      "canonicalAnswer": "Tier by the size of the exposure the model touches, the complexity and opacity of its methodology, and the consequence of it being wrong (regulatory capital, customer outcomes, financial reporting). Higher tiers get deeper validation, more frequent revalidation, more monitoring and stricter change control.",
+      "explanation": "Tiering exists because a large bank has thousands of models and uniform treatment would be both unaffordable and misallocated. A pricing model for a multi-billion exotic book and a spreadsheet estimating stationery costs do not merit the same scrutiny. What changes with tier is depth and cadence: a tier-1 model gets independent re-implementation, full benchmarking and annual revalidation, while a low-tier model may get a documentation review every three years. The failure mode to watch for is tiering by convenience rather than by exposure, and the classic gap is the low-tier model that quietly grew — a small tool that ended up feeding a material decision without anyone re-tiering it.",
+      "technique": "Materiality tiering",
+      "difficultyRationale": "Requires the tiering criteria plus the specific way tiering goes wrong in practice."
+    },
+    {
+      "topicId": "model-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between overfitting and look-ahead bias, and which is easier to detect?",
+      "canonicalAnswer": "Overfitting means the model has learned noise in the training data and will generalise poorly. Look-ahead bias means the model used information that was not available at the decision time, so its results are impossible rather than merely optimistic. Overfitting is easier to detect.",
+      "explanation": "Overfitting reveals itself in a properly constructed out-of-sample test — performance degrades and the gap is the diagnosis. Look-ahead bias survives out-of-sample testing, because the leaked information is present in every period including the test set, so the strategy performs beautifully everywhere and there is nothing to compare against. Detecting it requires auditing the data pipeline for timestamps: when was each field actually knowable, as opposed to what date it is stamped with. Restated financials, index membership applied retroactively, and any dataset assembled after the fact are the usual culprits. The practical rule is that unusually consistent performance across all periods is more suspicious than performance that varies.",
+      "technique": "Overfitting versus look-ahead bias",
+      "difficultyRationale": "Requires knowing that out-of-sample testing catches one and not the other."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What does the Net Stable Funding Ratio require, and how does its horizon differ from the LCR's?",
+      "canonicalAnswer": "The NSFR requires available stable funding to be at least 100% of required stable funding over a ONE-YEAR horizon, addressing structural funding mismatch. The LCR covers a 30-day acute stress.",
+      "explanation": "The two are deliberately complementary. The LCR asks whether you survive a month-long run, and is satisfied by holding liquid assets. The NSFR asks whether your funding structure is sustainable — whether long-dated, illiquid assets are financed with stable, long-dated liabilities rather than rolled overnight in wholesale markets. A bank could pass the LCR with a large buffer while funding a mortgage book entirely in the overnight repo market, and the NSFR is what prevents that. Deposits from retail and small business count as more stable than wholesale funding, which is a direct lesson from Northern Rock.",
+      "technique": "NSFR versus LCR",
+      "difficultyRationale": "Two ratios with different horizons and different questions."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A market's depth is best described as:",
+      "options": [
+        "The volume available near the current price without moving it materially",
+        "The difference between the best bid and best offer",
+        "The number of trades per day",
+        "The time it takes to execute an order"
+      ],
+      "correctOption": 0,
+      "explanation": "Liquidity has at least three separate dimensions and they are routinely conflated. Tightness is the bid-ask spread — the cost of a small trade. Depth is the size available before the price moves — the cost of a large one. Resiliency is how quickly the book refills after being hit. A market can be tight and shallow, which is the dangerous combination for a large position: the screen shows a one-basis-point spread and the position takes weeks to exit. Any liquidity measure built only on quoted spreads is measuring tightness and ignoring the dimension that matters for size.",
+      "technique": "Dimensions of market liquidity",
+      "difficultyRationale": "One definition, with the three-dimension framing as the substance."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is market impact, and how does it typically scale with trade size?",
+      "canonicalAnswer": "The adverse price move caused by your own trading. Empirically it scales roughly with the SQUARE ROOT of size relative to daily volume — impact is approximately proportional to volatility times sqrt(Q/V).",
+      "explanation": "The square-root law is one of the more robust empirical regularities in market microstructure, holding across asset classes and venues. Its practical implication is concave cost: doubling the size does not double the impact per share, so there is a genuine trade-off against the risk of executing slowly. That trade-off is exactly what optimal execution frameworks solve — trade fast and pay impact, trade slowly and bear price risk, with the balance set by your risk aversion and the asset's volatility. Note that permanent and temporary impact differ: temporary impact recovers after you stop, permanent impact reflects the information your trading revealed, and only the permanent part is a genuine transfer.",
+      "technique": "Market impact and the square-root law",
+      "difficultyRationale": "Requires the scaling law plus its consequence for execution strategy."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain the liquidity mismatch in an open-ended fund holding corporate bonds, and why it is a systemic concern.",
+      "canonicalAnswer": "The fund offers daily redemption while holding assets that may take weeks to sell. Redeeming investors are paid at today's NAV, funded by selling the most liquid holdings, leaving remaining investors with a less liquid portfolio — a first-mover advantage that can trigger a run.",
+      "explanation": "The mechanism is the key part. Selling the liquid assets first, called cash-first or vertical-slice-avoidance, means each redemption degrades the portfolio for those who stay, giving everyone an incentive to redeem early. That converts an ordinary outflow into a run without any change in fundamentals. The systemic dimension is that many funds hold similar assets and would sell simultaneously, which is what happened in March 2020 and required central bank intervention in corporate bond markets. Mitigants include swing pricing (making redeemers bear their own liquidation cost), redemption gates, notice periods, and vertical-slice liquidation — all of which work by removing the first-mover advantage rather than by holding more cash.",
+      "technique": "Liquidity transformation and run dynamics",
+      "difficultyRationale": "Requires the first-mover mechanism, which is what makes it a run rather than an outflow."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is swing pricing, and what problem does it solve?",
+      "canonicalAnswer": "Adjusting a fund's NAV on days of large net flows so that transacting investors bear the associated trading costs rather than the remaining shareholders. It removes the first-mover advantage that makes redemption runs rational.",
+      "explanation": "Without it, a redeeming investor receives the unadjusted NAV while the fund incurs spread and impact costs to raise the cash, which are borne by everyone who stays — so redeeming early is strictly better, and a modest outflow can cascade. Swing pricing charges those costs to the flow that caused them by moving the NAV down on a net-redemption day and up on a net-subscription day, typically only past a threshold. The design questions are the swing factor's size and whether it reflects stressed rather than normal costs, since an under-calibrated factor leaves part of the advantage in place. It is standard in Europe and has been slower to adopt in the US, partly because it complicates same-day pricing operationally.",
+      "technique": "Swing pricing",
+      "difficultyRationale": "Requires linking the mechanism to the incentive it removes."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why do secured funding markets freeze in a crisis even though the lender holds collateral?",
+      "canonicalAnswer": "Because the collateral's value and liquidity are themselves in question, and the lender does not want to own it — haircuts widen, eligible collateral narrows, and eventually lenders refuse regardless of price, since taking possession of an illiquid asset in a falling market is not an attractive outcome.",
+      "explanation": "Repo is often described as safe because it is collateralised, but the safety depends on being able to liquidate the collateral at close to the haircut-adjusted value, which is exactly what fails in a crisis. Haircuts on private-label structured credit went from a few percent to refusal in 2008, which withdrew funding entirely from firms whose business model assumed rollover. There is also an adverse selection dimension: a borrower posting a particular asset may know more about it than the lender, and in stressed conditions lenders assume the worst. The general lesson is that collateralisation converts credit risk into liquidity and market risk rather than removing risk, and the conversion is least favourable precisely when it matters.",
+      "technique": "Collateralised funding under stress",
+      "difficultyRationale": "Requires explaining why collateral fails to reassure, rather than restating that funding dries up."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Describe the liquidity spiral in which market liquidity and funding liquidity reinforce each other.",
+      "canonicalAnswer": "A price fall raises margin requirements and erodes capital, forcing leveraged holders to sell; the selling pushes prices down further and widens spreads; wider spreads and higher volatility raise haircuts, tightening funding again. Each loop makes the next one worse.",
+      "explanation": "Brunnermeier and Pedersen's framing is the standard reference, and the two channels are worth naming separately. The loss spiral works through capital: falling prices reduce equity, so a leveraged investor must shrink the balance sheet to maintain leverage, which means selling into the fall. The margin spiral works through haircuts: volatility rises, lenders demand more collateral per unit borrowed, and the same position requires more capital than it did yesterday. Both are amplifiers rather than causes, which is why the size of a shock is a poor predictor of the size of a crisis — leverage and the procyclicality of margin determine the multiplier. The policy responses follow directly: countercyclical margin floors, central bank liquidity facilities that break the funding leg, and leverage limits.",
+      "technique": "Loss and margin spirals",
+      "difficultyRationale": "Requires both channels and the observation that they are amplifiers rather than causes."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does a liquidity gap analysis work, and what makes it different from simply listing contractual maturities?",
+      "canonicalAnswer": "It projects cash inflows and outflows into time buckets and shows the cumulative net position in each. It differs from contractual maturities because it applies BEHAVIOURAL assumptions: deposit run-off rates, loan prepayment, facility drawdowns, and the assumption that some maturing assets will be rolled rather than repaid.",
+      "explanation": "Contractual maturity is nearly useless on its own for a bank. Current accounts are contractually overnight but behaviourally multi-year; committed facilities are contractually undrawn but will be drawn in a stress precisely when the bank can least afford it; a mortgage's contractual life bears little relation to its expected one. The gap analysis is therefore only as good as the behavioural assumptions, and those assumptions are the model risk — they are calibrated on periods that did not include a run. Good practice runs the analysis under both normal and stressed assumptions and shows the cumulative gap, since a fund that is comfortable at every individual bucket can still be short on a cumulative basis.",
+      "technique": "Behavioural liquidity gap analysis",
+      "difficultyRationale": "Requires identifying the behavioural overlay as both the point and the weakness."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a contingency funding plan, and what distinguishes a credible one?",
+      "canonicalAnswer": "A pre-agreed plan for meeting funding needs under stress: identified sources, the order in which they are used, triggers for activation, and named decision-makers. A credible one uses sources that will still be available in the stress, has been tested operationally, and has triggers that fire early enough to matter.",
+      "explanation": "The commonest weakness is relying on sources that vanish exactly when needed — uncommitted interbank lines, asset sales into a market where everyone is selling, or an equity raise during a systemic crisis. A credible plan therefore leans on pre-positioned collateral at the central bank, committed facilities, and assets that are liquid under stress rather than merely under normal conditions. Operational testing matters more than it sounds: firms have discovered in a crisis that collateral was not pre-positioned, that the legal agreements were unsigned, or that the operational path to pledge assets took days. And triggers must be leading indicators, since a plan activated once the firm is already in difficulty has lost most of its options.",
+      "technique": "Contingency funding planning",
+      "difficultyRationale": "Requires distinguishing a plan that exists from one that would work."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is concentration a liquidity risk as well as a market risk?",
+      "canonicalAnswer": "Because a position large relative to normal traded volume cannot be exited at quoted prices — the unwind cost grows with size and the time to exit grows with it, so the effective risk is far greater than a mark-to-market measure suggests.",
+      "explanation": "Two positions with the same VaR are not equally risky if one is 2% of daily volume and the other 200%. The second faces market impact on exit, an extended unwind period during which market risk continues to accrue, and the near-certainty that other holders of the same position are trying to exit simultaneously. It also becomes visible: a position large enough to matter is known to the market and can be traded against, which is what happened to LTCM and to Amaranth. Practical controls are volume-based position limits — expressed as days of average daily volume rather than as notional — and liquidity-adjusted VaR that scales the horizon with the estimated unwind period.",
+      "technique": "Concentration as liquidity risk",
+      "difficultyRationale": "Requires seeing that identical market-risk numbers can carry very different liquidity profiles."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a liquidity-adjusted VaR that accounts for an uncertain spread, and how is it constructed?",
+      "canonicalAnswer": "LVaR = ordinary VaR + 0.5 * (mean spread + z * spread standard deviation) * position value. The add-on charges the expected cost of crossing the spread plus an allowance for the spread being unusually wide when you need to trade.",
+      "explanation": "The construction treats the spread as a random variable rather than a constant, which matters because spreads are strongly correlated with the market moves that drive the VaR itself — you will be selling on exactly the days spreads are widest. Using the mean plus 2.326 standard deviations gives a 99% spread. Two refinements are worth mentioning: the add-on is usually added rather than combined in quadrature, since assuming independence between the market move and the spread is optimistic; and for a position large relative to volume, this measure still understates the cost because it ignores market impact entirely and assumes the whole size trades at the quoted spread.",
+      "technique": "Spread-based liquidity adjustment to VaR",
+      "difficultyRationale": "Requires the formula plus the reasons it remains conservative to add rather than combine."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish the exogenous and endogenous components of liquidity risk.",
+      "canonicalAnswer": "Exogenous liquidity risk is a property of the market — the spread and depth every participant faces, independent of your position. Endogenous liquidity risk depends on YOUR size: the impact your own trading has, which grows with the position relative to normal volume.",
+      "explanation": "The distinction determines which measure applies. Exogenous risk is captured adequately by a spread-based adjustment, is the same for everyone, and is the only component that matters for a small position. Endogenous risk requires a market impact model and is specific to you, and it is what turns a manageable position into an unmanageable one. The critical point is that endogenous risk is invisible in market data — nothing in the price history of an asset tells you what will happen when you try to sell 30 days of volume — so it must be modelled from position size and volume rather than estimated from returns. Most liquidity-adjusted VaR implementations capture only the exogenous part.",
+      "technique": "Exogenous versus endogenous liquidity",
+      "difficultyRationale": "Requires seeing that one component cannot be estimated from market data at all."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A hedge fund's prime broker raises margin requirements across the board. Trace the consequences.",
+      "canonicalAnswer": "The fund must post more collateral against unchanged positions, so it either finds cash or reduces positions. Reducing means selling into whatever market conditions prompted the margin increase, realising losses and possibly moving prices — and if other funds face the same call, the selling is simultaneous.",
+      "explanation": "The sequence matters because the trigger is usually not fund-specific: prime brokers raise margin in response to market volatility, so every leveraged client is called at once. That correlated deleveraging is the transmission channel from a volatility shock to a price shock, and it explains why crowded trades unwind violently. Two further consequences worth naming. The fund's liquidity buffer is consumed exactly when it is hardest to replenish, and any redemption notice from investors compounds it. And because prime brokers can usually change terms with short notice, a fund's effective leverage capacity is not a stable number it controls — which is why funding diversification across multiple prime brokers is standard practice despite the operational cost.",
+      "technique": "Margin calls as a deleveraging channel",
+      "difficultyRationale": "Requires tracing a chain and noting that the trigger is common across firms."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In March 2020 US Treasuries — normally the most liquid market in the world — became difficult to trade. What does that illustrate?",
+      "options": [
+        "Liquidity is a property of conditions, not of an asset",
+        "Treasuries carry more credit risk than assumed",
+        "Liquidity measures based on spreads are always wrong",
+        "Only equity markets experience liquidity crises"
+      ],
+      "correctOption": 0,
+      "explanation": "The episode is the strongest available counterexample to treating liquidity as an intrinsic attribute. Nothing about Treasuries changed; what changed was the balance between selling pressure — from foreign official holders, from levered relative-value funds unwinding the cash-futures basis trade, from funds raising cash — and dealer capacity to intermediate, which was constrained by balance sheet limits. The implication for risk management is that a liquidity assumption calibrated on normal conditions is unreliable in exactly the scenario you are stress testing, and that dealer intermediation capacity is a risk factor in its own right.",
+      "technique": "Liquidity as a state-dependent property",
+      "difficultyRationale": "Requires generalising from an episode rather than recalling it."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How would you set a position limit for an illiquid asset, given VaR does not capture the exit problem?",
+      "canonicalAnswer": "Express the limit in days of average daily volume rather than in notional or VaR — for instance no more than 10 days of volume at an assumed participation rate. Then check that the loss over that unwind horizon, at stressed volatility and stressed spreads, remains within appetite.",
+      "explanation": "The volume-based limit directly controls the quantity VaR ignores, and it automatically tightens when liquidity deteriorates because average volume falls. The second step converts the unwind period into a loss estimate: market risk accrues over the whole exit, so the relevant measure scales roughly with the square root of the unwind horizon rather than being a one-day figure, and it should use stressed rather than current volatility. Two refinements: the participation rate assumption should be conservative, since the assumed 20-25% of volume is not achievable when everyone is selling, and the volume input itself should be a stressed estimate rather than a trailing average, because volume in illiquid names can collapse rather than spike.",
+      "technique": "Volume-based limits for illiquid positions",
+      "difficultyRationale": "Requires constructing a limit framework around a quantity the standard measure omits."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why can a central bank solve a liquidity crisis but not a solvency crisis?",
+      "canonicalAnswer": "It can create unlimited money and lend against collateral, which addresses a shortage of cash. It cannot create capital, so if a firm's assets are genuinely worth less than its liabilities, lending only delays the failure and puts public money at risk.",
+      "explanation": "This is Bagehot's rule — lend freely, at a penalty rate, against good collateral, to solvent firms — and every clause carries weight. Freely, because a partial response fails to stop a run. At a penalty rate, so the facility is not a subsidy and is repaid once markets normalise. Against good collateral, which is what protects the central bank and enforces the solvency test. The practical difficulty is that the distinction between illiquid and insolvent is genuinely hard to make in real time: an asset's stressed price may reflect a liquidity discount that will reverse, or a permanent impairment, and you cannot tell which while the crisis is running. That ambiguity is why central bank interventions are always contested afterwards.",
+      "technique": "The liquidity/solvency distinction and Bagehot's rule",
+      "difficultyRationale": "Requires the rule's clauses and the honest observation that the distinction is hard to apply in real time."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is an asset-liability maturity transformation, and why is it both the core of banking and its core fragility?",
+      "canonicalAnswer": "Funding long-dated, illiquid assets with short-dated, liquid liabilities — lending for 25 years, funded by deposits withdrawable on demand. It is the core of banking because it is the service being provided, and the fragility because the bank cannot honour all its liabilities simultaneously by design.",
+      "explanation": "The transformation is genuinely valuable: savers want instant access, borrowers want long-term certainty, and the bank bridges the two, earning the term spread for doing so. But solvency does not imply the ability to pay everyone at once, and that gap is what makes a run possible — and self-fulfilling, since the belief that others will withdraw makes withdrawing rational. Diamond and Dybvig formalised this as a model with two equilibria, one good and one a run, with nothing distinguishing them but expectations. The policy architecture follows directly: deposit insurance removes the incentive to run, the lender of last resort supplies liquidity against good collateral, and the LCR and NSFR limit how much transformation is permitted.",
+      "technique": "Maturity transformation and run equilibria",
+      "difficultyRationale": "Requires framing the fragility as inherent to the function rather than as a flaw to be eliminated."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your firm holds a large position in an asset whose average daily volume has halved over six months. What has changed about your risk, and would VaR show it?",
+      "canonicalAnswer": "The unwind period has doubled, so the effective risk horizon and the market impact of exiting have both risen substantially. VaR would show little or nothing — it is a one-day measure computed from returns, and falling volume does not change return volatility in any immediate way.",
+      "explanation": "This is the clearest case of a material risk increase that the headline measure is structurally blind to. Worse, thin trading can actually LOWER measured volatility for a while, because stale or infrequent prices smooth the return series — so VaR may fall while the position becomes more dangerous. The indicators that would catch it are liquidity metrics tracked in their own right: days-to-liquidate, volume trend, bid-ask spread trend, and the number of active market makers. This is exactly the case for reporting liquidity measures alongside VaR rather than folding them into it, since an adjustment buried inside a single number would obscure which component moved.",
+      "technique": "Liquidity deterioration invisible to VaR",
+      "difficultyRationale": "Requires noticing that the standard measure can move in the wrong direction as the risk worsens."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the cash-futures basis trade in Treasuries, and why is it a liquidity risk story?",
+      "canonicalAnswer": "Buying cash Treasuries and selling the corresponding futures to capture a small price difference, financed in the repo market at high leverage. It is a liquidity story because the tiny spread requires enormous leverage, so a small adverse move triggers margin calls that force simultaneous unwinding by everyone in the trade.",
+      "explanation": "The economics are sound and the position is close to market-neutral, which is exactly what permits leverage of fifty times or more. That leverage is the risk: a few basis points of basis widening consumes the equity, margin calls arrive, and the unwind means selling cash Treasuries and buying futures in size — precisely the flow that widens the basis further. In March 2020 that dynamic contributed to Treasury market dysfunction and was one of the reasons for emergency Federal Reserve purchases. The general pattern is worth carrying: a strategy whose returns come from a small, stable spread must be levered to be worthwhile, and leverage converts a market-risk-light position into a liquidity-risk-heavy one.",
+      "technique": "Leverage converting small spreads into liquidity risk",
+      "difficultyRationale": "Requires connecting the trade's economics to why its unwind is destabilising."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you measure whether a bank's liquidity buffer is genuinely usable?",
+      "canonicalAnswer": "Check that the assets are unencumbered, held in the right entity and currency, operationally ready to be monetised (pre-positioned or settlement-tested), and that using them would not itself trigger adverse consequences such as a regulatory breach or a market signal of distress.",
+      "explanation": "A buffer that cannot be used is not a buffer, and each of those conditions has failed somewhere in practice. Encumbrance is the obvious one — assets already pledged are not available. Trapped liquidity is subtler: a surplus in one subsidiary may be unavailable to the group because of local regulatory ring-fencing or currency convertibility restrictions, so the consolidated ratio looks comfortable while the entity that needs cash cannot get it. Operational readiness has repeatedly proven weaker than assumed. And the signalling problem is real: drawing on a central bank facility can be read as distress, which is why facilities are designed to reduce stigma and why banks are reluctant to dip into buffers even when supervisors encourage it.",
+      "technique": "Usability of liquidity buffers",
+      "difficultyRationale": "Requires several distinct ways a nominally adequate buffer fails to be available."
+    },
+    {
+      "topicId": "time-series-vol",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does a volatility model fitted on log returns behave differently from one fitted on simple returns?",
+      "canonicalAnswer": "Log returns are additive across time and symmetric around zero, so they aggregate cleanly and cannot produce a negative price. Simple returns are bounded below at -100% and are right-skewed, so a symmetric model fitted to them is misspecified, particularly at high volatility.",
+      "explanation": "The additivity is the practical reason: multi-period log returns are sums of single-period ones, so variance adds and the square-root-of-time rule follows directly. Simple returns compound multiplicatively and do not aggregate that way. For daily equity data the two are almost identical — ln(1+r) is within a basis point of r for moves under 2% — so the choice rarely matters day to day. It matters at high volatility, over long horizons, and for anything where the difference between the mean and median return is material, which is exactly the volatility drag that the Ito correction quantifies.",
+      "technique": "Log versus simple returns in volatility modelling",
+      "difficultyRationale": "Requires the additivity argument and knowing when the approximation stops being harmless."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does a bank's own credit spread widening create a liquidity problem before it creates a solvency problem?",
+      "canonicalAnswer": "Because wholesale funding reprices or disappears immediately while the asset side reprices slowly. Counterparties reduce lines, require more collateral, and shorten tenors — so the funding cost rises and availability falls long before any asset is written down.",
+      "explanation": "The asymmetry is one of timing. A loan book is carried at amortised cost and deteriorates over quarters; wholesale funding is repriced daily and can be withdrawn at the next rollover. So a spread widening driven by nothing more than sentiment can starve a solvent bank of funding within days. There is also a reflexive element: the widening itself is read as evidence of trouble, which accelerates the withdrawal, and any collateral the bank has posted attracts higher haircuts at the same time. This is the mechanism behind most bank failures, and it is why supervisors monitor funding concentration and tenor rather than only capital ratios.",
+      "technique": "Funding withdrawal ahead of asset deterioration",
+      "difficultyRationale": "Requires the timing asymmetry between the two sides of the balance sheet."
+    },
+    {
+      "topicId": "liquidity-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is intraday liquidity risk, and why is it not captured by the LCR?",
+      "canonicalAnswer": "The risk of being unable to meet payment obligations at the specific time of day they fall due, even if the day's flows net to zero. The LCR measures a 30-day net outflow and says nothing about timing within a day.",
+      "explanation": "Large-value payment systems settle in real time, so a bank must have funds at the moment each payment is due, not by close of business. A bank can be comfortably liquid on a daily net basis and still fail to settle at 10am because expected inflows arrive at 3pm. The exposure is amplified by the fact that participants condition their outgoing payments on incoming ones, so a single delay propagates through the system — which is why central banks provide intraday credit against collateral and why supervisors collect intraday liquidity monitoring metrics such as daily maximum net position and time-specific obligations. It is a genuinely separate discipline from the 30-day framework.",
+      "technique": "Intraday liquidity",
+      "difficultyRationale": "Requires seeing that a netting-based measure hides a timing constraint."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is a threshold and a minimum transfer amount in a CSA, and why does each exist?",
+      "canonicalAnswer": "The threshold is the amount of uncollateralised exposure permitted before any collateral must be posted. The minimum transfer amount is the smallest collateral movement that will be made. The threshold reflects credit appetite; the MTA avoids operational cost on trivial transfers.",
+      "explanation": "Together they define an uncollateralised band: exposure below the threshold attracts no call at all, and movements smaller than the MTA are not transferred even above it. So the true uncollateralised exposure is the threshold plus the MTA, and that sum is what feeds a CVA calculation rather than zero. A zero-threshold CSA is now standard between dealers, which is why dealer-to-dealer CVA is small and client CVA is not. It is worth knowing that thresholds are often rating-linked, stepping down if the counterparty is downgraded — a clause that looks prudent but concentrates collateral calls at the moment the counterparty can least meet them.",
+      "technique": "CSA mechanics",
+      "difficultyRationale": "Two definitions, with the sum being the exposure that actually matters."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Potential future exposure (PFE) to a counterparty is:",
+      "options": [
+        "A high percentile of the exposure distribution at some future date",
+        "The current mark-to-market value of the trades",
+        "The expected loss if the counterparty defaults today",
+        "The notional value of the derivatives outstanding"
+      ],
+      "correctOption": 0,
+      "explanation": "PFE is a quantile — typically the 95th or 99th percentile — of what the exposure could be at a future point, obtained by simulating market factors forward and revaluing the netting set. It is used for limit setting, because a credit officer needs to know the worst plausible exposure over the trade's life, not just today's. Option 2 is current exposure. Option 3 is closer to expected loss, which combines expected exposure with default probability and loss given default and is the basis of CVA. Option 4 is notional, which for derivatives bears almost no relation to exposure.",
+      "technique": "PFE versus current exposure",
+      "difficultyRationale": "One definition against three commonly confused neighbours."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Sketch the typical shape of the expected exposure profile of an interest rate swap over its life, and explain it.",
+      "canonicalAnswer": "It rises then falls, peaking around a third of the way through. Two effects compete: diffusion of rates increases the range of possible values over time, while amortisation of remaining cash flows reduces the amount at risk as the swap approaches maturity.",
+      "explanation": "Early on there is little time for rates to have moved, so exposure is small. Late on, few payments remain, so even a large rate move changes little value. The peak is where the two effects balance, and for a standard swap it falls at roughly one third of the tenor. The shape matters because a credit limit set on current exposure would look comfortable at inception and be breached mid-life. Contrast with an FX forward, whose exposure grows monotonically to maturity because the whole notional exchanges at the end — which is why FX forwards carry more counterparty exposure per unit notional than a swap of the same tenor.",
+      "technique": "Exposure profiles by instrument type",
+      "difficultyRationale": "Requires reasoning from two competing effects to a shape, plus a contrasting case."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Write down the standard CVA formula and identify the assumption most likely to be violated.",
+      "canonicalAnswer": "CVA = LGD * integral over time of EE(t) * dPD(t), discounted — expected exposure at each date multiplied by the marginal default probability over that interval, times loss given default. The assumption most likely violated is INDEPENDENCE between exposure and default.",
+      "explanation": "Writing exposure and default probability as separate factors and multiplying them is only valid if they are independent, and wrong-way risk is exactly the case where they are not: exposure is largest precisely when the counterparty is most likely to fail. Where wrong-way risk is present the formula understates CVA, and the standard corrections are either an alpha multiplier or an explicit model coupling the credit driver to the market factors. Two further points: the default probabilities should be risk-neutral ones backed out of CDS spreads rather than historical rates, since CVA is a valuation adjustment; and LGD is usually assumed at 60% for senior unsecured, an assumption that is itself doing significant work.",
+      "technique": "CVA decomposition and its independence assumption",
+      "difficultyRationale": "Requires the formula and identifying which of several assumptions is the fragile one."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is DVA, and why is it controversial?",
+      "canonicalAnswer": "Debit valuation adjustment: the mirror of CVA, reflecting the possibility that YOU default and fail to pay your counterparty, which increases the value of your derivative book. It is controversial because a firm books a gain when its own credit quality deteriorates.",
+      "explanation": "The logic is symmetric and internally consistent — if your counterparty's default risk reduces what their promises are worth to you, yours reduces what your promises are worth to them, and that is a benefit you would only realise by failing. Banks reported large DVA gains as their spreads widened in 2011, which struck most observers as perverse accounting, and the gains reverse as conditions improve. Basel III removes DVA from regulatory capital for exactly that reason, so it remains an accounting item but not a capital one. The deeper point is that DVA is essentially unhedgeable — hedging it means selling protection on yourself — which is a good test of whether a valuation adjustment is economically meaningful.",
+      "technique": "DVA and the own-credit paradox",
+      "difficultyRationale": "Requires stating the symmetry argument and why regulators reject it despite its internal consistency."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is FVA, and how does it differ from CVA?",
+      "canonicalAnswer": "Funding valuation adjustment: the cost of funding the collateral and the uncollateralised portion of a derivative position over its life, at the bank's own funding spread rather than the risk-free rate. CVA prices counterparty default risk; FVA prices the funding of the position.",
+      "explanation": "The two arise from different facts. CVA exists because the counterparty might not pay. FVA exists because a bank that is out of the money on a collateralised hedge must post cash it has to borrow at its own funding cost, while the offsetting uncollateralised client trade generates no collateral inflow — so the trade consumes funding for years. The classic case is a dealer hedging an uncollateralised corporate swap with a collateralised interbank swap. FVA is genuinely contested in theory, with a well-known argument that charging it double-counts DVA and violates Modigliani-Miller, but essentially all major dealers now take it, because the funding cost is unmistakably real to the desk paying it.",
+      "technique": "FVA versus CVA",
+      "difficultyRationale": "Requires distinguishing two adjustments with different economic sources and knowing the theoretical objection."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain the margin period of risk and what determines its length.",
+      "canonicalAnswer": "The assumed interval between the last exchange of variation margin with a defaulting counterparty and the completion of close-out and replacement of the trades. It is driven by the time to identify the default, the dispute and grace periods in the documentation, and the time to re-hedge — typically 5 days for cleared and 10 for uncleared trades.",
+      "explanation": "It is the horizon over which initial margin must cover market moves, so it drives the size of IM directly — and because risk scales with the square root of time, doubling from 5 to 10 days raises the requirement by about 40%. The regulatory difference between cleared and uncleared is a deliberate incentive to clear. Longer periods apply where the portfolio is large relative to market liquidity, where disputes are frequent, or for netting sets with many trades, and supervisors require extensions in those cases. The 2008 Lehman close-out is the practical reference point, where the real period for complex portfolios ran to weeks rather than days.",
+      "technique": "Margin period of risk",
+      "difficultyRationale": "Requires the components of the period and its direct effect on IM through sqrt(T)."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How does a CCP's default waterfall work, and what is skin in the game?",
+      "canonicalAnswer": "In order: the defaulting member's initial margin, then its default fund contribution, then a tranche of the CCP's own capital (skin in the game), then the surviving members' default fund contributions, then further assessments on members. Skin in the game is the CCP's own capital placed ahead of surviving members' funds.",
+      "explanation": "The ordering is the whole design. Losses hit the defaulter first, which is the defaulter-pays principle, and only then become mutualised across surviving members. Skin in the game sits between the two deliberately: without it a CCP would earn fees from clearing volume while bearing none of the loss from weak margin models, so it exists to align the CCP's incentives with the prudence of its own risk management. Its adequacy is contested — the amounts are small relative to member contributions — and the later stages, assessments and variation margin gains haircutting, mean that clearing does not remove risk but converts bilateral counterparty risk into mutualised exposure to a systemically critical node.",
+      "technique": "CCP loss allocation",
+      "difficultyRationale": "Requires the ordering and the incentive argument for why the CCP's own capital sits where it does."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Clearing is said to reduce counterparty risk. What risks does it create or concentrate instead?",
+      "canonicalAnswer": "It concentrates risk in the CCP itself, which becomes a systemic single point of failure; it creates liquidity risk through mandatory daily variation margin in cash; and it mutualises losses across members, so a healthy member can be hit by another's default.",
+      "explanation": "The netting and default-management benefits are real — multilateral netting across members is far more efficient than bilateral, and the CCP has a rehearsed auction process. But the risks transform rather than vanish. The liquidity dimension is the most under-appreciated: bilateral positions could sometimes be collateralised with securities, whereas variation margin at a CCP is cash and must be found the same day, which is exactly what turned the 2022 UK gilt move and the 2021 European energy market stress into liquidity crises for members. Fragmentation adds a second cost: clearing the same exposure at multiple CCPs loses netting benefit and raises total margin.",
+      "technique": "Risk transformation under central clearing",
+      "difficultyRationale": "Requires identifying that risk changes form, with the cash-liquidity channel as the key insight."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is rehypothecation, and what risk does it create for the party posting collateral?",
+      "canonicalAnswer": "The reuse by the collateral taker of assets posted to it — lending them on or posting them elsewhere. The poster's risk is that if the taker fails, the assets are not there to be returned and the poster becomes an unsecured creditor for their value.",
+      "explanation": "Lehman's London entity is the standard case: hedge fund clients discovered that assets they believed were segregated had been rehypothecated and were caught in the administration for years. Rehypothecation is economically useful — it lowers the cost of financing by letting collateral circulate — and the trade-off is transparent in principle, since clients accept it in exchange for cheaper terms. The protections are segregation of client assets, contractual limits on the proportion that may be reused, and, for regulatory initial margin under the uncleared margin rules, an outright prohibition with mandatory segregation at a third-party custodian. That prohibition is why regulatory IM is expensive: the collateral genuinely leaves the system rather than being recycled.",
+      "technique": "Collateral reuse and segregation",
+      "difficultyRationale": "Requires the failure mode and why regulators treat initial margin differently from variation margin."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is initial margin not exchanged bilaterally in the same way as variation margin?",
+      "canonicalAnswer": "Variation margin is a transfer of value that settles an existing gain or loss, so it passes between the parties and can be used. Initial margin is a performance buffer that must survive the poster's default, so it is posted by BOTH parties on a gross basis and held segregated, not netted or used.",
+      "explanation": "The distinction is about what each is for. Variation margin extinguishes exposure and legitimately changes ownership. Initial margin only has value if it is still there and still available after a default, which rules out both netting the two parties' amounts against each other and letting the receiver spend it. Hence gross posting to a segregated third-party account under the uncleared margin rules. The consequence is significant: IM is a genuine drag on the system because that collateral cannot be recycled, which is a large part of why the uncleared margin rules pushed so much activity into clearing.",
+      "technique": "Why IM and VM are treated differently",
+      "difficultyRationale": "Requires reasoning from the purpose of each margin type to its legal treatment."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish specific and general wrong-way risk, and say how each is treated.",
+      "canonicalAnswer": "Specific wrong-way risk arises from a direct legal or structural link — a loan collateralised by the borrower's own shares. General wrong-way risk arises from a macro relationship, such as exposure to an emerging-market bank growing as its sovereign deteriorates. Specific is normally prohibited or handled case by case; general is capitalised through an alpha multiplier or an explicit correlation model.",
+      "explanation": "The distinction matters because the remedies differ. Specific wrong-way risk is identifiable at trade level and is best avoided outright — collateral that becomes worthless exactly when it is needed is not collateral, so most credit policies simply forbid it. General wrong-way risk is statistical and cannot be avoided by any individual trade decision, so it is priced and capitalised instead. Basel's approach to the general case is the alpha multiplier of 1.4 applied to effective expected positive exposure, a deliberately crude scaling that acknowledges the independence assumption is wrong without modelling the dependence explicitly.",
+      "technique": "Two categories of wrong-way risk",
+      "difficultyRationale": "Requires the classification and the different treatments each attracts."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A counterparty's CSA is one-way in your favour — they post, you do not. What are you giving up?",
+      "canonicalAnswer": "Nothing in credit terms, but you pay for it elsewhere: the counterparty prices the funding cost of the one-way arrangement into the trade, and you carry the FVA of any position where you are out of the money and cannot call collateral back.",
+      "explanation": "One-way CSAs are common with sovereigns, supranationals and some corporates who will not post collateral. The dealer's exposure is collateralised in one direction only, so it faces a funding asymmetry: when the trade moves against the dealer it must post to its hedge counterparty while receiving nothing back from the client. That funding cost runs for the life of the trade and is charged as FVA in the spread. So the client has not obtained a free concession — it has converted a collateral obligation into a wider price, which for a client with cheap funding may still be a good trade.",
+      "technique": "One-way CSAs and funding asymmetry",
+      "difficultyRationale": "Requires seeing that the concession is priced rather than free, and locating the cost in FVA."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How would you compute expected exposure for a netting set of interest rate swaps, and where does netting enter the calculation?",
+      "canonicalAnswer": "Simulate rate paths forward to a grid of future dates; at each date and path, revalue every trade and SUM them, then take the positive part of the netted value; average that across paths to get expected exposure at each date. Netting enters before the positive-part operation.",
+      "explanation": "The ordering is the entire point and is where implementations go wrong. Taking max(0, value) trade by trade and then summing gives the gross exposure and ignores netting completely; summing first and then taking the positive part credits the offsets. The difference is large for a book of two-way trades with the same counterparty. Two practical notes: the simulation must be done under the REAL-WORLD measure if the purpose is credit limit setting, and under the risk-neutral measure if it feeds CVA, because one is a forecast and the other a valuation. And collateral is applied path by path after netting, with the margin period of risk built in by lagging the collateral behind the exposure.",
+      "technique": "Exposure simulation with netting",
+      "difficultyRationale": "The order of netting and the positive-part operation is the discriminating detail."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a close-out auction, and why does a CCP run one rather than simply liquidating a defaulter's portfolio?",
+      "canonicalAnswer": "The CCP auctions the defaulted member's portfolio to surviving members, usually after hedging the largest risks. It auctions rather than liquidating because dumping a large derivatives portfolio into the market would move prices against the CCP and produce a far worse outcome.",
+      "explanation": "The Nasdaq Clearing default of 2018 and the Lehman close-out at LCH are the reference cases, and the difference in outcome is instructive: LCH hedged first, then auctioned, and used only a fraction of Lehman's margin. Two design features make auctions work. Members are usually obliged to bid, and the incentive is sharpened by juniorisation — a member submitting a poor bid has its default fund contribution allocated losses first, so bidding badly is expensive. The residual weakness is that the members most able to price the portfolio are the ones who then own more of the same risk, so an auction in a systemic crisis may find no capable bidder at any price.",
+      "technique": "Default management auctions",
+      "difficultyRationale": "Requires the market-impact rationale plus the incentive mechanism that makes auctions function."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is initial margin at a CCP typically calculated with a filtered historical simulation or SPAN-style model rather than a simple volatility scaling?",
+      "canonicalAnswer": "Because IM must cover the tail of a portfolio's P&L over the margin period of risk, including non-linear positions and the offsets between them, which a single volatility number cannot represent. Scenario-based models revalue the whole portfolio under many joint scenarios.",
+      "explanation": "A volatility scaling implicitly assumes linearity and normality, both of which fail for options portfolios where the loss distribution is asymmetric and the worst case need not be at the largest move. Scenario models — SPAN's grid of price and volatility shifts, or a filtered historical simulation over hundreds of past days — capture that shape and credit genuine offsets between positions. Two design tensions worth naming. The model must be conservative enough to cover a default but not so conservative that clearing becomes uneconomic. And it must be anti-procyclical: a purely reactive model raises margin sharply in a crisis, so regulators require floors, stress-period weighting or buffers to dampen the increase — the same procyclicality argument that runs through the rest of the framework.",
+      "technique": "CCP margin methodologies",
+      "difficultyRationale": "Requires the non-linearity argument plus the procyclicality constraint on the model design."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Two dealers have a zero-threshold CSA with daily variation margin. Their residual counterparty exposure is best described as:",
+      "options": [
+        "The potential market move over the margin period of risk",
+        "Zero",
+        "The full mark-to-market of the netting set",
+        "The minimum transfer amount only"
+      ],
+      "correctOption": 0,
+      "explanation": "Daily variation margin at a zero threshold keeps CURRENT exposure near zero, but not future exposure: if the counterparty defaults, you receive no further margin and the market keeps moving for the days it takes to close out and replace the trades. That gap-risk window is the residual exposure and is what initial margin is sized against. It is why 'fully collateralised' does not mean 'no counterparty risk', and why CVA on a daily-margined netting set is small but not zero.",
+      "technique": "Residual exposure under daily margining",
+      "difficultyRationale": "Requires distinguishing current from future exposure under a collateral agreement."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a credit support annex downgrade trigger, and why do supervisors regard such clauses as dangerous?",
+      "canonicalAnswer": "A CSA clause requiring additional collateral, or a lower threshold, if a party is downgraded below a specified rating. Supervisors dislike them because they concentrate large collateral demands at exactly the moment a firm is under stress, accelerating failure.",
+      "explanation": "The clause looks prudent from the individual counterparty's perspective — more protection as credit quality falls — but in aggregate it is a cliff. AIG is the canonical case: downgrades triggered collateral calls of tens of billions on its CDS book, which it could not meet, and that liquidity demand rather than any realised credit loss is what forced the rescue. The general lesson is that contractual terms which are individually rational can be collectively destabilising, and it is why liquidity stress tests are required to include the contingent outflows from rating triggers, and why the LCR assigns them specific run-off assumptions.",
+      "technique": "Contingent collateral obligations",
+      "difficultyRationale": "Requires seeing that an individually prudent clause is systemically destabilising, with the AIG mechanism as evidence."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does a CVA desk hedge, and what makes the hedge imperfect?",
+      "canonicalAnswer": "It hedges the credit component by buying CDS protection on the counterparty and the market component by taking offsetting market-risk positions, since CVA is sensitive to both. The hedge is imperfect because many counterparties have no liquid CDS, the cross-gamma between credit and market factors is hard to hedge, and hedging CDS creates its own basis and liquidity risk.",
+      "explanation": "CVA is a hybrid: its value depends on the counterparty's credit spread AND on the exposure, which depends on market rates, so a complete hedge needs both legs and their interaction. The gaps are practical. Single-name CDS exists for a few hundred names and almost no corporates outside that, so most counterparty credit is hedged with index proxies, leaving a basis that can be large. Cross-gamma requires rebalancing both legs as either moves. And a bank buying protection on its clients is selling their credit into a market that will price it wider precisely in a crisis. Under Basel III, hedges only reduce capital if they qualify as eligible under the CVA framework, so an economically sound hedge can still leave the capital charge in place.",
+      "technique": "CVA hedging and its limits",
+      "difficultyRationale": "Requires the hybrid nature of the exposure and several distinct reasons the hedge fails."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does a longer-dated derivative carry more counterparty risk than a shorter one of the same notional, even if both are fully margined daily?",
+      "canonicalAnswer": "Because there is more time for the counterparty's credit quality to deteriorate and for the exposure to grow, so the cumulative default probability over the life is higher and the peak potential future exposure is larger. Daily margining caps current exposure, not the CVA integral over ten years.",
+      "explanation": "CVA integrates expected exposure against the marginal default probability at every future date, so lengthening the trade adds terms to the sum in both factors. Cumulative default probability rises with horizon even for a strong credit, and the diffusion of market factors widens the exposure distribution as the square root of time. Margining reduces the exposure at each date to roughly the margin period of risk's worth of market move, but it does not remove the fact that there are 2,500 such dates in a ten-year trade rather than 250. This is why long-dated uncollateralised corporate swaps are the dominant contributor to most banks' CVA.",
+      "technique": "Tenor as a driver of counterparty risk",
+      "difficultyRationale": "Requires seeing that margining bounds exposure per date while tenor multiplies the number of dates."
+    },
+    {
+      "topicId": "counterparty-margin",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A client asks why the same swap is quoted at different prices depending on whether they sign a CSA. Explain the components of the difference.",
+      "canonicalAnswer": "Without a CSA the dealer bears counterparty default risk (CVA) and must fund the uncollateralised position over its life (FVA), and the trade attracts regulatory capital (KVA). With a zero-threshold CSA all three shrink towards zero, so the quoted spread is materially tighter.",
+      "explanation": "The xVA stack is the honest answer to why a 'standard' swap has no standard price. CVA is the expected loss from the client defaulting while owing the dealer money. FVA is the cost of funding the dealer's collateral posted on the offsetting hedge, which is not returned by the uncollateralised client leg. KVA is the cost of the capital the dealer must hold against the exposure for the trade's life. Discounting also changes: a collateralised trade is discounted at the collateral rate (OIS), an uncollateralised one at something closer to the dealer's funding curve. For a long-dated trade with a weak credit these adjustments can exceed the trade's own risk margin, which is why clearing and collateral agreements spread as fast as they did.",
+      "technique": "xVA decomposition of a quoted spread",
+      "difficultyRationale": "Requires naming three separate adjustments and the discounting change, and knowing why they collapse under a CSA."
     }
   ]
 }
