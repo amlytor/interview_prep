@@ -6450,11 +6450,11 @@
       "topicId": "markov-chains",
       "difficulty": "easy",
       "type": "free_text",
-      "prompt": "State the Markov property in one sentence.",
-      "canonicalAnswer": "Given the present state, the future is independent of the past: P(X_{n+1} = j | X_n = i, and all earlier states) = P(X_{n+1} = j | X_n = i).",
-      "explanation": "'Memorylessness': the current state contains everything relevant about the past. This is what makes the whole machinery work — one transition matrix describes the dynamics for all time. In practice you often ENFORCE it by enlarging the state: if tomorrow depends on the last two days, make the state the PAIR of the last two days and the property holds again.",
-      "technique": "Definition recall",
-      "difficultyRationale": "States a definition; no chain is analysed."
+      "prompt": "A Markov chain is in state 3. Does the chain's next move depend on how long it has already been in state 3?",
+      "canonicalAnswer": "No. The Markov property says the next state depends only on the CURRENT state, so the time already spent there is irrelevant — in discrete time the transition probabilities are the same on every visit and every step.",
+      "explanation": "This is memorylessness stated operationally rather than as a definition. It is also the property that most often fails in practice: credit ratings show momentum, so how long a firm has held a rating predicts its next move, and machine downtime depends on how long a part has been running. The remedy in both cases is the same — enlarge the state to include the duration, or move to a semi-Markov model where holding times have an arbitrary distribution. In continuous time, holding the Markov property forces the holding time to be exponential, for exactly this reason.",
+      "technique": "Memorylessness of the state",
+      "difficultyRationale": "Applies the definition to a concrete situation rather than asking for a restatement."
     },
     {
       "topicId": "markov-chains",
@@ -9513,6 +9513,860 @@
       "explanation": "The xVA stack is the honest answer to why a 'standard' swap has no standard price. CVA is the expected loss from the client defaulting while owing the dealer money. FVA is the cost of funding the dealer's collateral posted on the offsetting hedge, which is not returned by the uncollateralised client leg. KVA is the cost of the capital the dealer must hold against the exposure for the trade's life. Discounting also changes: a collateralised trade is discounted at the collateral rate (OIS), an uncollateralised one at something closer to the dealer's funding curve. For a long-dated trade with a weak credit these adjustments can exceed the trade's own risk margin, which is why clearing and collateral agreements spread as fast as they did.",
       "technique": "xVA decomposition of a quoted spread",
       "difficultyRationale": "Requires naming three separate adjustments and the discounting change, and knowing why they collapse under a CSA."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Standard Brownian motion has a scaling property. What is the distribution of W_{4t} in terms of W_t?",
+      "canonicalAnswer": "W_{4t} has the same law as 2*W_t. In general W_{ct} has the same law as sqrt(c)*W_t.",
+      "explanation": "Both sides are normal with mean zero, and Var(W_{4t}) = 4t while Var(2W_t) = 4t, so the laws agree — and the same argument extends to the whole path, making Brownian motion self-similar with exponent 1/2. This is the formal statement behind square-root-of-time scaling: zoom in on time by a factor c and you must zoom in on space by sqrt(c) to see the same picture. It is also why Brownian paths have infinite length — each halving of the time step halves the distance covered per step by only sqrt(2), so the total grows without bound.",
+      "technique": "Brownian scaling / self-similarity",
+      "difficultyRationale": "One variance comparison, with the sqrt(c) exponent as the fact to hold."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under the risk-neutral measure, with S following geometric Brownian motion, what is the probability that S_T exceeds K?",
+      "canonicalAnswer": "N(d_2), where d_2 = [ln(S_0/K) + (r - sigma^2/2)T] / (sigma*sqrt(T)).",
+      "explanation": "ln S_T is normal with mean ln S_0 + (r - sigma^2/2)T and standard deviation sigma*sqrt(T), so P(S_T > K) = P(Z > -d_2) = N(d_2). This is why N(d_2) appears in Black-Scholes as the coefficient of the discounted strike: the second term is the strike paid, weighted by the risk-neutral probability of paying it. Two cautions. It is a RISK-NEUTRAL probability, so it is not the real-world chance of finishing in the money — that would use mu in place of r and is typically higher for equities. And N(d_1), the delta, is a different quantity despite the similar form; conflating the two is the standard error on this topic.",
+      "technique": "Risk-neutral exercise probability",
+      "difficultyRationale": "One lognormal probability, with the N(d1)/N(d2) distinction as the trap."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "For geometric Brownian motion with drift mu = 10% and volatility sigma = 40%, compare the mean and the median of S_1/S_0. What does the gap represent?",
+      "canonicalAnswer": "The mean is e^0.10 = 1.105 and the median is e^(0.10 - 0.08) = e^0.02 = 1.020. The gap is volatility drag — the difference between arithmetic and geometric average growth.",
+      "explanation": "E[S_T] = S_0 e^{mu T} because the Ito correction cancels against the lognormal's own variance term, while the median is S_0 e^{(mu - sigma^2/2)T} because the median of a lognormal is the exponential of its log-mean. So the typical path grows at only 2% while the average grows at 10%, and the whole difference is sigma^2/2 = 8%. The intuition is that the mean is pulled up by a small number of very large outcomes, which is a property of every multiplicative process. It is also the mathematics behind why a fund with high volatility and a good average return can leave the median investor with almost nothing.",
+      "technique": "Mean versus median of a lognormal",
+      "difficultyRationale": "Two formulas and the interpretation of their difference."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the Ito isometry and say what it is used for.",
+      "canonicalAnswer": "E[(integral of f(s) dW_s from 0 to T)^2] = E[integral of f(s)^2 ds from 0 to T]. It converts the variance of a stochastic integral into an ordinary time integral.",
+      "explanation": "It is the workhorse for computing variances in continuous time — anything of the form 'what is the variance of this hedged position' reduces to an ordinary integral by this identity. The intuition comes straight from (dW)^2 = dt: squaring the stochastic increments turns them into time increments, and cross terms vanish because increments over disjoint intervals are independent with mean zero. A worked case: the variance of the integral of sigma dW over [0,T] with constant sigma is sigma^2 T, recovering the familiar variance of Brownian motion scaled by sigma.",
+      "technique": "Ito isometry",
+      "difficultyRationale": "One identity plus the reason it follows from the quadratic variation."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is the Ito integral of a well-behaved process a martingale, and what does that fail for the Stratonovich integral?",
+      "canonicalAnswer": "Because the integrand is evaluated at the LEFT endpoint of each interval, so it is independent of the increment dW that multiplies it, making each term conditionally mean zero. Stratonovich evaluates at the midpoint, which correlates the integrand with the increment and destroys the martingale property.",
+      "explanation": "The choice of evaluation point is the entire difference between the two integrals, and Ito's choice is the financially meaningful one: you must decide your hedge BEFORE observing the next move, which is precisely a left-endpoint rule. That non-anticipating requirement gives you the martingale property, and with it the whole apparatus of risk-neutral pricing. Stratonovich obeys the ordinary chain rule with no correction term, which makes it more convenient in physics where the equations come from a symmetric limit, but it implies a hedge that peeks at the increment it is trading against.",
+      "technique": "Ito versus Stratonovich",
+      "difficultyRationale": "Requires linking the evaluation point to the martingale property and to a financial interpretation."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Use Ito's lemma to show that W_t^2 - t is a martingale.",
+      "canonicalAnswer": "With f(t,w) = w^2 - t, df = (df/dt)dt + (df/dw)dW + 0.5*(d2f/dw2)(dW)^2 = -dt + 2W dW + 0.5*2*dt = 2W dW. Since the dt terms cancel, the process is a driftless Ito integral and hence a martingale.",
+      "explanation": "The partial derivatives are df/dt = -1, df/dw = 2w and d2f/dw2 = 2. Substituting and using (dW)^2 = dt, the -dt from the time derivative is exactly cancelled by the +dt from the second-order term. What remains is 2W dW with no drift, and a driftless Ito integral with a square-integrable integrand is a martingale. Reading it the other way round is instructive: the -t is precisely the compensator that removes the systematic growth in W^2, since E[W_t^2] = t. This is the simplest non-trivial example of the general recipe — find the compensator, subtract it, get a martingale — which is what Doob decomposition formalises.",
+      "technique": "Ito's lemma to verify a martingale",
+      "difficultyRationale": "Requires the full three-term expansion and the observation that the drift cancels exactly."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the reflection principle for Brownian motion, and use it to write P(max of W over [0,t] >= a).",
+      "canonicalAnswer": "Any path that touches level a can be reflected after its first touch to give an equally likely path ending on the other side of a. Hence P(max over [0,t] >= a) = 2*P(W_t >= a) for a > 0.",
+      "explanation": "The argument is that paths hitting a and finishing above a are in one-to-one, equally likely correspondence with paths hitting a and finishing below it. Since every path finishing above a must have hit a, P(hit a) = 2 P(W_t > a). It is the key to pricing barrier options, and it explains a fact people find surprising: the probability of ever touching a level is exactly twice the probability of ending beyond it, so a one-standard-deviation barrier is touched about 32% of the time over the period even though the endpoint exceeds it only 16% of the time. The principle requires a driftless process, which is why barrier formulas for drifting assets carry an extra factor.",
+      "technique": "Reflection principle and first passage",
+      "difficultyRationale": "Requires the bijection argument and the factor of two it produces."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Write down the Ornstein-Uhlenbeck SDE and state its stationary distribution.",
+      "canonicalAnswer": "dX = theta*(mu - X)dt + sigma*dW. The stationary distribution is normal with mean mu and variance sigma^2/(2*theta).",
+      "explanation": "The drift pulls X back towards mu at a rate proportional to the distance, so unlike Brownian motion the process does not wander off — the variance converges to a finite level rather than growing with t. The half-life of a deviation is ln(2)/theta, which is the number to quote when someone asks how fast a mean-reverting series forgets a shock. The stationary variance shows the trade-off directly: more noise widens the distribution, faster reversion narrows it. In finance OU appears as the Vasicek short-rate model, as the log-price model for cointegrated pairs trades, and as the variance process in several stochastic volatility models.",
+      "technique": "Ornstein-Uhlenbeck process",
+      "difficultyRationale": "Requires the SDE and the stationary moments, which do not follow by inspection."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Vasicek and CIR are both mean-reverting short-rate models. What is the structural difference and what does it buy?",
+      "canonicalAnswer": "Vasicek has constant volatility, dr = theta(mu - r)dt + sigma dW, and permits negative rates. CIR multiplies the diffusion by sqrt(r), dr = theta(mu - r)dt + sigma*sqrt(r)*dW, so volatility vanishes as r approaches zero and rates stay non-negative when 2*theta*mu >= sigma^2.",
+      "explanation": "The sqrt(r) term is the whole difference: as the rate falls the noise shrinks, so the drift dominates near zero and pulls the process back up. The Feller condition 2*theta*mu >= sigma^2 is what guarantees strict positivity. Vasicek's negative rates were treated as a fatal flaw for decades and then became a feature after 2014, when several currencies traded with genuinely negative policy rates — a useful reminder that a model's 'unrealistic' behaviour is a statement about the regime you assumed. Both are affine models, so both give closed-form bond prices, which is why they survived despite their single factor being an oversimplification of the curve.",
+      "technique": "Vasicek versus CIR",
+      "difficultyRationale": "Requires the structural difference, the Feller condition, and judgement about what counts as a flaw."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State Girsanov's theorem informally and say what it accomplishes in derivative pricing.",
+      "canonicalAnswer": "Changing to an equivalent probability measure changes the DRIFT of a Brownian motion but not its volatility: under the new measure, W~_t = W_t + (integral of the market price of risk) is a Brownian motion. It is what lets you replace the real-world drift mu with the risk-free rate r for pricing.",
+      "explanation": "The two measures agree on which events are possible — that is what equivalent means — so they must agree on volatility, since volatility is determined pathwise by the quadratic variation and is therefore the same under both. Only the drift is free to change. That asymmetry is the reason volatility is estimable from data and the drift is essentially a modelling choice: quadratic variation converges quickly from high-frequency data, while the drift requires decades. In pricing, Girsanov is the formal licence to move to the measure where discounted prices are martingales, and the amount by which the drift shifts is exactly the market price of risk.",
+      "technique": "Girsanov and the change of measure",
+      "difficultyRationale": "Requires the drift-not-volatility statement and its estimation consequence."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What does the Feynman-Kac formula say, and why is it useful?",
+      "canonicalAnswer": "The solution to a certain parabolic PDE can be written as an expectation of a functional of a diffusion: if f solves df/dt + mu*df/dx + 0.5*sigma^2*d2f/dx2 - r*f = 0 with terminal condition f(T,x) = h(x), then f(t,x) = E[e^{-r(T-t)} h(X_T) | X_t = x].",
+      "explanation": "It is the bridge between the two ways of pricing a derivative. Solve the Black-Scholes PDE numerically, or simulate the underlying and average the discounted payoff — Feynman-Kac says these are the same answer, so you may use whichever is computationally convenient. In practice PDE methods win in one or two dimensions and for early exercise, while Monte Carlo wins in high dimension, because its error rate does not depend on dimension. The formula also explains why the Black-Scholes PDE has no mu in it and the corresponding expectation is taken under the risk-neutral measure: the same drift appears in both representations.",
+      "technique": "Feynman-Kac",
+      "difficultyRationale": "Requires the correspondence in both directions and the practical criterion for choosing a method."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Write down Ito's lemma for a function of two correlated processes, f(X, Y).",
+      "canonicalAnswer": "df = f_x dX + f_y dY + 0.5*f_xx (dX)^2 + 0.5*f_yy (dY)^2 + f_xy dX dY, where for dX = ... + sigma_X dW_1 and dY = ... + sigma_Y dW_2 with correlation rho, the cross term is dX dY = rho*sigma_X*sigma_Y dt.",
+      "explanation": "The new ingredient is the cross term f_xy dX dY, which contributes rho*sigma_X*sigma_Y*f_xy*dt. It vanishes when the drivers are independent, which is why the one-dimensional lemma looks simpler than it is. This is where correlation enters the pricing of every multi-asset derivative: a spread option, a quanto, a best-of basket. The quanto adjustment is the cleanest example — the drift of a foreign asset paid in domestic currency picks up a term proportional to the correlation between the asset and the exchange rate, and that term comes directly from this cross derivative.",
+      "technique": "Multi-dimensional Ito's lemma",
+      "difficultyRationale": "Requires the cross term and knowing where it shows up in pricing."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Compute E[exp(sigma * W_t)] for standard Brownian motion, and say why the answer is not 1.",
+      "canonicalAnswer": "exp(sigma^2 * t / 2). It is not 1 because the exponential is a convex function, so by Jensen's inequality E[e^X] > e^{E[X]} = e^0 = 1.",
+      "explanation": "W_t is normal with mean 0 and variance t, and the moment generating function of a normal is E[e^{sX}] = exp(s*mean + s^2*variance/2), giving exp(sigma^2 t/2). The convexity reading is the one worth carrying: the upside outcomes of the exponential grow much faster than the downside ones shrink, so the average is dragged upward even though the exponent averages to zero. That single fact explains why E[S_T] for geometric Brownian motion is S_0 e^{mu T} despite the log drifting at mu - sigma^2/2, and it is the same Jensen gap that appears as convexity value in bonds and as the volatility premium in options.",
+      "technique": "Lognormal moment generating function and Jensen's inequality",
+      "difficultyRationale": "Requires the MGF and the convexity explanation for why the correction appears."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a Brownian bridge, and give one use for it.",
+      "canonicalAnswer": "A Brownian motion conditioned to take a specified value at a specified future time — most simply, W conditioned on W_T = 0. Its variance at time t is t(T-t)/T, zero at both ends and maximal in the middle. It is used to fill in intermediate points of a simulated path.",
+      "explanation": "The characteristic shape follows from the variance formula: uncertainty is pinned to zero at both endpoints and peaks halfway. Two practical uses. In Monte Carlo, you can simulate the endpoint first and then fill in the path by bridging, which is what makes quasi-random sequences effective — the most important dimensions are sampled first. And in barrier option pricing, discretely simulated paths systematically miss barrier crossings that happen between time steps, and the bridge gives the exact probability that a crossing occurred within an interval, correcting the bias without shrinking the step size.",
+      "technique": "Brownian bridge",
+      "difficultyRationale": "Requires the variance profile plus a genuine application."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Write down the Heston model and say what the correlation parameter controls.",
+      "canonicalAnswer": "dS = mu*S*dt + sqrt(v)*S*dW_1 and dv = kappa*(theta - v)*dt + xi*sqrt(v)*dW_2, with correlation rho between dW_1 and dW_2. Rho controls the SKEW of the implied volatility surface.",
+      "explanation": "The variance process is a CIR process, so it mean-reverts to theta at speed kappa and stays non-negative under the Feller condition. Reading the parameters onto the surface is the practical skill: rho negative tilts the surface so downside strikes carry higher implied volatility, matching the equity skew, because a falling price is now associated with rising volatility; xi (vol of vol) controls the CURVATURE, so a larger xi produces a more pronounced smile; and kappa governs how fast the smile flattens with maturity. Heston's popularity comes from having a semi-closed-form vanilla price via characteristic functions, so calibration is fast enough for production use.",
+      "technique": "Heston stochastic volatility",
+      "difficultyRationale": "Requires the SDE pair and the mapping from parameters to observable surface features."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does a jump-diffusion model differ from pure diffusion, and what feature of market data motivates it?",
+      "canonicalAnswer": "It adds a compound Poisson jump term: dS/S = (mu - lambda*k)dt + sigma*dW + (J-1)dN, where N is a Poisson process. It is motivated by the fact that prices actually gap — overnight and on news — which a continuous path cannot produce.",
+      "explanation": "A diffusion has continuous paths, so it can only reach a distant level by passing through everything in between, and over a short horizon it therefore assigns essentially zero probability to a large move. Real markets gap, and the consequences show up in two places: short-dated options are far more expensive than a diffusion model implies, which is the steep short-maturity smile, and delta hedging fails because you cannot rehedge through a gap. Merton's jump-diffusion prices vanillas as a Poisson-weighted sum of Black-Scholes prices, which is tractable. The deeper implication is that the market becomes incomplete — jump risk cannot be hedged with the underlying alone — so a unique price no longer follows from no-arbitrage.",
+      "technique": "Jump diffusion",
+      "difficultyRationale": "Requires the model form plus the market incompleteness consequence."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Contrast local volatility and stochastic volatility models. Which fits the surface exactly, and which produces more realistic dynamics?",
+      "canonicalAnswer": "Local volatility makes sigma a deterministic function of spot and time, sigma(S,t), and by Dupire's construction fits every vanilla price exactly. Stochastic volatility makes it a separate random process and generally cannot fit the surface exactly, but produces more realistic forward smile dynamics.",
+      "explanation": "The trade-off is the central modelling decision for an exotics desk. Local volatility is a perfect calibrator and a poor forecaster: it implies that the smile flattens and slides in a way markets do not exhibit, so it misprices forward-starting and cliquet products. Stochastic volatility keeps the smile alive at future dates because volatility remains random, which matches observed behaviour, but leaves calibration error on the vanillas. The industry answer is the hybrid: local-stochastic volatility models keep the stochastic component for dynamics and add a local component to close the calibration gap.",
+      "technique": "Local versus stochastic volatility",
+      "difficultyRationale": "Requires understanding that exact calibration and realistic dynamics are in tension."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are simulating geometric Brownian motion. Why should you use the exact solution rather than an Euler discretisation of the SDE?",
+      "canonicalAnswer": "Because GBM has a closed-form solution, so you can sample S_T exactly in one step with no discretisation bias, whatever the time step. Euler introduces bias proportional to the step size and can even produce negative prices.",
+      "explanation": "Simulating log S with increments (mu - sigma^2/2)dt + sigma*sqrt(dt)*Z is exact at every point of the grid, so for a European payoff you need one draw per path rather than hundreds. Euler applied to dS = mu S dt + sigma S dW is only first-order accurate and, because the increment is additive, can drive S below zero for a large step. The general lesson: check whether the SDE has an exact solution before discretising, and where it does not — Heston's variance process being the standard example, where Euler famously produces negative variance — use a scheme designed for it, such as Milstein or a full truncation or quadratic-exponential scheme.",
+      "technique": "Exact versus discretised simulation",
+      "difficultyRationale": "Requires knowing that discretisation bias is avoidable here, and where it is not."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Why does Brownian motion have infinite total variation but finite quadratic variation, and what does that imply for calculus?",
+      "canonicalAnswer": "The sum of absolute increments over [0,T] diverges as the partition is refined, because each increment is of order sqrt(dt) and there are 1/dt of them, giving order 1/sqrt(dt). The sum of SQUARED increments converges to T, because each is of order dt and there are 1/dt of them. Ordinary calculus needs finite variation, so it fails; Ito calculus is built on the quadratic variation instead.",
+      "explanation": "The counting argument is the whole content: n intervals each of length T/n produce increments of size sqrt(T/n), so the absolute sum behaves like n*sqrt(T/n) = sqrt(nT), which diverges, while the squared sum behaves like n*(T/n) = T, which does not. Infinite variation is why the Riemann-Stieltjes integral against dW does not exist pathwise and a new construction is needed. Finite non-zero quadratic variation is why the second-order term survives in Ito's lemma. For any differentiable function the quadratic variation is zero, which is exactly why ordinary calculus has no correction term.",
+      "technique": "Variation and quadratic variation",
+      "difficultyRationale": "Requires the order-counting argument for both sums and the consequence for each."
+    },
+    {
+      "topicId": "stochastic-calculus",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the market price of risk in a one-factor model, and what does it mean that all derivatives on the same underlying share it?",
+      "canonicalAnswer": "lambda = (mu - r)/sigma: the excess return per unit of volatility. All derivatives on the same underlying must share it, because otherwise you could combine two of them into a riskless portfolio earning more than r.",
+      "explanation": "The no-arbitrage argument is the substance. Take two derivatives on the same source of randomness, weight them so the dW terms cancel, and the resulting portfolio is riskless — so it must earn r, and rearranging gives the same lambda for both. That single common value is what makes the change of measure well defined, since Girsanov's shift is exactly lambda. It also explains why a derivative's own expected return is irrelevant to its price: its excess return is determined by its volatility times a lambda it does not get to choose. Multi-factor models have a market price of risk per factor, and the same argument applies factor by factor.",
+      "technique": "Market price of risk and the no-arbitrage argument",
+      "difficultyRationale": "Requires reconstructing the two-derivative hedging argument that forces lambda to be common."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A martingale has constant expectation. Does it also have constant variance?",
+      "options": [
+        "No — variance typically grows over time",
+        "Yes, both are constant by definition",
+        "Yes, provided the increments are independent",
+        "Only if the process is a random walk"
+      ],
+      "correctOption": 0,
+      "explanation": "The martingale property constrains only the conditional MEAN. A symmetric random walk is the standard example: E[S_n] = 0 for all n, while Var(S_n) = n grows without bound. That combination — a fixed centre with a spreading distribution — is exactly what makes a fair game dangerous, since your expected wealth is unchanged while the range of outcomes widens with every play. It is also why 'a martingale' and 'a process that goes nowhere' are different statements.",
+      "technique": "What the martingale property does and does not constrain",
+      "difficultyRationale": "One distinction, with the random walk as the immediate counterexample."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State three sufficient conditions under which the optional stopping theorem applies, and give a case where it fails.",
+      "canonicalAnswer": "It holds if the stopping time T is bounded; or if T is almost surely finite and the process is bounded up to T; or if E[T] is finite and the increments are bounded. It fails for the 'quit when £1 ahead' strategy on a symmetric random walk, where T is finite almost surely but E[T] is infinite and the process is unbounded below.",
+      "explanation": "Each condition rules out the same pathology in a different way: a strategy that requires unbounded time and unbounded interim losses. The failing example is worth carrying because it is the mathematical statement of why martingale betting systems do not work in practice — E[S_T] = 1 is genuinely not equal to E[S_0] = 0, but achieving it demands infinite expected time and an unbounded bankroll, neither of which anyone has. Checking the conditions is not pedantry; the theorem's conclusion is false without them.",
+      "technique": "Conditions for optional stopping",
+      "difficultyRationale": "Requires all three conditions and a concrete counterexample showing why they are needed."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a stopping time, and give an example of a rule that is NOT one.",
+      "canonicalAnswer": "A random time T such that the event {T = n} is determined by the information available up to time n — you can tell whether you have stopped without seeing the future. 'Sell at the highest price of the month' is not a stopping time, because you cannot identify the high until the month is over.",
+      "explanation": "The condition is exactly non-anticipation, and it is what makes the whole theory apply to real trading rules. 'The first time the price hits 110' is a stopping time; so is 'the tenth day' and 'the first day after a 5% fall'. 'The day before the crash' and 'the peak' are not, and any backtest that implicitly uses one is producing results that could not have been achieved. This is the formal underpinning of look-ahead bias: a strategy defined by a non-stopping time is not implementable, however good its historical performance.",
+      "technique": "Stopping times and non-anticipation",
+      "difficultyRationale": "Requires the measurability condition stated intuitively plus a violating example."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "For an asymmetric random walk with P(+1) = p and P(-1) = q = 1-p, show that (q/p)^{S_n} is a martingale.",
+      "canonicalAnswer": "E[(q/p)^{S_{n+1}} | S_n] = (q/p)^{S_n} * [p*(q/p) + q*(p/q)] = (q/p)^{S_n} * [q + p] = (q/p)^{S_n}. So the process is a martingale.",
+      "explanation": "The step up multiplies by (q/p) and occurs with probability p, contributing q; the step down multiplies by (p/q) and occurs with probability q, contributing p. The two contributions sum to 1, which is precisely the point — the base (q/p) is chosen to make that happen. This exponential martingale is the tool for the unfair gambler's ruin: apply optional stopping between barriers 0 and N to get the ruin probability (1 - (q/p)^k)/(1 - (q/p)^N) with no differential equation required. Finding the right martingale is usually the whole difficulty in this class of problem.",
+      "technique": "Exponential martingale for a biased walk",
+      "difficultyRationale": "Requires verifying the property algebraically and knowing what it is then used for."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A gambler with £5 plays a game winning £1 with probability 0.45 and losing £1 otherwise, stopping at £0 or £10. Find the probability of reaching £10.",
+      "canonicalAnswer": "About 0.27. With r = q/p = 0.55/0.45 = 1.2222, the probability is (r^5 - 1)/(r^10 - 1) = (2.727 - 1)/(7.438 - 1) = 1.727/6.438 = 0.268.",
+      "explanation": "Apply optional stopping to the martingale (q/p)^{S_n} between the barriers: r^5 = P*r^10 + (1-P)*r^0, so P = (r^5 - 1)/(r^10 - 1). With r = 1.2222, r^5 = 2.727 and r^10 = 7.438, giving P = 1.727/6.438 = 0.268. Compare with the fair-game answer of 5/10 = 0.5: a 5% edge against you has cut the chance of doubling from 50% to 27%. That sensitivity is the lesson — ruin probabilities respond to the edge exponentially through r^N, not linearly, which is why a small house edge is decisive over many plays.",
+      "technique": "Unfair gambler's ruin via the exponential martingale",
+      "difficultyRationale": "Requires constructing the right martingale, applying optional stopping, and careful arithmetic with powers."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the martingale convergence theorem and say what it implies for a non-negative martingale.",
+      "canonicalAnswer": "A martingale bounded in L1 (in particular, any non-negative martingale) converges almost surely to a finite limit. For a non-negative martingale this means the process settles down to some random value rather than oscillating forever.",
+      "explanation": "The result is stronger than it first appears: no boundedness of the paths is required, only of the expectation, and non-negativity delivers that automatically since E[|X_n|] = E[X_n] = X_0. A concrete consequence is that a non-negative martingale that hits zero stays there — it cannot recover, because zero is absorbing for a non-negative process with constant expectation. That is the formal reason a gambler with limited funds facing an unbounded opponent is eventually ruined. Note also that almost sure convergence does not imply convergence of the expectations: the limit's mean can be strictly less than X_0 unless the family is uniformly integrable.",
+      "technique": "Martingale convergence",
+      "difficultyRationale": "Requires the statement plus the subtlety that the limit's expectation need not be preserved."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Why does uniform integrability matter for the optional stopping theorem?",
+      "canonicalAnswer": "Because without it a martingale can converge almost surely to a limit whose expectation differs from its starting value, so E[X_T] = E[X_0] fails. Uniform integrability is exactly the condition that rules out mass escaping to infinity in the limit.",
+      "explanation": "The failure mode is that a vanishingly small probability of a vanishingly large value contributes a finite amount to the expectation at every finite time and nothing in the limit. The 'quit when £1 ahead' strategy is precisely this: with probability approaching 1 you finish £1 up, and the compensating enormous losses occur with probability approaching zero but never fast enough to be ignored. Uniform integrability requires the tails to be uniformly small across the whole family, which forbids that. In practice you rarely verify it directly — you check one of the sufficient conditions (bounded T, bounded process, or bounded increments with E[T] finite) instead — but knowing what they are all protecting against is what stops you applying the theorem where it does not hold.",
+      "technique": "Uniform integrability and the limits of optional stopping",
+      "difficultyRationale": "Requires articulating a subtle mode of failure that the sufficient conditions exist to prevent."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the Doob decomposition of a submartingale?",
+      "canonicalAnswer": "Any submartingale X_n can be written uniquely as X_n = M_n + A_n, where M is a martingale and A is a predictable, non-decreasing process with A_0 = 0. A is the compensator — the systematic drift stripped out.",
+      "explanation": "The construction is direct: A_n is the running sum of the conditional expected increments E[X_{k+1} - X_k | F_k], each of which is non-negative for a submartingale, and M is what remains. Predictable means A_{n+1} is known at time n, which is what makes the decomposition unique. The value of it is that it separates the forecastable part of a process from the unforecastable part, and the pattern shows up everywhere: S_n^2 - n is the martingale part of the submartingale S_n^2, with compensator n. The continuous-time analogue is the Doob-Meyer decomposition, which is what underlies the drift-plus-diffusion structure of every SDE.",
+      "technique": "Doob decomposition",
+      "difficultyRationale": "Requires the construction and the role of predictability in making it unique."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "State the Azuma-Hoeffding inequality and say what it is used for.",
+      "canonicalAnswer": "For a martingale with bounded increments |X_k - X_{k-1}| <= c_k, P(|X_n - X_0| >= t) <= 2*exp(-t^2 / (2 * sum of c_k^2)). It gives exponential concentration bounds without needing independence.",
+      "explanation": "It is the martingale generalisation of Hoeffding's inequality, and its power is that the increments need not be independent — only bounded and conditionally mean-zero. That makes it the standard tool for concentration in dependent settings. The classic application is the method of bounded differences: if a function of many random inputs changes by at most c when any single input changes, then building a martingale by revealing the inputs one at a time (a Doob martingale) and applying Azuma shows the function is tightly concentrated around its mean. With all c_k = 1 and n steps the bound is 2*exp(-t^2/2n), so deviations beyond a few multiples of sqrt(n) are exponentially unlikely.",
+      "technique": "Azuma-Hoeffding concentration",
+      "difficultyRationale": "Requires the inequality's form and the bounded-differences application that makes it useful."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Using the gambling-team martingale argument, find the expected number of fair coin tosses until the pattern HTH first appears.",
+      "canonicalAnswer": "10. The suffixes of HTH that are also prefixes are HTH itself and H, contributing 2^3 + 2^1 = 8 + 2 = 10.",
+      "explanation": "Imagine a fresh gambler arriving before each toss with £1, betting on the next letter of HTH and letting winnings ride at fair odds. The casino collects £1 per toss, so its income at the stopping time T has expectation E[T]. Its payout is the total held by gamblers still alive when the pattern completes: one who started at the beginning of the final HTH holds 2^3 = 8, and one who started at the final H holds 2^1 = 2. Since the whole game is fair the two must balance, giving E[T] = 10. The method is entirely mechanical once you can spot the overlaps — sum 2^k over every k such that the last k characters equal the first k. Compare HHH, whose overlaps at 3, 2 and 1 give 8 + 4 + 2 = 14.",
+      "technique": "Conway's leading numbers via the martingale betting argument",
+      "difficultyRationale": "Requires constructing the betting argument and identifying every self-overlap of the pattern."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a Polya urn (draw a ball, return it with an extra ball of the same colour), what quantity is a martingale?",
+      "canonicalAnswer": "The PROPORTION of white balls in the urn. It is a martingale even though the composition drifts, because the expected proportion after a draw equals the current proportion.",
+      "explanation": "Check it with 1 white and 1 black. With probability 1/2 you draw white and the proportion becomes 2/3; with probability 1/2 you draw black and it becomes 1/3. The average is 1/2, the current value. The general argument is the same computation with w white out of n. Since the proportion is a bounded non-negative martingale it converges almost surely — and the striking part is what it converges to: for the standard urn the limit is uniformly distributed on [0,1], so the process locks in an essentially arbitrary long-run proportion. That is a clean model of path dependence and self-reinforcement, and it is used to describe technology adoption and preferential attachment.",
+      "technique": "Polya's urn as a bounded martingale",
+      "difficultyRationale": "Requires identifying the right quantity and knowing the surprising limit distribution."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A branching process has offspring distribution with mean m. What is the martingale, and what does it tell you about extinction?",
+      "canonicalAnswer": "Z_n / m^n is a martingale, where Z_n is the population at generation n. Extinction is certain if m <= 1 (excluding the trivial case where each individual has exactly one offspring), and occurs with probability less than 1 if m > 1.",
+      "explanation": "Each individual has m offspring in expectation, so E[Z_{n+1} | Z_n] = m*Z_n, and dividing by m^{n+1} makes it a martingale. The critical case m = 1 is the interesting one: the population is a martingale outright, its expectation stays at Z_0 forever, and yet it dies out with probability 1 — which is a memorable demonstration that constant expectation says nothing about the typical outcome. For m > 1 the extinction probability is the smallest root in [0,1] of s = G(s), where G is the offspring generating function. The same structure describes default cascades and epidemic spread, with m playing the role of the reproduction number.",
+      "technique": "Branching processes and extinction",
+      "difficultyRationale": "Requires the normalised martingale and the counterintuitive critical case."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is a discounted asset price a martingale under the risk-neutral measure, and what happens if it is not?",
+      "canonicalAnswer": "Because under Q every asset drifts at r, so dividing by the money-market account e^{rt} removes the drift entirely. If a discounted price were not a martingale there would be a trading strategy with positive expected profit and no risk — an arbitrage.",
+      "explanation": "This is the first fundamental theorem of asset pricing: absence of arbitrage is equivalent to the existence of a measure under which discounted prices are martingales. The martingale property is not an assumption bolted on for convenience, it IS the no-arbitrage condition restated. The second theorem adds that the measure is unique exactly when the market is complete, which is why a model with unhedgeable jump risk or stochastic volatility admits a range of arbitrage-free prices rather than a single one. Practically, this is why exotics desks quote a price plus a model reserve: no-arbitrage alone does not pin the number down.",
+      "technique": "Fundamental theorem of asset pricing",
+      "difficultyRationale": "Requires stating the equivalence in both directions and the completeness caveat."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In hypothesis testing, why is the likelihood ratio a martingale under the null hypothesis?",
+      "canonicalAnswer": "Because E_0[L_{n+1}/L_n] = integral of (f_1/f_0)*f_0 = integral of f_1 = 1, so the expected likelihood ratio is unchanged under the null. Hence E_0[L_n] = 1 for all n.",
+      "explanation": "The computation is one line and its consequence is important: by Markov's inequality, P_0(L_n >= k for some n) <= 1/k. So under the null the chance of ever accumulating evidence at odds of 20:1 against it is at most 5%, however long you keep collecting data. That is what makes sequential testing legitimate — you can monitor a likelihood ratio continuously and stop when it crosses a threshold without inflating the error rate, unlike a p-value, which is only valid at a pre-specified sample size. Peeking at p-values is a genuine problem; peeking at likelihood ratios is not, and the martingale property is the reason.",
+      "technique": "Likelihood ratio martingale and sequential testing",
+      "difficultyRationale": "Requires the one-line computation and the non-obvious consequence for optional stopping in testing."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A symmetric random walk is recurrent in one and two dimensions but transient in three. State what that means and why it matters.",
+      "canonicalAnswer": "Recurrent means the walk returns to its starting point with probability 1 and does so infinitely often; transient means it has a positive probability of never returning. In three dimensions the return probability is about 0.34.",
+      "explanation": "Polya's theorem, often summarised as 'a drunk man finds his way home but a drunk bird does not'. The intuition is a counting one: the number of sites reachable in n steps grows like n^{d/2} in the relevant sense, and the expected number of returns is a sum that converges only for d >= 3. The financial relevance is the one-dimensional case: a driftless price process will, given unlimited time, revisit any level — which is why 'wait until it comes back' is a strategy that succeeds with probability 1 and still fails in practice, because the expected waiting time is infinite and any real position has a finite bankroll and a finite horizon.",
+      "technique": "Polya recurrence",
+      "difficultyRationale": "Requires the statement, the dimension threshold, and the practical caveat about infinite expected time."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State Doob's maximal inequality and say what makes it useful.",
+      "canonicalAnswer": "For a non-negative submartingale, P(max over k <= n of X_k >= a) <= E[X_n]/a. It bounds the probability that a process EVER exceeds a level using only its terminal expectation.",
+      "explanation": "The useful part is that it controls the whole path from a single terminal quantity, which is otherwise hard — the running maximum depends on everything that happened, yet the bound needs only E[X_n]. That is what makes it the tool for drawdown-type questions: how likely is a portfolio to breach a limit at any point during a period, as opposed to at the end. The L2 version, E[(max X_k)^2] <= 4*E[X_n^2], is the one used to prove convergence results for stochastic integrals. Note that it applies to submartingales, so it covers |M| and M^2 for a martingale M, which is how it reaches most applications.",
+      "technique": "Doob's maximal inequality",
+      "difficultyRationale": "Requires the statement plus an appreciation of why bounding a running maximum is otherwise hard."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A supermartingale represents an unfavourable game. What does that imply about any strategy for playing it?",
+      "canonicalAnswer": "No strategy based only on past information can make it favourable: for a supermartingale, E[X_T] <= E[X_0] for any bounded stopping time, so your expected wealth never improves however you choose to stop or bet.",
+      "explanation": "The technical statement is that the class of supermartingales is closed under 'martingale transforms' — betting a predictable, non-negative amount on each step. This is the formal version of 'you cannot beat a casino', and it is stronger than it sounds: it holds for arbitrarily clever strategies, varying stake sizes and any stopping rule, provided each decision uses only information already available. It is also the reason a trading strategy with negative expected return per trade cannot be rescued by position sizing or by an exit rule. Sizing changes the distribution of outcomes, not the sign of the expectation.",
+      "technique": "Supermartingales and unbeatable unfavourable games",
+      "difficultyRationale": "Requires stating what class of strategies the result covers, which is the substance."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Give a martingale argument for the expected number of rolls of a fair die needed to see all six faces.",
+      "canonicalAnswer": "Rather than a martingale, the clean route is decomposition into geometric waits: 6/6 + 6/5 + 6/4 + 6/3 + 6/2 + 6/1 = 14.7. A martingale formulation would track the expected remaining time as a compensated process, but the decomposition is both simpler and standard.",
+      "explanation": "This is a case where recognising that a martingale is NOT the right tool is the skill being tested. Optional stopping shines when the quantity of interest is the value of a process at a random time, as in ruin problems and pattern waiting times. Here the natural structure is a sum of independent geometric waits, each with a different success probability, and linearity of expectation finishes it in one line. A good answer says which tool fits and why, rather than forcing the fashionable one — interviewers ask questions like this specifically to see whether a technique is being applied or merely recited.",
+      "technique": "Choosing the right tool: decomposition over martingales",
+      "difficultyRationale": "Tests judgement about method selection rather than execution of a named technique."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A stock price is a martingale under Q. Does that mean a European call on it has zero expected profit under Q?",
+      "canonicalAnswer": "Its DISCOUNTED price is a Q-martingale, so its expected return under Q is r, the same as everything else — no excess profit. But under the real-world measure P the call has a large positive expected return, because it is a levered position in the stock.",
+      "explanation": "The distinction between measures is the whole answer. Under Q every asset earns r by construction, so no instrument looks better than any other and 'expected profit' is not a meaningful comparison. Under P the call's expected return is r + (its elasticity) times the stock's risk premium, and the elasticity of an out-of-the-money option is large — often 5 to 10 — so its expected return can be enormous. That is compensation for risk, not free money, and it is exactly why you cannot read a real-world expected return off a risk-neutral price. Confusing the two is the commonest conceptual error in this area.",
+      "technique": "Expected returns under P versus Q",
+      "difficultyRationale": "Requires distinguishing the measures and quantifying why the real-world return differs."
+    },
+    {
+      "topicId": "martingales",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your P&L from a fully delta-hedged option position should, in theory, be a martingale. In practice it is not. Name three reasons.",
+      "canonicalAnswer": "Discrete rather than continuous rehedging leaves gamma P&L; transaction costs make each rehedge a certain loss; and realised volatility differs from the implied volatility the hedge was built on, so the position earns or loses the variance difference.",
+      "explanation": "The theoretical result assumes continuous, costless hedging at the true volatility, and each assumption fails in a different direction. Discrete hedging leaves a residual whose expectation is zero but whose variance grows as the hedging interval widens, so the P&L is noisier rather than biased. Transaction costs are a systematic drain proportional to the number of rehedges — which is why an optimal hedging frequency exists rather than 'as often as possible'. The volatility mismatch is the largest term and is not noise at all: a long option delta-hedged to expiry earns approximately the integral of (1/2)*gamma*S^2*(realised variance - implied variance), which is a directional bet with a sign you can predict if your volatility forecast is good.",
+      "technique": "Why the hedged P&L is not a martingale in practice",
+      "difficultyRationale": "Requires three distinct failure modes and knowing which is noise and which is directional."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A one-period stock is at 100 and moves to 120 or 80. The risk-free rate is zero. What is the risk-neutral probability of the up move?",
+      "canonicalAnswer": "0.5. Solve 120q + 80(1-q) = 100, giving 40q = 20 and q = 0.5.",
+      "explanation": "The risk-neutral probability is whatever makes the stock's expected value equal its forward price — here just 100, since rates are zero. Note it has nothing to do with how likely the up move actually is: the real-world probability could be 0.8 and q would still be 0.5. The general one-period formula is q = (S*e^{rT} - S_d)/(S_u - S_d), and the requirement that q lie strictly between 0 and 1 is exactly the no-arbitrage condition — if the forward were outside the range [80, 120] you could lock in a profit.",
+      "technique": "Risk-neutral probability in a one-period model",
+      "difficultyRationale": "One linear equation, with the independence from real-world probability as the point."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two analysts disagree completely about whether a stock will rise. They agree on its volatility and on rates. What can you say about their option prices?",
+      "options": [
+        "They must agree, because the drift does not enter the price",
+        "The more bullish analyst will price calls higher",
+        "They will differ unless both use the same real-world probability",
+        "They will agree only if the option is at the money"
+      ],
+      "correctOption": 0,
+      "explanation": "This is the practical face of risk-neutral valuation. The option's price is the cost of the replicating portfolio, and that cost depends on volatility, rates, spot, strike and time — not on anyone's directional view. So two people with opposite opinions must quote the same price or one of them can be arbitraged. It also explains what options desks actually trade: agreement on direction is irrelevant, disagreement on VOLATILITY is where the position is.",
+      "technique": "Drift independence of option prices",
+      "difficultyRationale": "One conceptual consequence, with the intuitive wrong answer as the lead distractor."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the two fundamental theorems of asset pricing.",
+      "canonicalAnswer": "First: a market is arbitrage-free if and only if there exists an equivalent martingale measure under which discounted prices are martingales. Second: that measure is UNIQUE if and only if the market is complete.",
+      "explanation": "The two theorems separate two different questions. The first says no-arbitrage and the existence of a pricing measure are the same statement, which is why risk-neutral valuation is not an extra assumption. The second says uniqueness — and therefore a single well-defined price — requires every payoff to be replicable. Incomplete markets are the normal case in practice: stochastic volatility, jumps, and any unhedgeable risk factor all break completeness, leaving a RANGE of arbitrage-free prices. That range is the theoretical justification for model reserves, and it is why two desks can hold defensible but different marks on the same exotic.",
+      "technique": "The fundamental theorems",
+      "difficultyRationale": "Requires both theorems and the practical significance of incompleteness."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a numeraire, and why can you choose one other than the money-market account?",
+      "canonicalAnswer": "A numeraire is any strictly positive traded asset used as the unit of account — prices are expressed relative to it. You may choose any such asset, and for each there is a corresponding measure under which relative prices are martingales; you pick whichever makes the calculation easiest.",
+      "explanation": "Using the money-market account gives the familiar risk-neutral measure. Using a zero-coupon bond maturing at T gives the T-forward measure, under which the forward price is a martingale and the discount factor comes out of the expectation as a constant — which is exactly what makes pricing an option on a bond tractable when rates are stochastic. Using the annuity gives the swap measure, under which the swap rate is a martingale, and that is what makes the Black formula for swaptions legitimate rather than a heuristic. The change of numeraire is one of the most useful techniques in derivatives pricing precisely because the answer does not depend on the choice, only the difficulty does.",
+      "technique": "Change of numeraire",
+      "difficultyRationale": "Requires the definition plus two concrete cases where an alternative numeraire simplifies the problem."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under the T-forward measure, what is a martingale, and why is that convenient?",
+      "canonicalAnswer": "The forward price of any asset for delivery at T. It is convenient because the stochastic discount factor drops out: V_0 = P(0,T) * E^T[payoff], with the bond price outside the expectation.",
+      "explanation": "Under the risk-neutral measure you must evaluate E[exp(-integral of r ds) * payoff], and when rates are stochastic that discount factor is correlated with the payoff, so it cannot be separated. Switching numeraire to the T-maturity zero-coupon bond makes the discounting deterministic from today's perspective — P(0,T) is just today's bond price — and everything stochastic is confined to the expectation. That is what makes it possible to price a caplet or a bond option with a Black-style formula despite rates being random. It is the cleanest example of the general principle: choose the numeraire that turns the quantity you care about into a martingale.",
+      "technique": "The T-forward measure",
+      "difficultyRationale": "Requires seeing why stochastic discounting is the obstacle and how the numeraire change removes it."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is a real-world Monte Carlo simulation used for risk and a risk-neutral one for pricing? What goes wrong if you swap them?",
+      "canonicalAnswer": "Risk asks what will actually happen, so it needs real-world drifts and probabilities. Pricing asks what a payoff is worth today, which is the cost of replication and requires the risk-neutral measure. Swapping them gives a VaR that understates equity risk (drift set to r rather than mu) and a price that embeds someone's directional view.",
+      "explanation": "The two questions are genuinely different and the error runs in both directions. Using risk-neutral drifts for a ten-year potential future exposure calculation replaces an equity's 8% expected return with a 3% risk-free rate, which materially changes the exposure profile of a long-dated equity derivative. Using real-world drifts to price an option produces a number that is not the replication cost, so it can be arbitraged. The two measures share one thing — volatility, which Girsanov leaves unchanged — and that is why a single volatility calibration can serve both. Note the practical wrinkle that CVA sits awkwardly between the two: it is a valuation, so it uses risk-neutral, while the credit limit built on the same exposure engine should use real-world.",
+      "technique": "Choosing the measure by the question",
+      "difficultyRationale": "Requires the consequence of the error in both directions, plus the borderline CVA case."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What is the state price density (or stochastic discount factor), and how does it relate the two measures?",
+      "canonicalAnswer": "It is the price today of £1 paid in a particular future state, per unit of probability. Prices satisfy V_0 = E^P[m * payoff] where m is the stochastic discount factor, and m is exactly the Radon-Nikodym derivative dQ/dP times the discount factor.",
+      "explanation": "It unifies the two ways of writing a price. Under P you weight the payoff by the SDF, which is low in good states and high in bad ones — that is the whole content of risk aversion, since a payoff concentrated in bad states is worth more per unit of expectation. Under Q you discount at the risk-free rate and use distorted probabilities instead. The two are the same equation rearranged, with the SDF absorbing both the discounting and the probability distortion. Reading it this way makes the risk premium concrete: an asset's expected excess return equals minus the covariance of its return with the SDF, so assets that pay off in bad states command a lower return, which is the general form of CAPM and every factor model.",
+      "technique": "Stochastic discount factor",
+      "difficultyRationale": "Requires connecting three representations of the same pricing equation."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A binomial tree is built with up and down factors u and d. What condition must hold for the model to be arbitrage-free?",
+      "canonicalAnswer": "d < e^{r*dt} < u — the risk-free growth factor must lie strictly between the two possible stock outcomes. Otherwise the risk-neutral probability q = (e^{r*dt} - d)/(u - d) falls outside [0,1].",
+      "explanation": "If the stock's worst outcome still beat cash, you would borrow and buy without risk; if its best outcome failed to beat cash, you would short and lend. The condition is exactly the requirement that q be a genuine probability, which is the first fundamental theorem showing up in the simplest possible model. The practical consequence appears when calibrating trees with the Cox-Ross-Rubinstein choice u = exp(sigma*sqrt(dt)): if the time step is large relative to volatility, or rates are high, the condition can fail and the tree produces negative probabilities. The fix is a smaller time step or a different parameterisation.",
+      "technique": "No-arbitrage condition in the binomial model",
+      "difficultyRationale": "Requires the inequality, its arbitrage interpretation, and the practical case where calibration breaks it."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is an American option's value computed by backward induction rather than by a single expectation?",
+      "canonicalAnswer": "Because the holder chooses when to exercise, so the value at each node is max(immediate exercise, continuation value) — and the continuation value depends on the optimal policy from that node onward. That recursive dependence cannot be written as one expectation over a fixed payoff.",
+      "explanation": "For a European option the payoff is a fixed function of the terminal price, so a single risk-neutral expectation suffices and Monte Carlo works directly. An American option's payoff depends on a stopping rule that you are simultaneously optimising, which is an optimal stopping problem — hence dynamic programming from the terminal date backwards. This is why lattices and PDEs remain the default for American exercise while Monte Carlo, which naturally runs forward, needs the Longstaff-Schwartz regression approach to estimate continuation values. Note the standard result that falls straight out of the comparison: an American call on a non-dividend-paying stock is never worth exercising early, so it equals its European counterpart.",
+      "technique": "Optimal stopping in American option pricing",
+      "difficultyRationale": "Requires seeing that the payoff depends on a policy being optimised, which breaks the single-expectation form."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In an incomplete market, what replaces the unique arbitrage-free price?",
+      "canonicalAnswer": "A RANGE of arbitrage-free prices, bounded below by the cheapest sub-replicating portfolio and above by the cheapest super-replicating one. Any price in that interval is consistent with no arbitrage, and choosing a point within it requires a preference or a model assumption.",
+      "explanation": "Incompleteness means some payoff cannot be replicated, so no-arbitrage alone cannot pin a number down — there are many equivalent martingale measures, each giving a different price. The super-replication bound is often uselessly wide in practice (for an unhedgeable jump risk it can be the full notional), which is why practitioners narrow it with a model instead: choose a specific measure by calibrating a stochastic volatility or jump model, and hold a reserve reflecting the residual spread. This is the formal answer to why exotic marks are contestable, and why the fair-value hierarchy puts these instruments in level 3.",
+      "technique": "Price bounds in incomplete markets",
+      "difficultyRationale": "Requires knowing the bounds exist, why they are often too wide, and what practitioners do instead."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a quanto, and where does the correlation adjustment in its drift come from?",
+      "canonicalAnswer": "A derivative on a foreign-currency asset that settles in domestic currency at a fixed exchange rate. Its drift picks up a term -rho*sigma_S*sigma_FX, arising from the change of measure when converting the payoff to the domestic numeraire.",
+      "explanation": "The correction comes out of the cross term in multi-dimensional Ito when you express the foreign asset in domestic terms and then change measure. Its sign is intuitive: if the asset and the exchange rate are positively correlated, the payoff is worth more in domestic terms precisely when the asset rises, and the quanto strips that benefit away — so the effective drift is reduced. The practical significance is that quanto pricing depends explicitly on a correlation between the asset and FX, which is not directly observable from vanilla option markets, making correlation the dominant model risk for these products.",
+      "technique": "Quanto adjustment",
+      "difficultyRationale": "Requires locating the adjustment in the measure change and reading the sign correctly."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "The risk-neutral density can be recovered from option prices. How?",
+      "canonicalAnswer": "By the Breeden-Litzenberger result: the second derivative of the call price with respect to strike, discounted back, gives the risk-neutral probability density at that strike. f(K) = e^{rT} * d2C/dK2.",
+      "explanation": "The intuition is a butterfly spread: buying a call at K-h, selling two at K and buying one at K+h pays off only if the underlying finishes near K, and its cost divided by h^2 approaches the density as h shrinks — which is exactly a second difference. The result is model-free, requiring only no-arbitrage, so it turns the observed smile into a full implied distribution. Two practical limits: strikes are discrete and bounded, so the tails must be extrapolated with an assumption, and any non-convexity in the observed call prices produces a NEGATIVE density, which is both an arbitrage signal and a common symptom of stale or inconsistent quotes.",
+      "technique": "Breeden-Litzenberger",
+      "difficultyRationale": "Requires the formula, the butterfly intuition, and the practical failure mode."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Why does the risk-neutral distribution implied by equity index options have a fatter left tail than any historical estimate of the real-world distribution?",
+      "canonicalAnswer": "Because the risk-neutral density embeds a risk premium as well as a probability. Investors pay above the actuarially fair price for crash protection, so downside states are OVER-weighted in the risk-neutral measure relative to their true likelihood.",
+      "explanation": "The stochastic discount factor is large in bad states — money is worth more when the market has fallen — so risk-neutral probabilities inflate exactly those states. The observable consequence is that index put options have persistently negative expected returns: systematically selling them has been profitable on average, which is compensation for taking the crash risk rather than a free lunch. This is the same phenomenon as the variance risk premium and as risk-neutral default probabilities exceeding historical default rates. The practical implication for a risk manager is that you cannot read the market's forecast of a crash off option prices — what you can read is the price of insuring against one.",
+      "technique": "Risk premium embedded in the risk-neutral density",
+      "difficultyRationale": "Requires the SDF argument and the observable consequence for put returns."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are asked for the probability that a bond issuer defaults in the next five years. What do you need to know before answering?",
+      "canonicalAnswer": "Which probability is wanted. A risk-neutral probability backed out of CDS spreads is appropriate for valuing or hedging; a real-world probability from historical default rates or a ratings transition matrix is appropriate for expected loss, scenario analysis and capital.",
+      "explanation": "The gap between the two is large and systematic — risk-neutral default probabilities routinely run several times the historical rate for investment grade, because the spread compensates for default RISK and illiquidity as well as expected loss. Using the risk-neutral number in an expected-loss calculation overstates the loss and distorts pricing decisions; using the historical number to mark a CDS produces a mark that cannot be achieved in the market. The question is a standard interview probe precisely because the correct first move is to ask which one is meant, rather than to produce a number.",
+      "technique": "Which default probability for which purpose",
+      "difficultyRationale": "Tests whether the candidate clarifies before computing, which is the intended lesson."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain the credit triangle relating spread, default probability and recovery.",
+      "canonicalAnswer": "s = h * (1 - R), where s is the credit spread, h the risk-neutral hazard rate (instantaneous default intensity) and R the recovery rate. Given any two you can solve for the third.",
+      "explanation": "The relation says the spread earned per year compensates exactly for the expected annual loss: the probability of defaulting times the fraction lost. So a 300bp spread with an assumed 40% recovery implies a hazard rate of 0.03/0.6 = 5% a year. The critical practical point is that spread pins down only the PRODUCT h(1-R), not either factor — so quoting an implied default probability always requires an assumed recovery, conventionally 40% for senior unsecured. Change the recovery assumption to 20% and the same spread implies a hazard rate of 3.75% instead. Any statement of the form 'the market implies a 25% chance of default' is therefore incomplete without its recovery assumption.",
+      "technique": "The credit triangle",
+      "difficultyRationale": "Requires the relation plus the identification problem it exposes."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is put-call parity a stronger statement than any option pricing model?",
+      "canonicalAnswer": "Because it follows from no-arbitrage alone — C - P = S - K*e^{-rT} holds regardless of the distribution of the underlying, the volatility, or any model assumption. A pricing model can be wrong; parity cannot, without an arbitrage.",
+      "explanation": "The proof is a static portfolio: long a call, short a put, both at strike K, replicates a forward, so the two sides must cost the same today. No dynamics, no volatility, no distributional assumption enters. That makes parity the first sanity check on any quoted surface or model implementation — if your model violates it, the model is wrong, and if the market violates it, either you have missed a dividend or borrow cost, or there is a genuine trade. It also has the useful corollary that a call and a put at the same strike must have the SAME implied volatility, which is why implied volatility surfaces are quoted per strike rather than per option type.",
+      "technique": "Static replication and put-call parity",
+      "difficultyRationale": "Requires understanding why a static argument is stronger than a dynamic one."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean to say that a forward price is not a forecast of the future spot price?",
+      "canonicalAnswer": "The forward is set by no-arbitrage from the spot price and carry costs, F = S*e^{(r-q)T}, not by anyone's expectation. It equals the expected future spot only under the risk-neutral measure, which is not the real-world expectation.",
+      "explanation": "The forward is whatever prevents an arbitrage between buying now and financing, versus contracting to buy later — so it is a statement about interest rates, storage and dividends, and it would be exactly the same whatever anyone believed about the future. Under P the expected future spot differs from the forward by the risk premium, and the two only coincide if investors are risk-neutral. This is why 'the futures curve is predicting a recovery' is usually a mistaken reading of a carry relationship, and why the forward FX rate has historically been a poor and even wrong-signed predictor of the future spot rate — the forward premium puzzle.",
+      "technique": "Forwards as carry relations, not forecasts",
+      "difficultyRationale": "Requires distinguishing the no-arbitrage construction from an expectation and citing where the confusion bites."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Under the risk-neutral measure, which of these is NOT generally true?",
+      "options": [
+        "The probability of a stock rising equals its real-world probability",
+        "Discounted asset prices are martingales",
+        "Every asset has expected return r",
+        "Derivative prices equal discounted expected payoffs"
+      ],
+      "correctOption": 0,
+      "explanation": "The measure change alters the probabilities — that is precisely what it is for. What it preserves is the set of possible outcomes (the two measures are equivalent, so they agree on what has probability zero) and the volatility, which Girsanov leaves untouched. The other three options are all statements of what the risk-neutral measure is defined to do. The persistent misconception is that risk-neutral valuation somehow assumes investors do not care about risk; it does not, it just moves the risk compensation out of the probabilities and into the discount rate so that both are r.",
+      "technique": "What the measure change does and does not preserve",
+      "difficultyRationale": "Requires knowing which properties survive a change of measure."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A colleague computes a 10-year potential future exposure by simulating equities with a risk-neutral drift. Why is that wrong, and in which direction?",
+      "canonicalAnswer": "PFE is a real-world question — what exposure will actually arise — so it should use the real-world drift. Using r instead of mu understates the equity's growth over ten years and therefore misstates the exposure profile, typically understating it for a long-equity position.",
+      "explanation": "Over a decade the difference between an 8% real-world drift and a 3% risk-free rate compounds to a factor of about 1.6 in the level of the underlying, which is not a rounding error in an exposure profile. The direction depends on the position: for a trade whose exposure grows with the equity level the risk-neutral simulation understates, and for a short-equity exposure it overstates. The general principle is that measure choice follows from the question — valuation is risk-neutral, forecasting is real-world — and PFE feeds credit limits, which are a forecasting exercise. CVA on the same netting set is the opposite case and correctly uses risk-neutral, which is why exposure engines usually run both.",
+      "technique": "Measure selection for exposure modelling",
+      "difficultyRationale": "Requires the direction of the error and awareness that the same engine legitimately serves both measures."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Derive the forward price of a non-dividend-paying stock by a no-arbitrage argument, and say what changes with a continuous dividend yield.",
+      "canonicalAnswer": "Borrow S today, buy the stock, and deliver at T repaying S*e^{rT}: this replicates the forward at zero cost, so F = S*e^{rT}. With a continuous dividend yield q, the stock position throws off income reinvested at rate q, so a smaller initial holding suffices and F = S*e^{(r-q)T}.",
+      "explanation": "The argument is a cash-and-carry: if F exceeded S*e^{rT} you would sell the forward, borrow and buy the stock, and lock in the difference risklessly; if it were below, reverse the trade. The dividend case is handled by starting with e^{-qT} shares and reinvesting the dividends, so that you hold exactly one share at T. The same structure generalises: replace q with a storage cost (negative income) for commodities, or with the foreign interest rate for FX, which recovers covered interest parity. Where the reverse trade is impossible — short-selling restrictions, or a commodity that cannot be borrowed — the argument only bounds the forward from one side, which is why commodity forwards can trade in backwardation without an arbitrage.",
+      "technique": "Cash-and-carry arbitrage",
+      "difficultyRationale": "Requires constructing the replicating trade in both directions and knowing when one direction is unavailable."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A structured note pays the maximum of two indices' returns. What makes it harder to price than two separate options, and what is the main risk factor?",
+      "canonicalAnswer": "Its payoff depends on the JOINT distribution of the two indices, not just their marginals, so vanilla option prices do not determine it. The dominant risk factor is the correlation between the two indices, which is not observable from vanilla markets.",
+      "explanation": "Vanilla options on each index pin down each marginal risk-neutral distribution exactly, via Breeden-Litzenberger, but say nothing about how the two move together — and a best-of payoff is worth more when correlation is low, since the chance of at least one performing well rises. So the price is a function of an input that must be estimated from historical data or from a thin correlation market, and the model reserve should reflect that. This is the general shape of multi-asset exotic risk: the marginals are calibrated and the dependence is assumed, which is exactly the split a copula formalises and exactly where the model risk concentrates.",
+      "technique": "Multi-asset payoffs and correlation risk",
+      "difficultyRationale": "Requires recognising that the marginals are pinned down and the dependence is not."
+    },
+    {
+      "topicId": "risk-neutral-valuation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is static replication, and give an example where it prices something no dynamic model is needed for.",
+      "canonicalAnswer": "Constructing a portfolio of traded instruments held unchanged to maturity that reproduces a payoff exactly. A digital option is the classic example: it is the limit of a tight call spread, so its price follows from two vanilla prices with no model at all.",
+      "explanation": "Static replication is preferable to dynamic hedging wherever available, because it is immune to model error, gap risk and transaction costs — you buy the portfolio once and stop. Beyond digitals, a variance swap is statically replicated by a strip of options weighted 1/K^2 plus a dynamic futures position, which is the basis of the VIX construction; and a European payoff that is any twice-differentiable function of the terminal price can be decomposed into a bond, a forward, and a continuum of options via the Carr-Madan formula. The limitation is that path-dependent and early-exercise payoffs generally cannot be replicated statically, which is where models become unavoidable.",
+      "technique": "Static replication",
+      "difficultyRationale": "Requires an example and an account of why static beats dynamic where it is available."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A random walk moves to a uniformly chosen neighbour on a graph. What is its stationary distribution?",
+      "canonicalAnswer": "Proportional to the degree of each vertex: pi_i = deg(i) / (2 * number of edges).",
+      "explanation": "Check it with detailed balance: the flow from i to j is pi_i * (1/deg(i)), which with pi_i proportional to deg(i) is proportional to 1 for every edge — the same in both directions. So the chain is reversible and the degree-proportional distribution is stationary. The practical reading is that a random walker spends time in proportion to how well connected a vertex is, which is the seed of every centrality measure. Note the walk on a bipartite graph is PERIODIC, so it does not converge to this distribution even though the distribution is stationary.",
+      "technique": "Random walk on a graph",
+      "difficultyRationale": "One result, verifiable by a single detailed-balance check."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A chain has two absorbing states and no other recurrent states. What are its stationary distributions?",
+      "options": [
+        "Infinitely many — any mixture of the two absorbing states",
+        "Exactly one, uniform over the absorbing states",
+        "None exist",
+        "Exactly one, determined by the transient structure"
+      ],
+      "correctOption": 0,
+      "explanation": "Any distribution supported entirely on the absorbing states is stationary, since once there the chain never moves — so all convex combinations qualify and there are infinitely many. Uniqueness of the stationary distribution requires IRREDUCIBILITY, which this chain fails: you cannot get from one absorbing state to the other. What the transient structure does determine is the absorption probabilities from a given starting point, which is a different question and the one usually of interest.",
+      "technique": "Uniqueness requires irreducibility",
+      "difficultyRationale": "Tests the condition for uniqueness rather than the computation."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the Chapman-Kolmogorov equation and say what it means in matrix terms.",
+      "canonicalAnswer": "P(m+n)_ij = sum over k of P(m)_ik * P(n)_kj — the m+n step transition probability is obtained by conditioning on the state at the intermediate time. In matrix terms it is simply P^(m+n) = P^m * P^n.",
+      "explanation": "The equation says the chain has no memory of how it reached the intermediate state, which is the Markov property expressed at the level of transition probabilities. The matrix form is worth appreciating: matrix multiplication IS 'sum over all intermediate states of the product of the two legs', so the algebra of transition matrices encodes conditioning automatically. That is why n-step questions reduce to matrix powers, and why the eigen-decomposition of P tells you everything about the chain's long-run behaviour.",
+      "technique": "Chapman-Kolmogorov",
+      "difficultyRationale": "Requires recognising matrix multiplication as the conditioning operation."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define irreducibility and aperiodicity, and say what each is needed for.",
+      "canonicalAnswer": "Irreducible means every state can be reached from every other. Aperiodic means the greatest common divisor of the possible return times to a state is 1. Irreducibility gives a UNIQUE stationary distribution; aperiodicity gives CONVERGENCE to it from any starting point.",
+      "explanation": "The two conditions do different jobs, and separating them is the point. A chain that alternates deterministically between two states is irreducible — so it has a unique stationary distribution of (1/2, 1/2) — but periodic, so starting in state 1 it is in state 1 at every even time and never settles. Aperiodicity fixes that. A sufficient practical check for aperiodicity is any self-loop at all, since a state that can return in one step has period 1. Together the two give the ergodic theorem: the distribution converges to pi regardless of where you start.",
+      "technique": "Conditions for convergence to stationarity",
+      "difficultyRationale": "Requires separating which condition delivers uniqueness and which delivers convergence."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is detailed balance, and what does a chain satisfying it gain?",
+      "canonicalAnswer": "pi_i * P_ij = pi_j * P_ji for every pair — the probability flow between any two states is equal in both directions. A chain satisfying it is reversible, and the pi in the equation is automatically stationary.",
+      "explanation": "Detailed balance is a sufficient but not necessary condition for stationarity, and it is enormously convenient because it lets you VERIFY a candidate pi with pairwise checks rather than solving pi P = pi. It also means the chain looks statistically identical run backwards. The practical payoff is Markov chain Monte Carlo: rather than solve for a stationary distribution, you construct a chain that satisfies detailed balance with respect to the distribution you want, which is exactly what the Metropolis acceptance rule does. Note that many perfectly good chains are stationary without being reversible — a cyclic chain on three states, for instance.",
+      "technique": "Detailed balance and reversibility",
+      "difficultyRationale": "Requires knowing it is sufficient but not necessary, and why that still makes it useful."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How does the Metropolis-Hastings algorithm construct a chain with a prescribed stationary distribution?",
+      "canonicalAnswer": "Propose a move from x to y using any proposal density q, then accept it with probability min(1, [p(y)q(x|y)] / [p(x)q(y|x)]). The acceptance rule makes the chain satisfy detailed balance with respect to p, so p is stationary.",
+      "explanation": "The remarkable feature is that p only needs to be known up to a constant, since it appears as a ratio — which is exactly the situation in Bayesian inference, where the posterior's normalising constant is the intractable part. The proposal q can be almost anything, and its choice controls efficiency rather than correctness: too small a step and the chain crawls, too large and almost everything is rejected. In practice you tune towards an acceptance rate of roughly 25-50%. Diagnostics matter because the theory only guarantees convergence eventually — discard a burn-in period, check trace plots and autocorrelation, and run multiple chains from dispersed starting points to detect a chain stuck in one mode.",
+      "technique": "Metropolis-Hastings",
+      "difficultyRationale": "Requires the acceptance rule, why the normalising constant cancels, and the practical diagnostics."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "For an absorbing Markov chain, what is the fundamental matrix and what does it give you?",
+      "canonicalAnswer": "Write the transition matrix in canonical form with Q the transient-to-transient block. The fundamental matrix is N = (I - Q)^{-1}. Its ij entry is the expected number of visits to transient state j starting from i, and its ROW SUMS give the expected number of steps to absorption from each state.",
+      "explanation": "The inverse arises from the geometric series I + Q + Q^2 + ... which counts visits at every future time, and it converges because absorption is certain so Q^n tends to zero. Two more quantities come from the same decomposition: the absorption probabilities are N*R, where R is the transient-to-absorbing block, and the variance of the absorption time is also available from N. This is the systematic version of first-step analysis — for a two- or three-state problem the equations are quicker by hand, but for anything larger the matrix formulation is what you want, and it is how credit models compute expected time to default.",
+      "technique": "Fundamental matrix for absorbing chains",
+      "difficultyRationale": "Requires the construction, what the entries mean, and where the inverse comes from."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A chain has states 0 and 3 absorbing. From state 1 it moves to 0 or 2 with probability 1/2 each; from state 2 it moves to 1 or 3 with probability 1/2 each. Find the expected time to absorption from state 1.",
+      "canonicalAnswer": "2 steps. Let a and b be the expected times from 1 and 2: a = 1 + b/2 and b = 1 + a/2, so a = b = 2.",
+      "explanation": "First-step analysis: from state 1 you always pay one step, then with probability 1/2 you are absorbed and with probability 1/2 you are at state 2 facing b more. Solving the symmetric pair gives a = 2. The matrix route agrees: Q = [[0, 0.5], [0.5, 0]], so (I-Q)^{-1} = [[4/3, 2/3], [2/3, 4/3]] and each row sums to 2. And the general fair-random-walk formula k(N-k) gives 1 x 2 = 2. Three routes to the same answer is a good habit — for small chains the equations are fastest, but checking against a known formula catches setup errors.",
+      "technique": "First-step analysis for absorption time",
+      "difficultyRationale": "Two simultaneous equations, with cross-checks available."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish transient, positive recurrent and null recurrent states.",
+      "canonicalAnswer": "A transient state has a positive probability of never being revisited. A recurrent state is revisited with probability 1; it is positive recurrent if the expected return time is finite, and null recurrent if the return is certain but the expected return time is infinite.",
+      "explanation": "Null recurrence is the case people forget and it is genuinely strange: you return with certainty, yet the average wait is infinite. The symmetric random walk on the integers is the standard example, and its consequence is exactly the 'wait for it to come back' trading fallacy — the strategy succeeds with probability 1 and has infinite expected duration, so it is unusable. Positive recurrence is what a stationary distribution requires, with pi_i = 1 / (expected return time to i). A finite irreducible chain is always positive recurrent, so these distinctions only bite on infinite state spaces.",
+      "technique": "State classification",
+      "difficultyRationale": "Requires the null recurrent case, which is the one usually omitted."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A credit rating transition matrix gives one-year probabilities. How do you get the five-year probability of default, and what assumption are you making?",
+      "canonicalAnswer": "Raise the matrix to the fifth power and read the entry from the current rating to the default state. You are assuming the chain is Markov and TIME-HOMOGENEOUS — that transition probabilities depend only on the current rating and are the same every year.",
+      "explanation": "Both assumptions are empirically questionable. Ratings show momentum: a firm downgraded to BBB last year is more likely to be downgraded again than one that has sat at BBB for a decade, which violates the Markov property outright. And transition probabilities are strongly cyclical, so a matrix estimated over an expansion understates downgrades in a recession. The standard fixes are to enlarge the state space so it includes recent rating history — restoring the Markov property by definition — or to condition the matrix on a macroeconomic factor, which is what point-in-time as opposed to through-the-cycle rating models do.",
+      "technique": "Matrix powers for multi-period transitions",
+      "difficultyRationale": "Requires naming both assumptions and the empirical evidence against each."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A process is not Markov because tomorrow depends on the last two days. How do you fix it, and what is the cost?",
+      "canonicalAnswer": "Enlarge the state to the PAIR of the last two days. The enlarged process is Markov by construction. The cost is that the state space is squared — n states become n^2 — and estimating the transition matrix now requires far more data.",
+      "explanation": "This is the general remedy, and it is why the Markov assumption is less restrictive than it sounds: almost any finite-memory dependence can be absorbed into the state. The costs are real though. The transition matrix grows quadratically (or as n^k for k days of memory), so estimation becomes data-hungry and many entries are never observed. Interpretation suffers too, since the states no longer correspond to anything meaningful. The trade-off between memory and dimension is the same one that appears throughout time-series modelling — it is exactly why an ARMA representation is preferred to a very long AR.",
+      "technique": "Restoring the Markov property by state augmentation",
+      "difficultyRationale": "Requires the construction and an honest account of the dimensional cost."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a regime-switching (hidden Markov) model, and what makes it attractive for financial time series?",
+      "canonicalAnswer": "The observable series is generated by parameters that depend on an unobserved Markov state — for instance returns drawn from a low-volatility or high-volatility regime, with the regime following a Markov chain. It is attractive because financial markets visibly alternate between persistent calm and turbulent periods.",
+      "explanation": "The state is HIDDEN, so you infer a probability of being in each regime from the observations, using the forward-backward algorithm, and estimate parameters by EM (the Baum-Welch algorithm). The appeal is that it captures fat tails and volatility clustering through a mechanism with an interpretation — a mixture of two normals is fat-tailed even though each component is not — rather than through a purely statistical device. The practical difficulties are that the likelihood is multimodal and label-switching makes the regimes hard to identify, and that with enough regimes the model will fit anything, so the number of states must be justified rather than chosen to maximise fit.",
+      "technique": "Hidden Markov / regime-switching models",
+      "difficultyRationale": "Requires the latent-state structure plus the estimation and identification difficulties."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does a continuous-time Markov chain differ from a discrete-time one, and what replaces the transition matrix?",
+      "canonicalAnswer": "Transitions occur at random times rather than on a fixed clock: the holding time in a state is exponential and the next state is chosen by a jump chain. The generator matrix Q replaces P, with off-diagonal q_ij the transition RATES and diagonal entries making rows sum to zero. Transition probabilities are P(t) = exp(Qt).",
+      "explanation": "The exponential holding time is forced by the Markov property — memorylessness in continuous time admits no other distribution. The generator is the derivative of the transition matrix at time zero, which is why the matrix exponential recovers P(t), and the row-sum-zero condition is the continuous analogue of rows summing to one. The financial use is direct: credit models specify a default INTENSITY, which is exactly a generator entry, and that makes it natural to compute a default probability over any horizon rather than only over the estimation period's fixed step.",
+      "technique": "Generator matrices and continuous-time chains",
+      "difficultyRationale": "Requires the exponential holding time, the generator's structure, and the matrix exponential."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What governs how fast a Markov chain converges to its stationary distribution?",
+      "canonicalAnswer": "The second-largest eigenvalue modulus of the transition matrix. The largest eigenvalue is always 1 with the stationary distribution as its left eigenvector; the distance to stationarity decays like |lambda_2|^n, so a spectral gap close to 1 means fast mixing.",
+      "explanation": "Decomposing an initial distribution in the eigenbasis, the lambda = 1 component is the stationary distribution and every other component shrinks by its eigenvalue each step — so the slowest-decaying one dominates and sets the mixing time, roughly 1/(1 - |lambda_2|) steps. The practical significance is largest in MCMC, where a small spectral gap means a chain that appears to have converged but is still exploring one region: a bimodal posterior with rare crossings between modes has |lambda_2| very close to 1 and will fool a short run. It also explains why a periodic chain never converges — it has an eigenvalue of modulus 1 other than the trivial one.",
+      "technique": "Spectral gap and mixing time",
+      "difficultyRationale": "Requires the eigen-decomposition argument and the MCMC consequence."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A transition matrix is doubly stochastic (rows and columns both sum to 1). What is its stationary distribution?",
+      "canonicalAnswer": "Uniform over the states. If pi_i = 1/n for all i, then (pi P)_j = (1/n) * sum over i of P_ij = 1/n, using the column sum.",
+      "explanation": "The column sums are doing the work — for an ordinary stochastic matrix only the rows sum to 1, and the stationary distribution is generally non-uniform. Doubly stochastic matrices arise from symmetric transition structures: a random walk on a regular graph, a random shuffle, or any chain where the mechanism treats states interchangeably. The result is worth spotting quickly, because it turns a linear-algebra problem into an instant answer. Note it says nothing about convergence — a deterministic cycle is doubly stochastic and periodic.",
+      "technique": "Doubly stochastic matrices",
+      "difficultyRationale": "One verification, with the reason column sums matter as the insight."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the ergodic theorem for Markov chains and say why it matters for simulation.",
+      "canonicalAnswer": "For an irreducible positive recurrent chain, the long-run fraction of time spent in state i converges almost surely to pi_i, and time averages of a function converge to its expectation under pi — regardless of the starting state.",
+      "explanation": "It licenses replacing an expectation over the stationary distribution with an average along a single simulated path, which is the entire basis of MCMC: you cannot sample from a complicated posterior directly, but you can run one chain for a long time and average. Two practical qualifications. Aperiodicity is not needed for the time-average result, only for convergence of the distribution itself — so a periodic chain still gives correct long-run averages. And the samples are correlated, so the effective sample size is much smaller than the number of iterations, which is why autocorrelation time rather than iteration count determines how long to run.",
+      "technique": "Ergodic theorem and time averages",
+      "difficultyRationale": "Requires distinguishing the time-average result from distributional convergence."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In MCMC, what are burn-in and thinning, and is thinning usually a good idea?",
+      "canonicalAnswer": "Burn-in discards the early iterations before the chain has reached its stationary distribution. Thinning keeps only every k-th sample to reduce autocorrelation. Thinning is usually NOT a good idea — it throws away information and increases the variance of the estimate.",
+      "explanation": "Burn-in is legitimate: the early samples are drawn from the wrong distribution and including them biases the estimate. Thinning addresses a real problem — successive samples are correlated, so 10,000 iterations may carry the information of only a few hundred independent draws — but discarding samples never reduces the variance of a mean estimate, it only saves storage. The correct response to high autocorrelation is a better sampler or a longer run, and the quantity to report is the effective sample size rather than the raw iteration count. Thinning survives mainly as a memory-management practice.",
+      "technique": "MCMC diagnostics",
+      "difficultyRationale": "Requires the counterintuitive conclusion that a standard practice is usually unhelpful."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "PageRank models a web surfer as a Markov chain. Why is a damping factor needed?",
+      "canonicalAnswer": "Because the raw link graph is neither irreducible nor aperiodic — dangling pages with no outgoing links and disconnected clusters break the conditions for a unique stationary distribution. Damping mixes in a small probability of jumping to a uniformly random page, which makes the chain irreducible and aperiodic.",
+      "explanation": "With damping factor d around 0.85, the surfer follows a link with probability d and teleports with probability 1-d. That guarantees every state is reachable from every other, so the stationary distribution exists and is unique — and it also improves the spectral gap, so the power iteration converges quickly. Without it, rank would accumulate in sink components and never escape, which is both mathematically ill-defined and easy to exploit. It is a good example of a modelling fix chosen to satisfy a theorem's hypotheses rather than to describe behaviour more faithfully.",
+      "technique": "Making a chain irreducible by construction",
+      "difficultyRationale": "Requires diagnosing which conditions the raw chain violates and how damping repairs each."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two gamblers, one with £3 and one with £7, flip a fair coin for £1 a time until one is broke. Model this as a Markov chain and find the probability the first wins.",
+      "canonicalAnswer": "0.3. The state is the first gambler's wealth, 0 to 10, with 0 and 10 absorbing and steps of plus or minus 1 with probability 1/2. For a fair walk the probability of hitting N before 0 from k is k/N = 3/10.",
+      "explanation": "Setting it up as a chain makes the structure explicit: 11 states, two absorbing, symmetric transitions between the rest. The answer follows from first-step analysis — h_k = (h_{k-1} + h_{k+1})/2 with h_0 = 0 and h_10 = 1, whose solution is linear in k, giving h_3 = 0.3. The martingale route reaches the same place faster, since wealth is a martingale and optional stopping gives 3 = 10p. The general lesson is that a harmonic equation with linear boundary conditions has a linear solution, which is why the fair case is always k/N and the unfair case, where the recursion has a geometric solution, is not.",
+      "technique": "Gambler's ruin as an absorbing chain",
+      "difficultyRationale": "Requires the chain formulation plus recognising the harmonic equation's linear solution."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A weather chain has P(rain | rain) = 0.7 and P(rain | dry) = 0.3. Starting from a dry day, how many days until the distribution is within 1% of stationary?",
+      "canonicalAnswer": "About 6 days. The eigenvalues are 1 and lambda_2 = 0.7 - 0.3 = 0.4, and the deviation decays as 0.4^n, so you need 0.4^n < 0.01, giving n > ln(0.01)/ln(0.4) = 5.0 — so 5 to 6 days.",
+      "explanation": "For a two-state chain the second eigenvalue is always p_11 - p_21, here 0.4. The initial deviation from stationarity is at most 1 in total variation and shrinks by a factor of 0.4 each day, so convergence is geometric and quick. The stationary distribution itself is pi_rain = 0.3/(0.3 + 0.3) = 0.5. The general point is that mixing time scales as 1/(1 - |lambda_2|), so a chain with lambda_2 = 0.99 would need hundreds of steps for the same accuracy — and a persistent regime-switching model, whose whole purpose is high persistence, is by construction slow-mixing.",
+      "technique": "Convergence rate from the second eigenvalue",
+      "difficultyRationale": "Requires the eigenvalue shortcut for a 2x2 chain and a logarithm to invert the decay."
+    },
+    {
+      "topicId": "markov-chains",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why can't a Markov chain model on prices produce genuinely predictable returns without creating an arbitrage?",
+      "canonicalAnswer": "If the chain's state were observable and implied a positive expected return above the risk-free rate for a knowable next step, traders would take that position until prices adjusted and the edge disappeared. A Markov model of prices is therefore constrained to be nearly a martingale.",
+      "explanation": "The constraint applies to PRICES, not to everything: a Markov chain modelling volatility regimes, liquidity states or credit ratings is perfectly consistent with efficiency, because knowing the state does not tell you the direction. That is the same asymmetry that makes volatility forecastable and returns not. Where price-level Markov models do appear legitimately, they carry a risk premium interpretation rather than an arbitrage — a state with a higher expected return is one where risk is higher or investors are more risk-averse. Distinguishing 'predictable because inefficient' from 'predictable because risky' is the central difficulty in this whole area.",
+      "technique": "Efficiency constraints on price models",
+      "difficultyRationale": "Requires the distinction between predictable direction and predictable risk."
     }
   ]
 }
