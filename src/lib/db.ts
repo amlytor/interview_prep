@@ -12,6 +12,20 @@ export interface KeyValueStore {
   get<T>(key: string): Promise<T | undefined>;
   put(key: string, value: unknown): Promise<void>;
   remove(key: string): Promise<void>;
+  /**
+   * Read, transform, and write back inside a SINGLE transaction.
+   *
+   * This is the difference between "save what this tab thinks the state is" and
+   * "apply this change to whatever the state actually is". With a plain put(),
+   * a second tab holding a ten-minute-old copy overwrites everything done in
+   * the first one; here the change is applied to the current stored value, so
+   * concurrent writers merge instead of clobbering.
+   *
+   * `apply` MUST be synchronous — an IndexedDB transaction auto-commits as soon
+   * as control returns to the event loop with no pending requests, so an await
+   * inside it would close the transaction before the write is queued.
+   */
+  update<T>(key: string, apply: (current: T | undefined) => T): Promise<T>;
 }
 
 export function idbAvailable(): boolean {
@@ -88,6 +102,44 @@ function run<T>(
   );
 }
 
+/**
+ * Read-modify-write in one transaction. See KeyValueStore.update.
+ *
+ * The get and the put are issued on the same transaction object, so nothing
+ * can interleave between them: IndexedDB will not start a second overlapping
+ * readwrite transaction on the store until this one commits.
+ */
+function update<T>(
+  dbName: string,
+  storeName: string,
+  key: string,
+  apply: (current: T | undefined) => T,
+): Promise<T> {
+  return open(dbName, storeName).then(
+    (db) =>
+      new Promise<T>((resolve, reject) => {
+        const tx = db.transaction(storeName, "readwrite");
+        const objectStore = tx.objectStore(storeName);
+        const get = objectStore.get(key);
+        let next: T;
+        get.onsuccess = () => {
+          try {
+            next = apply(get.result as T | undefined);
+          } catch (err) {
+            // A throwing transform must not leave a half-applied write behind.
+            tx.abort();
+            reject(err);
+            return;
+          }
+          objectStore.put(next, key);
+        };
+        tx.oncomplete = () => resolve(next);
+        tx.onerror = () => reject(tx.error ?? new Error("IndexedDB update failed."));
+        tx.onabort = () => reject(tx.error ?? new Error("IndexedDB transaction aborted."));
+      }),
+  );
+}
+
 /** A key-value view over one object store. Errors reject; callers decide. */
 export function keyValueStore(dbName: string, storeName: string): KeyValueStore {
   return {
@@ -96,5 +148,7 @@ export function keyValueStore(dbName: string, storeName: string): KeyValueStore 
       run<IDBValidKey>(dbName, storeName, "readwrite", (s) => s.put(value, key)).then(() => undefined),
     remove: (key: string) =>
       run<undefined>(dbName, storeName, "readwrite", (s) => s.delete(key)).then(() => undefined),
+    update: <T,>(key: string, apply: (current: T | undefined) => T) =>
+      update<T>(dbName, storeName, key, apply),
   };
 }

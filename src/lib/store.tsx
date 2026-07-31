@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type {
   AppData,
@@ -13,7 +13,11 @@ import type {
 } from "../types";
 import type { TopicId } from "./topics";
 import { registerCustomTopics, slugifyTopic } from "./topics";
-import { clearStoredData, exportToFile, freshData, importFromFile, loadData, saveData } from "./storage";
+import {
+  clearStoredData, commitData, exportToFile, freshData, importFromFile, loadData, readStoredState,
+} from "./storage";
+import type { LoadResult } from "./storage";
+import { announceCommit, onRemoteCommit } from "./sync";
 import { applyTrickleCredit, scheduleAfterAttempt } from "./srs";
 import { useAutoBackup } from "./backup";
 import type { AutoBackup } from "./backup";
@@ -103,7 +107,7 @@ function makeId(): string {
  * dashboards while the bank is read.
  */
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [initial, setInitial] = useState<AppData | null>(null);
+  const [initial, setInitial] = useState<LoadResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,13 +119,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // overwrites it until a save succeeds.
       .catch((err) => {
         console.error("QuantPrep couldn't load your saved data; starting fresh.", err);
-        return freshData();
+        return { data: freshData(), revision: 0, persisted: false };
       })
       .then((loaded) => {
         if (cancelled) return;
         // Seed the display-name registry before the first render, so custom
         // topics never flash their raw slug.
-        registerCustomTopics(loaded.customTopics);
+        registerCustomTopics(loaded.data.customTopics);
         setInitial(loaded);
       });
     return () => {
@@ -133,18 +137,61 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   return <StoreInner initial={initial}>{children}</StoreInner>;
 }
 
-function StoreInner({ initial, children }: { initial: AppData; children: ReactNode }) {
-  const [data, setData] = useState<AppData>(initial);
+function StoreInner({ initial, children }: { initial: LoadResult; children: ReactNode }) {
+  const [data, setData] = useState<AppData>(initial.data);
+  const [saveFailed, setSaveFailed] = useState(!initial.persisted);
 
   // topicLabel() reads a module-level registry rather than the store, so it can
   // be called from render paths with no context. Keep the two in sync here —
   // useMemo (not useEffect) so it lands before children render.
   useMemo(() => registerCustomTopics(data.customTopics), [data.customTopics]);
 
-  const [saveFailed, setSaveFailed] = useState(false);
-  useEffect(() => {
-    void saveData(data).then((ok) => setSaveFailed(!ok));
-  }, [data]);
+  // The revision this tab has seen. Used only to ignore its own echo and any
+  // notification that has already been overtaken.
+  const revision = useRef(initial.revision);
+  // The latest state, readable from a callback without making every action
+  // depend on `data` and re-create itself on each change.
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
+  /**
+   * The single write path.
+   *
+   * Applies the change locally at once so the UI never waits on a disk write,
+   * then commits it — and the commit is what decides the real outcome, because
+   * it re-applies the same transform to whatever is actually stored. If another
+   * tab has written in between, this returns THEIR state with our change on top
+   * rather than our stale snapshot, and we adopt it. That is why the transform
+   * must be a pure function of the previous state: it runs twice, and the
+   * second run is the one that counts.
+   */
+  const mutate = useCallback((apply: (prev: AppData) => AppData) => {
+    setData(apply);
+    void commitData((stored) => apply(stored ?? dataRef.current)).then((result) => {
+      setSaveFailed(result === null);
+      if (!result) return;
+      revision.current = result.revision;
+      registerCustomTopics(result.data.customTopics);
+      setData(result.data);
+      announceCommit(result.revision);
+    });
+  }, []);
+
+  // Adopt writes made in other tabs, so a second window isn't showing a
+  // snapshot frozen at the moment it loaded.
+  useEffect(
+    () =>
+      onRemoteCommit((remote) => {
+        if (remote <= revision.current) return; // already seen, or our own echo
+        void readStoredState().then((stored) => {
+          if (!stored || stored.revision <= revision.current) return;
+          revision.current = stored.revision;
+          registerCustomTopics(stored.data.customTopics);
+          setData(stored.data);
+        });
+      }),
+    [],
+  );
 
   const backup = useAutoBackup(data);
 
@@ -156,9 +203,9 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
       custom: true,
       origin: "user",
     };
-    setData((prev) => ({ ...prev, questions: [...prev.questions, question] }));
+    mutate((prev) => ({ ...prev, questions: [...prev.questions, question] }));
     return question;
-  }, []);
+  }, [mutate]);
 
   const recordAttempt = useCallback((input: RecordAttemptInput) => {
     const attempt: Attempt = {
@@ -174,7 +221,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
       timeSpentSec: input.timeSpentSec,
     };
 
-    setData((prev) => {
+    mutate((prev) => {
       // 1. Schedule (or reschedule) the answered question itself.
       const prevSrs = prev.srs.find((s) => s.questionId === input.questionId);
       const nextSrs = scheduleAfterAttempt(input.questionId, prevSrs, input.verdict);
@@ -212,28 +259,28 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
     });
 
     return attempt;
-  }, []);
+  }, [mutate]);
 
   const updateSettings = useCallback((partial: Partial<Settings>) => {
-    setData((prev) => ({ ...prev, settings: { ...prev.settings, ...partial } }));
-  }, []);
+    mutate((prev) => ({ ...prev, settings: { ...prev.settings, ...partial } }));
+  }, [mutate]);
 
   const rateAttemptDifficulty = useCallback((attemptId: string, rating: DifficultyRating) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       attempts: prev.attempts.map((a) => (a.id === attemptId ? { ...a, difficultyRating: rating } : a)),
     }));
-  }, []);
+  }, [mutate]);
 
   const saveDiagnosis = useCallback((attemptId: string, diagnosis: MissDiagnosis) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       attempts: prev.attempts.map((a) => (a.id === attemptId ? { ...a, diagnosis } : a)),
     }));
-  }, []);
+  }, [mutate]);
 
   const updateDiagnosisSummary = useCallback((attemptId: string, summary: string) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       attempts: prev.attempts.map((a) =>
         a.id === attemptId && a.diagnosis
@@ -241,7 +288,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
           : a,
       ),
     }));
-  }, []);
+  }, [mutate]);
 
   const addCustomTopic = useCallback(
     (input: NewTopicInput): TopicId => {
@@ -258,14 +305,14 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
       lastEdited: Date.now(),
       modified: false,
     };
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       customTopics: [...prev.customTopics, { id: topicId, label: title }],
       studyNotes: [...prev.studyNotes, note],
     }));
     return topicId;
     },
-    [data.customTopics],
+    [data.customTopics, mutate],
   );
 
   /**
@@ -274,7 +321,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
    * counting them once the questions are gone.
    */
   const deleteCustomTopic = useCallback((topicId: TopicId) => {
-    setData((prev) => {
+    mutate((prev) => {
       // Guard: seeded topics have no customTopics entry and are not deletable.
       if (!prev.customTopics.some((t) => t.id === topicId)) return prev;
       return {
@@ -292,17 +339,17 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
         stagedQuestions: prev.stagedQuestions.filter((q) => !q.topics.includes(topicId)),
       };
     });
-  }, []);
+  }, [mutate]);
 
   const setTopicPrereqs = useCallback((topicId: TopicId, prereqs: TopicId[]) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       studyNotes: prev.studyNotes.map((n) =>
         // Self-edges would make the depth walk meaningless.
         n.topicId === topicId ? { ...n, prereqs: prereqs.filter((p) => p !== topicId) } : n,
       ),
     }));
-  }, []);
+  }, [mutate]);
 
   const topicDeletionImpact = useCallback(
     (topicId: TopicId): TopicDeletionImpact => ({
@@ -314,7 +361,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
   );
 
   const setNoteBody = useCallback((topicId: TopicId, body: string, source: StudyNote["source"]) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       studyNotes: prev.studyNotes.map((n) =>
         n.topicId === topicId
@@ -322,16 +369,16 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
           : n,
       ),
     }));
-  }, []);
+  }, [mutate]);
 
   const stageQuestions = useCallback((drafts: NewQuestion[]) => {
     const createdAt = Date.now();
     const staged = drafts.map((d) => ({ ...d, id: `staged-${makeId()}`, createdAt }));
-    setData((prev) => ({ ...prev, stagedQuestions: [...prev.stagedQuestions, ...staged] }));
-  }, []);
+    mutate((prev) => ({ ...prev, stagedQuestions: [...prev.stagedQuestions, ...staged] }));
+  }, [mutate]);
 
   const approveStagedQuestion = useCallback((id: string, revealed = false) => {
-    setData((prev) => {
+    mutate((prev) => {
       const staged = prev.stagedQuestions.find((q) => q.id === id);
       if (!staged) return prev;
       return {
@@ -345,7 +392,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
         ],
       };
     });
-  }, []);
+  }, [mutate]);
 
   /** Approve everything the validation pass cleared, without revealing answers. */
   const approveCleanStaged = useCallback(
@@ -358,7 +405,7 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
       );
       if (clean.length === 0) return 0;
       const ids = new Set(clean.map((q) => q.id));
-      setData((prev) => ({
+      mutate((prev) => ({
         ...prev,
         stagedQuestions: prev.stagedQuestions.filter((q) => !ids.has(q.id)),
         questions: [
@@ -370,36 +417,49 @@ function StoreInner({ initial, children }: { initial: AppData; children: ReactNo
       }));
       return clean.length;
     },
-    [data.stagedQuestions],
+    [data.stagedQuestions, mutate],
   );
 
   const markStagedRevealed = useCallback((id: string) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       stagedQuestions: prev.stagedQuestions.map((q) => (q.id === id ? { ...q, answerSeen: true } : q)),
     }));
-  }, []);
+  }, [mutate]);
 
   const rejectStagedQuestion = useCallback((id: string) => {
-    setData((prev) => ({
+    mutate((prev) => ({
       ...prev,
       stagedQuestions: prev.stagedQuestions.filter((q) => q.id !== id),
     }));
-  }, []);
+  }, [mutate]);
 
   const exportData = useCallback(() => {
     exportToFile(data);
   }, [data]);
 
-  const importData = useCallback(async (file: File) => {
-    const imported = await importFromFile(file);
-    setData(imported);
-  }, []);
+  const importData = useCallback(
+    async (file: File) => {
+      const imported = await importFromFile(file);
+      // An import REPLACES the state rather than deriving from it — that is the
+      // one mutation whose transform ignores what came before.
+      mutate(() => imported);
+    },
+    [mutate],
+  );
 
   const resetAllData = useCallback(() => {
     // Kept fire-and-forget so the Settings button stays a plain click handler;
     // loadData() re-seeds a fresh install and saves it on the way back.
-    void clearStoredData().then(loadData).then(setData);
+    void clearStoredData()
+      .then(loadData)
+      .then((loaded) => {
+        revision.current = loaded.revision;
+        setSaveFailed(!loaded.persisted);
+        registerCustomTopics(loaded.data.customTopics);
+        setData(loaded.data);
+        announceCommit(loaded.revision);
+      });
   }, []);
 
   const value = useMemo<StoreValue>(

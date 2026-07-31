@@ -268,6 +268,14 @@ percent rather than the 75% of the ~5 MB it filled when everything lived in
 console and keeps running on in-memory state rather than crashing mid-drill —
 export immediately if you see it.
 
+**Two tabs are safe.** Every change is applied inside the same IndexedDB
+transaction that reads the current state, so a tab that has been sitting open
+for an hour writes its change *onto* whatever is stored rather than replacing it
+with its own stale picture. Tabs also tell each other when they commit, so a
+second window updates itself instead of drifting. This used to be a real way to
+lose work: answer questions in one tab, change a setting in another, and the
+first tab's attempts were gone.
+
 Browser storage is "best effort" by default, meaning a browser under disk
 pressure is allowed to clear it. The same panel offers **Protect it**, which
 asks the browser to exempt QuantPrep from that. Chromium usually grants it
@@ -324,8 +332,9 @@ src/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files
     seedQuestions.ts     The original starter bank (retagged, deduped)
-    db.ts                Promise wrapper over IndexedDB (a key-value store)
-    storage.ts           Load/save, schema migration, JSON export/import
+    db.ts                Promise wrapper over IndexedDB, incl. atomic read-modify-write
+    storage.ts           Load/commit, schema migration, JSON export/import
+    sync.ts              Cross-tab change notification (BroadcastChannel)
     store.tsx            React context: single source of truth + actions
     srs.ts               Spaced repetition (2/7/21 ladder + trickle-down credit)
     mastery.ts           Mastery scores, unlock rules, tiers, next-topic recommendation
@@ -365,7 +374,7 @@ npm run test:e2e   # end-to-end suites (build first)
 ```
 
 `npm run test:e2e` drives a real browser against the production build. It starts
-the preview server and a mock OpenAI-compatible provider, then runs seven
+the preview server and a mock OpenAI-compatible provider, then runs eight
 suites. `content` comes first and needs no browser at all — it reads the seed
 JSON directly and checks referential integrity, question depth per topic, an
 easy entry point everywhere, and that no note has fallen behind the bank it
@@ -380,5 +389,7 @@ streak's day arithmetic, spoiler-free staging, calibration reaching the
 generation prompt, and the diagnosis chat end to end), and `resilience` (what
 happens when the browser refuses to store anything — blocked site data, a
 denied IndexedDB, or both: the app has to boot, stay usable, and say out loud
-that it isn't saving). Needs a browser once — `npx playwright install chromium` — or set
+that it isn't saving), and `multitab` (two tabs on one origin: a stale tab must
+not overwrite the other's work, simultaneous writes must both land, and a change
+in one tab must show up in the other). Needs a browser once — `npx playwright install chromium` — or set
 `CHROMIUM_PATH` to one you already have.

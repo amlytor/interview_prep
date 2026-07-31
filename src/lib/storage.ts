@@ -229,15 +229,78 @@ function refreshSeedNotes(stored: StudyNote[]): StudyNote[] {
   return added.length ? [...refreshed, ...added] : refreshed;
 }
 
+// ---------------------------------------------------------------------------
+// The stored envelope
+// ---------------------------------------------------------------------------
+// The payload is wrapped in `{ revision, data }`. The revision is a counter
+// bumped on every write, and it exists so a tab can tell "someone else has
+// written since I last looked" from "nothing has changed" without diffing 2.5
+// MB of question bank. Correctness does not depend on it — that comes from
+// commitData() applying changes inside the transaction that reads them.
+
+export interface StoredState {
+  data: AppData;
+  revision: number;
+}
+
+interface Envelope {
+  revision: number;
+  data: AppData;
+}
+
+/** Accepts both the envelope and the bare payload written before it existed. */
+function unwrap(raw: unknown): StoredState | null {
+  if (!raw || typeof raw !== "object") return null;
+  const envelope = raw as Partial<Envelope>;
+  if (typeof envelope.revision === "number" && envelope.data && typeof envelope.data === "object") {
+    return { data: envelope.data as AppData, revision: envelope.revision };
+  }
+  // A pre-envelope payload is the AppData itself; treat it as revision 0 and it
+  // gets wrapped on the next write.
+  return { data: raw as AppData, revision: 0 };
+}
+
 /** Read the stored payload, treating any IndexedDB failure as "nothing there". */
-async function readStored(): Promise<AppData | null> {
+export async function readStoredState(): Promise<StoredState | null> {
   try {
-    const stored = await store.get<AppData>(IDB_KEY);
-    return stored && typeof stored === "object" ? stored : null;
+    return unwrap(await store.get<unknown>(IDB_KEY));
   } catch (err) {
     // Private-browsing modes and a few locked-down configurations refuse
     // IndexedDB outright. The app still runs; it just won't remember anything.
     console.error("QuantPrep couldn't read from IndexedDB.", err);
+    return null;
+  }
+}
+
+/**
+ * Apply a change to whatever is currently stored, atomically.
+ *
+ * `apply` runs INSIDE the IndexedDB transaction that read the current value, so
+ * between the read and the write nothing can slip in. That is what makes a
+ * second tab safe: it no longer saves its own snapshot of the world over the
+ * top of another tab's work, it replays its change onto the live state. The
+ * transform therefore has to be a pure function of the previous state — which
+ * every store action already is, since they are all `setData(prev => next)`.
+ *
+ * Returns null if the write failed; the caller keeps its in-memory state and
+ * warns, exactly as a failed save always has.
+ */
+export async function commitData(
+  apply: (prev: AppData | null) => AppData,
+): Promise<StoredState | null> {
+  try {
+    const written = await store.update<Envelope>(IDB_KEY, (current) => {
+      const previous = unwrap(current);
+      return { revision: (previous?.revision ?? 0) + 1, data: apply(previous?.data ?? null) };
+    });
+    void requestPersistence();
+    return { data: written.data, revision: written.revision };
+  } catch (err) {
+    console.error(
+      "QuantPrep couldn't save to IndexedDB — your progress this session is in memory only. " +
+        "Export to JSON from Settings to avoid losing it.",
+      err,
+    );
     return null;
   }
 }
@@ -273,92 +336,81 @@ function removeLocal(key: string): void {
 }
 
 /**
- * Move a localStorage payload into IndexedDB, then reclaim the space.
- *
- * The v1 key is kept forever because the v1→v2 migration is lossy — questions
- * were dropped and topic labels rewritten, so the original is the only record.
- * This move is not: the same object goes in the same shape into a different
- * container. A duplicate would carry no information while pinning ~4 MB of the
- * ~5 MB localStorage budget, and a stale snapshot sitting in the fallback slot
- * is worse than useless — if IndexedDB were ever cleared on its own it would
- * silently reinstate months-old progress. So the copy goes, but only after the
- * new one has been written AND read back.
+ * Anything worth loading that ISN'T already in IndexedDB: the two legacy
+ * localStorage keys. Returns null on a fresh install. Runs before the commit
+ * below, so the migrated payload becomes the starting point for it.
  */
-async function retireLocalCopy(migrated: AppData): Promise<void> {
-  const written = await saveData(migrated);
-  if (written && (await readStored()) !== null) removeLocal(STORAGE_KEY_V2);
-}
-
-export async function loadData(): Promise<AppData> {
-  // 1. Live data, already in IndexedDB.
-  const stored = await readStored();
-  if (stored) {
-    try {
-      return normalizeCurrent(stored);
-    } catch (err) {
-      // Don't clobber whatever bad data is there — set it aside before resetting.
-      console.error("QuantPrep couldn't read its saved data; setting it aside.", err);
-      try {
-        await store.put(`${IDB_KEY}_corrupt_${Date.now()}`, stored);
-      } catch {
-        // If even that fails there is nothing useful left to do about it.
-      }
-    }
-  }
-
-  // 2. A pre-IndexedDB install: v2 data still sitting in localStorage.
+function migrationSource(): AppData | null {
+  // A pre-IndexedDB install: v2 data still sitting in localStorage.
   const rawV2 = readLocal(STORAGE_KEY_V2);
   if (rawV2) {
     try {
-      const migrated = normalizeCurrent(JSON.parse(rawV2) as AppData);
-      await retireLocalCopy(migrated);
-      return migrated;
+      return normalizeCurrent(JSON.parse(rawV2) as AppData);
     } catch {
       writeLocal(`${STORAGE_KEY_V2}_corrupt_backup_${Date.now()}`, rawV2);
+      return null;
     }
   }
 
-  // 3. v1 data present → migrate it forward (v1 key is left in place as backup).
+  // v1 data present → migrate it forward (v1 key is left in place as backup).
   const rawV1 = readLocal(STORAGE_KEY_V1);
-  if (rawV1 && !rawV2) {
+  if (rawV1) {
     try {
-      const migrated = migrateV1toV2(JSON.parse(rawV1) as Record<string, unknown>);
-      await saveData(migrated);
-      return migrated;
+      return migrateV1toV2(JSON.parse(rawV1) as Record<string, unknown>);
     } catch {
       // Fall through to a fresh install; the v1 key remains untouched.
     }
   }
+  return null;
+}
 
-  // 4. Fresh install.
-  const fresh = defaultData();
-  await saveData(fresh);
-  return fresh;
+export interface LoadResult extends StoredState {
+  /** False when the browser refused to store the loaded state. */
+  persisted: boolean;
 }
 
 /**
- * Persist to IndexedDB. A failed write must not take the app down mid-drill,
- * so quota/permission errors are reported rather than thrown — the in-memory
- * state stays usable and the user can still export.
+ * Load, upgrade, and persist the saved state.
  *
- * Writes are not debounced. IndexedDB serialises transactions on a store in
- * the order they are created, so a burst of edits lands in order and the last
- * one wins; no read-modify-write race is possible.
+ * The upgrade runs inside a commit rather than as a plain write. That matters
+ * with two tabs open: opening a second tab re-runs the seed backfill, and as a
+ * bare put() that would have written a payload read moments earlier straight
+ * over anything the first tab did in between.
  */
-export async function saveData(data: AppData): Promise<boolean> {
-  try {
-    await store.put(IDB_KEY, data);
-    void requestPersistence();
-    return true;
-  } catch (err) {
-    console.error(
-      "QuantPrep couldn't save to IndexedDB — your progress this session is in memory only. " +
-        "Export to JSON from Settings to avoid losing it.",
-      err,
-    );
-    return false;
+export async function loadData(): Promise<LoadResult> {
+  let existing = await readStoredState();
+
+  // Corrupt stored data is set aside rather than overwritten, so there is
+  // always something to recover from by hand. Checked against the same
+  // condition normalizeCurrent throws on, so it costs nothing — running the
+  // real thing here would mean cloning the whole bank just to validate it.
+  if (existing && !(Array.isArray(existing.data?.questions) && Array.isArray(existing.data?.attempts))) {
+    console.error("QuantPrep couldn't read its saved data; setting it aside.");
+    try {
+      await store.put(`${IDB_KEY}_corrupt_${Date.now()}`, existing.data);
+      await store.remove(IDB_KEY);
+    } catch {
+      // If even that fails there is nothing useful left to do about it.
+    }
+    existing = null;
   }
+
+  const fallback = migrationSource();
+  const committed = await commitData((prev) => normalizeCurrent(prev ?? fallback ?? defaultData()));
+
+  if (committed) {
+    // The localStorage copy only goes once the payload is verifiably elsewhere:
+    // commitData resolves on the transaction COMMITTING, not on the write being
+    // queued, so by here the data is durably in IndexedDB.
+    if (fallback) removeLocal(STORAGE_KEY_V2);
+    return { ...committed, persisted: true };
+  }
+
+  // Nothing could be written. Run on whatever we managed to read, in memory.
+  const data = normalizeCurrent(existing?.data ?? fallback ?? defaultData());
+  return { data, revision: existing?.revision ?? 0, persisted: false };
 }
+
 
 /** Erase everything the app has stored, including the pre-IndexedDB keys. */
 export async function clearStoredData(): Promise<void> {

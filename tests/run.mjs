@@ -91,7 +91,7 @@ try {
   await waitFor(4173, "preview server");
   await waitFor(4599, "mock provider");
 
-  for (const suite of ["content.mjs", "smoke.mjs", "migration.mjs", "provider.mjs", "backup.mjs", "diagnostic.mjs", "resilience.mjs"]) {
+  for (const suite of ["content.mjs", "smoke.mjs", "migration.mjs", "provider.mjs", "backup.mjs", "diagnostic.mjs", "resilience.mjs", "multitab.mjs"]) {
     // Deliberately not `exitCode ||= await run(suite)`: ||= short-circuits, so
     // one failing suite would silently skip every suite after it.
     const code = await run(suite);

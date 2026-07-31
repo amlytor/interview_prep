@@ -45,6 +45,13 @@ const STATE_DB = "quantprep";
 const STATE_STORE = "app";
 const STATE_KEY = "data";
 
+// The stored value is an envelope, `{ revision, data }`. Tests care about the
+// payload, so these helpers unwrap on read and re-wrap (bumping the revision,
+// as a real commit would) on write. A bare payload — anything written before
+// the envelope existed — is still accepted on read. The unwrapping is inlined
+// into each helper rather than shared, because these bodies run in the browser
+// and can't close over anything defined out here.
+
 /** Body of the in-page IDB open, shared by the helpers below. */
 function openArgs() {
   return [STATE_DB, STATE_STORE, STATE_KEY];
@@ -66,7 +73,12 @@ export function readState(page) {
           const get = db.transaction(storeName, "readonly").objectStore(storeName).get(key);
           get.onsuccess = () => {
             db.close();
-            resolve(get.result ?? null);
+            const raw = get.result;
+            resolve(
+              raw && typeof raw === "object" && typeof raw.revision === "number" && raw.data
+                ? raw.data
+                : (raw ?? null),
+            );
           };
           get.onerror = () => reject(get.error);
         };
@@ -99,15 +111,21 @@ export function writeState(page, mutate) {
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      const state = await new Promise((resolve, reject) => {
+      const envelope = await new Promise((resolve, reject) => {
         const get = db.transaction(storeName, "readonly").objectStore(storeName).get(key);
         get.onsuccess = () => resolve(get.result ?? null);
         get.onerror = () => reject(get.error);
       });
-      const report = apply(state);
+      const wrapped =
+        envelope && typeof envelope.revision === "number" && envelope.data
+          ? envelope
+          : { revision: 0, data: envelope };
+      const report = apply(wrapped.data);
       await new Promise((resolve, reject) => {
         const tx = db.transaction(storeName, "readwrite");
-        tx.objectStore(storeName).put(state, key);
+        // Bump the revision the way a real commit does, so a running tab treats
+        // this as a change it hasn't seen rather than ignoring it.
+        tx.objectStore(storeName).put({ revision: wrapped.revision + 1, data: wrapped.data }, key);
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
@@ -134,7 +152,7 @@ export function putState(page, state) {
       });
       await new Promise((resolve, reject) => {
         const tx = db.transaction(storeName, "readwrite");
-        tx.objectStore(storeName).put(value, key);
+        tx.objectStore(storeName).put({ revision: 1, data: value }, key);
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
