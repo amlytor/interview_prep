@@ -1,21 +1,24 @@
 // The four diagnostic changes: daily streak, spoiler-free staging, difficulty
 // calibration, and the "why did I get this wrong?" chat. Runs against the mock
 // provider, so the AI paths execute end to end without a real key.
-import { APP_URL, MOCK_URL, launch, nav, reporter } from "./harness.mjs";
+import { APP_URL, MOCK_URL, launch, nav, readState, reporter, resetApp, writeState } from "./harness.mjs";
 
 // DAY is injected into the seeded snippets below rather than used here.
 
 const { check, finish } = reporter();
 
 
-/** Seed localStorage with a known state, then reload into it. */
+/**
+ * Seed the saved state with a known payload, then reload into it.
+ *
+ * The fixtures below are source strings so they can name `d` and `DAY`
+ * directly; wrapping one in a Function here gives writeState the callable it
+ * ships to the page. A dynamically built function still stringifies to valid
+ * source, so the round-trip holds.
+ */
 async function seed(page, mutate) {
-  await page.evaluate((fn) => {
-    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
-    // eslint-disable-next-line no-new-func
-    new Function("d", "DAY", fn)(d, 24 * 60 * 60 * 1000);
-    localStorage.setItem("quantprep_data_v2", JSON.stringify(d));
-  }, mutate);
+  // eslint-disable-next-line no-new-func
+  await writeState(page, new Function("d", `const DAY = 24 * 60 * 60 * 1000;\n${mutate}`));
   await page.reload({ waitUntil: "networkidle" });
 }
 
@@ -40,8 +43,7 @@ const browser = await launch();
 {
   const page = await browser.newPage();
   await page.goto(APP_URL, { waitUntil: "networkidle" });
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
+  await resetApp(page);
 
   // Three consecutive days ending today, then a gap, then two more.
   await seed(page, `
@@ -108,8 +110,7 @@ const browser = await launch();
 {
   const page = await browser.newPage();
   await page.goto(APP_URL, { waitUntil: "networkidle" });
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
+  await resetApp(page);
   await configureProvider(page);
 
   await nav(page, /Topics/);
@@ -136,7 +137,7 @@ const browser = await launch();
   // Bank the clean one without ever seeing its answer.
   await page.getByRole("button", { name: /Bank 1 checked question unseen/ }).click();
   await page.waitForTimeout(400);
-  const afterBank = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
+  const afterBank = await readState(page);
   // Match the generated prompt exactly: the seeded bank also contains a
   // recursive-states question mentioning HTH, and it would match first.
   const banked = afterBank.questions.find((q) => q.prompt === "Expected number of flips to see HTH?");
@@ -150,7 +151,7 @@ const browser = await launch();
   check("revealing shows the answer", (await page.locator(".staged-answer").count()) === 1);
   await page.getByRole("button", { name: "Add to bank", exact: true }).click();
   await page.waitForTimeout(400);
-  const afterReveal = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
+  const afterReveal = await readState(page);
   const revealed = afterReveal.questions.find((q) => q.prompt.includes("second generated"));
   check("a revealed question is recorded as seen", revealed?.answerSeen === true, `answerSeen=${revealed?.answerSeen}`);
 
@@ -191,8 +192,7 @@ const browser = await launch();
 {
   const page = await browser.newPage();
   await page.goto(APP_URL, { waitUntil: "networkidle" });
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
+  await resetApp(page);
   await configureProvider(page);
 
   // One bayes-theorem question, so the prereq closure is non-empty — and it has
@@ -242,7 +242,7 @@ const browser = await launch();
   await page.getByRole("button", { name: "Save the diagnosis" }).click();
   await page.waitForSelector(".diagnosis-result", { timeout: 20000 });
 
-  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")).attempts[0]);
+  const stored = (await readState(page)).attempts[0];
   check("the taxonomy tag is stored", stored.diagnosis?.tag === "missing prerequisite knowledge",
     `tag=${stored.diagnosis?.tag}`);
   check("the one-line summary is stored", (stored.diagnosis?.summary ?? "").includes("independent"));
@@ -261,7 +261,7 @@ const browser = await launch();
   await page.locator(".diagnosis-result textarea").fill("My own wording.");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await page.waitForTimeout(400);
-  const edited = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")).attempts[0]);
+  const edited = (await readState(page)).attempts[0];
   check("the summary is editable and flagged as edited",
     edited.diagnosis?.summary === "My own wording." && edited.diagnosis?.edited === true);
 

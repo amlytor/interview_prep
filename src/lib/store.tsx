@@ -13,7 +13,7 @@ import type {
 } from "../types";
 import type { TopicId } from "./topics";
 import { registerCustomTopics, slugifyTopic } from "./topics";
-import { exportToFile, importFromFile, loadData, saveData } from "./storage";
+import { clearStoredData, exportToFile, importFromFile, loadData, saveData } from "./storage";
 import { applyTrickleCredit, scheduleAfterAttempt } from "./srs";
 import { useAutoBackup } from "./backup";
 import type { AutoBackup } from "./backup";
@@ -87,14 +87,38 @@ function makeId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+/**
+ * Loads the saved state, then hands it to the real provider.
+ *
+ * IndexedDB is asynchronous, so the data can't be read in a useState
+ * initialiser the way localStorage was. Splitting the load out keeps the inner
+ * provider's hooks unconditional — it only ever mounts with data in hand — and
+ * gives the app a single, honest loading state instead of a flash of empty
+ * dashboards while the bank is read.
+ */
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(() => {
-    const loaded = loadData();
-    // Seed the display-name registry before the first render, so custom topics
-    // never flash their raw slug.
-    registerCustomTopics(loaded.customTopics);
-    return loaded;
-  });
+  const [initial, setInitial] = useState<AppData | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadData().then((loaded) => {
+      if (cancelled) return;
+      // Seed the display-name registry before the first render, so custom
+      // topics never flash their raw slug.
+      registerCustomTopics(loaded.customTopics);
+      setInitial(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!initial) return <div className="app-loading">Loading your bank…</div>;
+  return <StoreInner initial={initial}>{children}</StoreInner>;
+}
+
+function StoreInner({ initial, children }: { initial: AppData; children: ReactNode }) {
+  const [data, setData] = useState<AppData>(initial);
 
   // topicLabel() reads a module-level registry rather than the store, so it can
   // be called from render paths with no context. Keep the two in sync here —
@@ -102,7 +126,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useMemo(() => registerCustomTopics(data.customTopics), [data.customTopics]);
 
   useEffect(() => {
-    saveData(data);
+    void saveData(data);
   }, [data]);
 
   const backup = useAutoBackup(data);
@@ -356,9 +380,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetAllData = useCallback(() => {
-    localStorage.removeItem("quantprep_data_v2");
-    localStorage.removeItem("quantprep_data_v1");
-    setData(loadData());
+    // Kept fire-and-forget so the Settings button stays a plain click handler;
+    // loadData() re-seeds a fresh install and saves it on the way back.
+    void clearStoredData().then(loadData).then(setData);
   }, []);
 
   const value = useMemo<StoreValue>(

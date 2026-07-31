@@ -1,14 +1,13 @@
 // Drives the OpenAI-compatible provider path end to end against the local mock
 // in mock-provider.mjs: Test Connection, then a real free-text grading round-trip.
-import { APP_URL, MOCK_URL, launch, nav, reporter } from "./harness.mjs";
+import { APP_URL, MOCK_URL, launch, nav, readState, reporter, resetApp, writeState } from "./harness.mjs";
 
 const { check, finish } = reporter();
 
 const browser = await launch();
 const page = await browser.newPage();
 await page.goto(APP_URL);
-await page.evaluate(() => localStorage.clear());
-await page.reload({ waitUntil: "networkidle" });
+await resetApp(page);
 
 // --- Point the app at the mock via the "custom endpoint" provider -----------
 await nav(page, /Settings/);
@@ -35,8 +34,7 @@ await page.waitForTimeout(300);
 // seed question that's missing, so a deleted bank simply comes back on reload —
 // and a multiple-choice question has no textarea to type into.
 async function pinFreeTextQuestion() {
-  await page.evaluate(() => {
-    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
+  await writeState(page, (d) => {
     d.questions = d.questions.filter((q) => q.id !== "test-free-text");
     d.questions.forEach((q) => { q.answerSeen = true; });
     d.questions.push({
@@ -49,7 +47,6 @@ async function pinFreeTextQuestion() {
     // pickPractice is guaranteed to serve it.
     d.attempts = [];
     d.srs = [];
-    localStorage.setItem("quantprep_data_v2", JSON.stringify(d));
   });
   await page.reload({ waitUntil: "networkidle" });
 }
@@ -76,10 +73,8 @@ check("verdict from the mock provider is rendered",
   bodyText.includes("You conditioned on the wrong event."),
   bodyText.includes("misread problem") ? "feedback + whyMissed shown" : "not found");
 
-const attempt = await page.evaluate(() => {
-  const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
-  return d.attempts[d.attempts.length - 1];
-});
+const stored = await readState(page);
+const attempt = stored.attempts[stored.attempts.length - 1];
 check("attempt recorded with the parsed verdict", attempt?.verdict === "incorrect", `verdict=${attempt?.verdict}`);
 check("whyMissed tag parsed and stored", attempt?.whyMissed === "misread problem", `whyMissed=${attempt?.whyMissed}`);
 
@@ -145,9 +140,7 @@ await page.fill("#task-generation", "strong-generator");
 await page.getByRole("button", { name: "Save Settings" }).click();
 await page.waitForTimeout(300);
 
-const savedOverrides = await page.evaluate(
-  () => JSON.parse(localStorage.getItem("quantprep_data_v2")).settings.taskModels,
-);
+const savedOverrides = (await readState(page)).settings.taskModels;
 check("overrides are stored per provider",
   savedOverrides.custom?.grading === "cheap-grader" && savedOverrides.custom?.generation === "strong-generator",
   JSON.stringify(savedOverrides));

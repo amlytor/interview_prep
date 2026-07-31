@@ -1,4 +1,6 @@
-import { APP_URL, SEEDED_TOPICS, launch, nav, reporter } from "./harness.mjs";
+import {
+  APP_URL, SEEDED_TOPICS, clearState, launch, nav, readState, reporter, resetApp, waitForSaved, writeState,
+} from "./harness.mjs";
 
 const { check, finish } = reporter();
 
@@ -9,9 +11,13 @@ const browser = await launch();
 // ===========================================================================
 {
   const page = await browser.newPage();
-  await page.goto(APP_URL);
+  await page.goto(APP_URL, { waitUntil: "networkidle" });
+  // Clear IndexedDB too, or the fresh install written on first load would win
+  // and the legacy key would never be read. Wait for that install to land
+  // before wiping it, so its save can't arrive afterwards and undo the wipe.
+  await waitForSaved(page);
+  await clearState(page);
   await page.evaluate(() => {
-    localStorage.clear();
     localStorage.setItem(
       "quantprep_data_v1",
       JSON.stringify({
@@ -36,7 +42,7 @@ const browser = await launch();
     );
   });
   await page.reload({ waitUntil: "networkidle" });
-  const d = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
+  const d = await readState(page);
 
   check("v1: attempts preserved", d.attempts.length === 2, `${d.attempts.length} attempts`);
   check("v1: legacy key moved into apiKeys.anthropic", d.settings.apiKeys.anthropic === "sk-ant-legacy",
@@ -80,9 +86,10 @@ const browser = await launch();
 // ===========================================================================
 {
   const page = await browser.newPage();
-  await page.goto(APP_URL);
+  await page.goto(APP_URL, { waitUntil: "networkidle" });
+  await waitForSaved(page);
+  await clearState(page);
   await page.evaluate(() => {
-    localStorage.clear();
     localStorage.setItem(
       "quantprep_data_v2",
       JSON.stringify({
@@ -106,7 +113,7 @@ const browser = await launch();
     );
   });
   await page.reload({ waitUntil: "networkidle" });
-  const d = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
+  const d = await readState(page);
 
   check("old-v2: attempts preserved", d.attempts.length === 1);
   check("old-v2: legacy key migrated", d.settings.apiKeys.anthropic === "sk-ant-old-v2");
@@ -116,6 +123,14 @@ const browser = await launch();
   check("old-v2: customTopics backfilled", Array.isArray(d.customTopics));
   check("old-v2: edited note NOT clobbered by re-seeding",
     d.studyNotes.find((n) => n.topicId === "bayes-theorem")?.body === "my edited note");
+
+  // The move off localStorage. Reading the payload back proves it landed in
+  // IndexedDB (readState is the only thing consulted above); the localStorage
+  // copy is then dropped, both to hand ~4 MB of the 5 MB budget back and so a
+  // months-stale snapshot can never quietly reappear as the fallback.
+  check("old-v2: the payload moved into IndexedDB", d !== null && Array.isArray(d.questions));
+  check("old-v2: the localStorage copy is retired once the move is verified",
+    await page.evaluate(() => localStorage.getItem("quantprep_data_v2") === null));
   await page.close();
 }
 
@@ -125,8 +140,7 @@ const browser = await launch();
 {
   const page = await browser.newPage();
   await page.goto(APP_URL);
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
+  await resetApp(page);
 
   await nav(page, /Topics/);
   await page.getByRole("button", { name: "+ New topic" }).click();
@@ -136,9 +150,8 @@ const browser = await launch();
   await page.getByRole("button", { name: "Create topic" }).click();
   await page.waitForTimeout(300);
 
-  const exported = await page.evaluate(() => localStorage.getItem("quantprep_data_v2"));
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
+  const exported = JSON.stringify(await readState(page));
+  await resetApp(page);
 
   // Feed the export back through the real import path.
   await nav(page, /Settings/);
@@ -171,11 +184,9 @@ const browser = await launch();
 {
   const page = await browser.newPage();
   await page.goto(APP_URL);
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
+  await resetApp(page);
 
-  const before = await page.evaluate(() => {
-    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
+  const before = await writeState(page, (d) => {
     // Count by id prefix, not by topic: a couple of legacy starter questions
     // also carry the derivatives tag but aren't part of the authored bank.
     const derivs = d.questions.filter((q) => q.id.startsWith("sq-derivatives-greeks-"));
@@ -192,14 +203,12 @@ const browser = await launch();
     const bayes = d.studyNotes.find((n) => n.topicId === "bayes-theorem");
     bayes.body = "MY OWN WORDS";
     bayes.modified = true;
-    localStorage.setItem("quantprep_data_v2", JSON.stringify(d));
     return { seeded: derivs.length, count: d.questions.length };
   });
   check("fixture: seed bank ships derivatives questions", before.seeded > 20, `${before.seeded}`);
 
   await page.reload({ waitUntil: "networkidle" });
-  const after = await page.evaluate(() => {
-    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
+  const after = await writeState(page, (d) => {
     return {
       derivs: d.questions.filter((q) => q.id.startsWith("sq-derivatives-greeks-")).length,
       total: d.questions.length,
@@ -223,10 +232,10 @@ const browser = await launch();
 
   // Idempotence: a second load must not append the same questions again.
   await page.reload({ waitUntil: "networkidle" });
-  const twice = await page.evaluate(() => {
-    const d = JSON.parse(localStorage.getItem("quantprep_data_v2"));
-    return { total: d.questions.length, dupes: d.questions.length - new Set(d.questions.map((q) => q.id)).size };
-  });
+  const twice = await writeState(page, (d) => ({
+    total: d.questions.length,
+    dupes: d.questions.length - new Set(d.questions.map((q) => q.id)).size,
+  }));
   check("backfill: idempotent across reloads",
     twice.total === after.total && twice.dupes === 0, `${twice.total} vs ${after.total}`);
   await page.close();

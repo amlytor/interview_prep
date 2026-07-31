@@ -10,6 +10,7 @@
 // Export button, which is always available.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppData } from "../types";
+import { keyValueStore } from "./db";
 
 // Minimal structural types for the subset of the API used here, so the code
 // compiles regardless of which lib.dom version is in play.
@@ -50,35 +51,12 @@ export function backupSupported(): boolean {
 // Handle persistence (IndexedDB — localStorage can't hold a file handle)
 // ---------------------------------------------------------------------------
 
-const DB_NAME = "quantprep_backup";
-const STORE = "handles";
 const KEY = "backupFile";
-
-function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
-  return openDb().then(
-    (db) =>
-      new Promise<T>((resolve, reject) => {
-        const tx = db.transaction(STORE, mode);
-        const request = run(tx.objectStore(STORE));
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-        tx.oncomplete = () => db.close();
-      }),
-  );
-}
+const handles = keyValueStore("quantprep_backup", "handles");
 
 async function loadHandle(): Promise<BackupFileHandle | null> {
   try {
-    return (await withStore<BackupFileHandle | undefined>("readonly", (s) => s.get(KEY))) ?? null;
+    return (await handles.get<BackupFileHandle>(KEY)) ?? null;
   } catch {
     return null;
   }
@@ -86,9 +64,8 @@ async function loadHandle(): Promise<BackupFileHandle | null> {
 
 async function storeHandle(handle: BackupFileHandle | null): Promise<void> {
   try {
-    // Split rather than a ternary: put/delete return differently-typed requests.
-    if (handle) await withStore<IDBValidKey>("readwrite", (s) => s.put(handle, KEY));
-    else await withStore<undefined>("readwrite", (s) => s.delete(KEY));
+    if (handle) await handles.put(KEY, handle);
+    else await handles.remove(KEY);
   } catch (err) {
     // Non-fatal: without persistence the backup simply won't auto-reconnect
     // after a reload. Auto-saving for the rest of this session still works.

@@ -5,6 +5,16 @@ import { PROVIDERS, providerInfo, DEFAULT_PROVIDER_ID, DEFAULT_MODEL } from "../
 import type { ProviderModel } from "../lib/providers";
 import type { AiTask, Settings } from "../types";
 import { AI_TASKS, AI_TASK_HINTS, AI_TASK_LABELS } from "../types";
+import { requestPersistentStorage, storageReport } from "../lib/storage";
+import type { StorageReport } from "../lib/storage";
+
+/** Bytes as something readable; null when the browser won't say. */
+function formatBytes(bytes: number | null): string {
+  if (bytes === null) return "an unknown amount";
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
 
 const CUSTOM_MODEL = "__custom__";
 
@@ -37,6 +47,28 @@ export function SettingsPage() {
   // suggestions stay usable, and the custom-ID field always works.
   const [liveModels, setLiveModels] = useState<ProviderModel[] | null>(null);
   const [modelsState, setModelsState] = useState<"idle" | "loading" | "ok" | "error">("idle");
+
+  // How much room the browser is actually giving us, and whether it has agreed
+  // not to evict us. Re-read whenever the data changes, so the number moves as
+  // the bank grows rather than showing whatever it was at page load.
+  const [storage, setStorage] = useState<StorageReport | null>(null);
+  const [protectFailed, setProtectFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void storageReport().then((report) => {
+      if (!cancelled) setStorage(report);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [data]);
+
+  async function handleProtect() {
+    const granted = await requestPersistentStorage();
+    setProtectFailed(!granted);
+    setStorage(await storageReport());
+  }
 
   useEffect(() => {
     if (!info.modelsUrl) {
@@ -476,9 +508,27 @@ export function SettingsPage() {
         <div className="card-title">Your Data</div>
         <p className="muted" style={{ marginTop: 0 }}>
           {data.questions.length} questions · {data.attempts.length} attempts logged · {data.studyNotes.length}{" "}
-          study notes ({data.customTopics.length} your own). All progress lives in this browser's local storage
-          under <code>quantprep_data_v2</code> — it survives restarts, but it is tied to this browser at this exact
-          URL. Export regularly.
+          study notes ({data.customTopics.length} your own). All progress lives in this browser's IndexedDB
+          under <code>quantprep</code> — it survives restarts, but it is tied to this browser at this exact URL.
+          Export regularly.
+        </p>
+        <p className="muted storage-usage">
+          {storage
+            ? `Using ${formatBytes(storage.usage)} of about ${formatBytes(storage.quota)} available.`
+            : "Measuring storage…"}{" "}
+          {storage?.persisted ? (
+            <span className="storage-persisted">Protected from browser cleanup.</span>
+          ) : (
+            storage && (
+              <>
+                The browser may clear this if the disk fills up.{" "}
+                <button className="btn-link" onClick={handleProtect}>
+                  Protect it
+                </button>
+                {protectFailed && " — the browser declined; export a backup instead."}
+              </>
+            )
+          )}
         </p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button className="btn btn-primary" onClick={exportData}>

@@ -724,6 +724,38 @@ select:focus {
   color: var(--gray-500);
 }
 
+/* Storage usage line in Settings. */
+.storage-usage {
+  margin-top: -4px;
+  font-size: 13px;
+}
+
+.storage-persisted {
+  color: var(--green-600);
+}
+
+/* A button that reads as a link — for inline actions inside a paragraph. */
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--blue-600);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Shown while the saved bank is read out of IndexedDB — a fraction of a second
+   on a warm load, but the app has nothing to render until it lands. */
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--gray-500);
+  font-size: 15px;
+}
+
 .empty-state h3 {
   color: var(--gray-700);
   margin-bottom: 8px;

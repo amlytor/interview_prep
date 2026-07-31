@@ -1,4 +1,4 @@
-import { APP_URL, SEEDED_TOPICS, launch, nav, reporter } from "./harness.mjs";
+import { APP_URL, SEEDED_TOPICS, launch, nav, readState, reporter } from "./harness.mjs";
 
 const { check, finish } = reporter();
 
@@ -19,7 +19,7 @@ await page.goto(APP_URL, { waitUntil: "networkidle" });
 check("app boots", (await page.locator("h1").first().textContent()) !== null);
 
 // --- Fresh install writes the expected settings shape -----------------------
-const settings = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")).settings);
+const settings = (await readState(page)).settings;
 check("fresh install defaults to OpenRouter", settings.provider === "openrouter", `provider=${settings.provider}`);
 check("fresh settings have apiKeys map", typeof settings.apiKeys === "object" && settings.apiKeys !== null);
 check("fresh settings default model", settings.model === "anthropic/claude-sonnet-5", `model=${settings.model}`);
@@ -59,7 +59,7 @@ check("deepseek key retained on switch back", (await page.locator("#apiKey").inp
 
 await page.getByRole("button", { name: "Save Settings" }).click();
 await page.waitForTimeout(300);
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")).settings);
+const saved = (await readState(page)).settings;
 check("both keys persisted", saved.apiKeys.anthropic === "sk-ant-test" && saved.apiKeys.deepseek === "sk-deepseek-test",
   JSON.stringify(saved.apiKeys));
 check("provider persisted", saved.provider === "deepseek");
@@ -98,7 +98,7 @@ check("lands on the new topic", (await page.locator("h2").first().textContent())
 check("marked as user topic", await page.getByText("Your topic").isVisible());
 check("KaTeX renders in the note", (await page.locator(".katex").count()) > 0);
 
-const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
+const stored = await readState(page);
 const custom = stored.customTopics[0];
 check("customTopics persisted", custom?.id === "reflection-principle", JSON.stringify(stored.customTopics));
 const newNote = stored.studyNotes.find((n) => n.topicId === "reflection-principle");
@@ -153,7 +153,7 @@ await page.locator(".topic-card", { hasText: "Reflection principle" }).click();
 await page.waitForTimeout(200);
 await page.getByRole("button", { name: "Delete this topic" }).click();
 await page.waitForTimeout(400);
-const afterDelete = await page.evaluate(() => JSON.parse(localStorage.getItem("quantprep_data_v2")));
+const afterDelete = await readState(page);
 check("topic deleted", afterDelete.customTopics.length === 0);
 check("its note deleted", !afterDelete.studyNotes.some((n) => n.topicId === "reflection-principle"));
 check("seeded topics untouched", afterDelete.studyNotes.length === SEEDED_TOPICS,

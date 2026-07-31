@@ -6,7 +6,7 @@ and risk theory (VaR / ES), with AI-powered grading and Socratic feedback from
 the model of your choice.
 
 Everything runs in your browser. Your questions, attempt history, and spaced-repetition
-schedule are stored in `localStorage` on your machine — nothing is sent anywhere
+schedule are stored in your browser's IndexedDB — nothing is sent anywhere
 except grading requests, which go directly from your browser to whichever AI
 provider you configure, using your own API key. Point it at a local model and
 nothing leaves your machine at all.
@@ -240,9 +240,9 @@ self-imposed cap — check actual usage in your provider's console
 
 All progress — question bank, attempt history, spaced-repetition schedule, study
 notes, your own topics, staged AI questions, miss diagnoses, difficulty
-ratings, and settings — lives in your
-browser's `localStorage` under the key `quantprep_data_v2`. It is written on
-every change, synchronously, so there is no "unsaved work" to lose.
+ratings, and settings — lives in your browser's **IndexedDB**, in a database
+called `quantprep`. It is written on every change, so there is no "unsaved
+work" to lose.
 
 **It survives** closing the tab, quitting the browser, rebooting, `git pull`,
 and rebuilding the app. Schema changes are additive and backfilled on load, so
@@ -250,7 +250,7 @@ upgrading the code never resets your progress.
 
 **It does not survive** these, so know them:
 
-- **A different origin.** `localStorage` is scoped to scheme + host + *port*.
+- **A different origin.** Browser storage is scoped to scheme + host + *port*.
   This is the one that actually catches people: if `5173` is busy, Vite silently
   starts on `5174`, and that is a different origin with its own empty storage.
   Your progress isn't gone — it's under the old port. Pin it with
@@ -261,10 +261,29 @@ upgrading the code never resets your progress.
   in the browser, not in the repo, so cloning this repo elsewhere gets you the
   app with a fresh, empty history.
 
-`localStorage` also caps out around 5 MB per origin. Attempts are tiny, so
-you'd have to try, but if a write ever does fail the app logs a clear message to
-the console and keeps running on in-memory state rather than crashing mid-drill
-— export immediately if you see it.
+**Settings → Your Data** shows how much room you are actually using. IndexedDB's
+budget is a share of free disk, so the seeded bank sits at a fraction of a
+percent rather than the 75% of the ~5 MB it filled when everything lived in
+`localStorage`. If a write ever does fail, the app logs a clear message to the
+console and keeps running on in-memory state rather than crashing mid-drill —
+export immediately if you see it.
+
+Browser storage is "best effort" by default, meaning a browser under disk
+pressure is allowed to clear it. The same panel offers **Protect it**, which
+asks the browser to exempt QuantPrep from that. Chromium usually grants it
+silently once you've used the app a few times; Firefox asks. Continuous backup
+below is the belt-and-braces answer either way.
+
+<details>
+<summary>Upgrading from a version that used <code>localStorage</code></summary>
+
+Nothing to do. On first load the old `quantprep_data_v2` payload is read,
+written to IndexedDB, read back to confirm it landed, and only then removed
+from `localStorage` — which hands ~4 MB of the 5 MB budget back. The much older
+`quantprep_data_v1` key is left in place permanently, since that migration was
+lossy and the original is the only record of it.
+
+</details>
 
 ### Continuous backup (recommended)
 
@@ -305,7 +324,8 @@ src/
     topics.ts            Topic taxonomy: seeded ids + labels, custom-topic registry
     seedData.ts          Import adapter for the src/data JSON files
     seedQuestions.ts     The original starter bank (retagged, deduped)
-    storage.ts           localStorage read/write, schema migration, JSON export/import
+    db.ts                Promise wrapper over IndexedDB (a key-value store)
+    storage.ts           Load/save, schema migration, JSON export/import
     store.tsx            React context: single source of truth + actions
     srs.ts               Spaced repetition (2/7/21 ladder + trickle-down credit)
     mastery.ts           Mastery scores, unlock rules, tiers, next-topic recommendation
@@ -345,11 +365,14 @@ npm run test:e2e   # end-to-end suites (build first)
 ```
 
 `npm run test:e2e` drives a real browser against the production build. It starts
-the preview server and a mock OpenAI-compatible provider, then runs five
-suites: `smoke` (provider switching, custom-topic lifecycle), `migration`
-(upgrading old saved data, export/import round-trip, and backfilling seed
-content added since your data was written without touching your edits),
-`provider` (a full
+the preview server and a mock OpenAI-compatible provider, then runs six
+suites. `content` comes first and needs no browser at all — it reads the seed
+JSON directly and checks referential integrity, question depth per topic, an
+easy entry point everywhere, and that no note has fallen behind the bank it
+backs. Then: `smoke` (provider switching, custom-topic lifecycle), `migration`
+(upgrading old saved data, moving a pre-IndexedDB payload across, export/import
+round-trip, and backfilling seed content added since your data was written
+without touching your edits), `provider` (a full
 grading round-trip through a non-Anthropic endpoint, asserting the exact wire
 format), `backup` (auto-save to a real file handle, debouncing, reconnect after
 permission lapses, and the unsupported-browser fallback), and `diagnostic` (the

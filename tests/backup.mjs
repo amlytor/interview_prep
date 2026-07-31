@@ -2,7 +2,7 @@
 // stubbed (Playwright cannot drive it); the handle it hands back is a real
 // FileSystemFileHandle, so structured-cloning into IndexedDB, persistence
 // across reloads, and the write path itself all run for real.
-import { APP_URL, launch, nav, reporter } from "./harness.mjs";
+import { APP_URL, launch, nav, reporter, resetApp } from "./harness.mjs";
 
 const { check, finish } = reporter();
 
@@ -89,8 +89,7 @@ const browser = await launch();
   const page = await browser.newPage();
   await page.addInitScript(stubPicker());
   await page.goto(APP_URL, { waitUntil: "networkidle" });
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: "networkidle" });
+  await resetApp(page);
 
   await nav(page, /Settings/);
   await page.waitForSelector(".backup-status");

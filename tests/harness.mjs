@@ -31,6 +31,165 @@ export function nav(page, name) {
   return page.locator("nav.sidebar").getByRole("button", { name }).click();
 }
 
+// ---------------------------------------------------------------------------
+// Persisted state (IndexedDB)
+// ---------------------------------------------------------------------------
+// The app keeps everything in IndexedDB — localStorage only holds the two
+// pre-migration keys, which are read once and then retired. These helpers are
+// what the suites use to inspect and seed saved state; they mirror the app's
+// own database names exactly, and their onupgradeneeded creates the store the
+// same way, so a test that runs before the app has ever loaded can't leave a
+// storeless database behind for the app to trip over.
+
+const STATE_DB = "quantprep";
+const STATE_STORE = "app";
+const STATE_KEY = "data";
+
+/** Body of the in-page IDB open, shared by the helpers below. */
+function openArgs() {
+  return [STATE_DB, STATE_STORE, STATE_KEY];
+}
+
+/** The app's saved state, or null if nothing has been persisted yet. */
+export function readState(page) {
+  return page.evaluate(
+    ([dbName, storeName, key]) =>
+      new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains(storeName)) {
+            request.result.createObjectStore(storeName);
+          }
+        };
+        request.onsuccess = () => {
+          const db = request.result;
+          const get = db.transaction(storeName, "readonly").objectStore(storeName).get(key);
+          get.onsuccess = () => {
+            db.close();
+            resolve(get.result ?? null);
+          };
+          get.onerror = () => reject(get.error);
+        };
+        request.onerror = () => reject(request.error);
+      }),
+    openArgs(),
+  );
+}
+
+/**
+ * Read the saved state, transform it in the page, and write it back.
+ *
+ * `mutate` runs in the browser, not in Node — it is shipped across as source
+ * and rebuilt there, so it must not close over anything. Whatever it returns
+ * is handed back to the caller, which is how the fixtures report what they
+ * changed. Keeping the payload in the page also avoids serialising ~4 MB of
+ * question bank over the wire twice per call.
+ */
+export function writeState(page, mutate) {
+  return page.evaluate(
+    async ([dbName, storeName, key, source]) => {
+      const apply = new Function(`return (${source})`)();
+      const db = await new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains(storeName)) {
+            request.result.createObjectStore(storeName);
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const state = await new Promise((resolve, reject) => {
+        const get = db.transaction(storeName, "readonly").objectStore(storeName).get(key);
+        get.onsuccess = () => resolve(get.result ?? null);
+        get.onerror = () => reject(get.error);
+      });
+      const report = apply(state);
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, "readwrite");
+        tx.objectStore(storeName).put(state, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      db.close();
+      return report ?? null;
+    },
+    [...openArgs(), mutate.toString()],
+  );
+}
+
+/** Write a state object built in Node (used to seed a specific payload). */
+export function putState(page, state) {
+  return page.evaluate(
+    async ([dbName, storeName, key, value]) => {
+      const db = await new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains(storeName)) {
+            request.result.createObjectStore(storeName);
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, "readwrite");
+        tx.objectStore(storeName).put(value, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      db.close();
+    },
+    [...openArgs(), state],
+  );
+}
+
+/**
+ * Wipe everything the app persists: the IndexedDB database and both legacy
+ * localStorage keys. Deleting the database can block on the connection the app
+ * itself is holding, which it releases via onversionchange — hence the resolve
+ * on `onblocked` as well, so a suite can never hang here.
+ */
+export function clearState(page) {
+  return page.evaluate(
+    ([dbName]) =>
+      new Promise((resolve) => {
+        localStorage.clear();
+        const request = indexedDB.deleteDatabase(dbName);
+        request.onsuccess = resolve;
+        request.onerror = resolve;
+        request.onblocked = resolve;
+      }),
+    openArgs(),
+  );
+}
+
+/**
+ * Wait until the running app has persisted something.
+ *
+ * Wiping storage out from under a page that is still booting is a race: the
+ * save issued by the first load can land AFTER the wipe, quietly restoring a
+ * fresh install over whatever fixture the test just planted. Once a payload is
+ * readable, every write the load issued has committed, and IndexedDB orders
+ * anything that comes next behind it.
+ */
+export async function waitForSaved(page, timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await readState(page)) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error("the app never persisted its state");
+}
+
+/** Clear saved state and reload into a guaranteed-fresh install. */
+export async function resetApp(page) {
+  await waitForSaved(page);
+  await clearState(page);
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForSelector("nav.sidebar");
+}
+
 /** Collects pass/fail lines and exits non-zero if anything failed. */
 export function reporter() {
   const results = [];
