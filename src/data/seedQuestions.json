@@ -7369,6 +7369,848 @@
       "explanation": "Let X_i indicate that the i-th card dealt is an ace. By symmetry each has E[X_i] = 4/52, so the total is 5 * 4/52 = 5/13. The important part is what you did NOT need: the cards are dealt WITHOUT replacement, so the indicators are dependent — knowing card 1 is an ace lowers the chance for card 2. Linearity does not care. Trying to do this by summing k * P(exactly k aces) over k = 0..4 with hypergeometric probabilities gets the same answer after a great deal more work.",
       "technique": "Indicator variables with dependent trials",
       "difficultyRationale": "One product; the point is recognising dependence is irrelevant."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Your risk report says \"1-day 99% VaR: £5m\". State precisely what that claims — and three things it does not.",
+      "canonicalAnswer": "It claims that on 99% of days the loss will be less than £5m, i.e. you expect to lose more than £5m about 1 day in 100. It does not say how much more you lose on those days, that £5m is the worst case, or that the losses will be spread evenly.",
+      "explanation": "The claim is about a frequency, not a bound. Over 250 trading days you should expect roughly 2 to 3 breaches — zero breaches is evidence the model is too conservative, not evidence of safety. What it is silent on: the SIZE of the tail beyond the quantile (that is expected shortfall's job), the possibility that breaches cluster in one bad week rather than arriving evenly, and anything about a holding period longer than a day. Being able to state the claim this tightly is what separates someone who uses the number from someone who just reports it.",
+      "technique": "Interpreting a VaR figure",
+      "difficultyRationale": "Definitional, but requires stating the negative space precisely."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two positions have standalone 1-day VaRs of £4m and £3m, with returns uncorrelated. What is the portfolio VaR?",
+      "canonicalAnswer": "£5m. VaR combines like standard deviations: sqrt(4^2 + 3^2) = sqrt(25) = 5.",
+      "explanation": "With normal returns and zero correlation the cross term drops out, leaving VaR_p = sqrt(V1^2 + V2^2). The 3-4-5 triangle makes the arithmetic instant. Note the diversification benefit: the standalone VaRs sum to £7m, so £2m of risk vanished purely from imperfect correlation. And note the shape — combining EQUAL risks at zero correlation gives sqrt(2) times one of them, not twice, which is the same sqrt(n) scaling that governs everything else in this topic.",
+      "technique": "Portfolio VaR at zero correlation",
+      "difficultyRationale": "One Pythagorean sum."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define component VaR, and explain why the components sum exactly to the portfolio VaR when marginal VaRs do not.",
+      "canonicalAnswer": "Component VaR for position i is its marginal VaR multiplied by its position size: C_i = (dVaR/dx_i) * x_i. They sum to total VaR because VaR is homogeneous of degree one in position sizes, so Euler's theorem gives sum of (dVaR/dx_i)*x_i = VaR.",
+      "explanation": "Marginal VaR is a derivative — a per-unit sensitivity — so adding derivatives across positions of different sizes is meaningless. Multiplying each by its own position size converts sensitivities into contributions, and Euler's theorem for homogeneous functions guarantees they add up. Under the variance-covariance model this works out to C_i = VaR * w_i * beta_i, where beta_i is the position's beta to the portfolio. The practical value is that component VaR tells you where your risk actually IS, and a negative component identifies a genuine hedge — a position whose removal would INCREASE portfolio VaR.",
+      "technique": "Euler decomposition of VaR",
+      "difficultyRationale": "Requires knowing why homogeneity is what makes the decomposition additive, not just the formula."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish marginal VaR, incremental VaR and component VaR. Which would you quote to a trader asking \"what does this new trade cost me in risk?\"",
+      "canonicalAnswer": "Marginal VaR is the derivative of VaR with respect to a small change in the position. Incremental VaR is the actual change in VaR from adding or removing the whole position. Component VaR is marginal VaR times position size, and the components sum to total VaR. For a new trade of material size, quote INCREMENTAL VaR.",
+      "explanation": "Marginal is a local first-order sensitivity — accurate only for small changes, but cheap and additive. Incremental requires revaluing VaR twice, with and without the trade, and is the honest answer for a large ticket because it captures the non-linearity that marginal VaR's linearisation misses. Component is a decomposition of the EXISTING book, useful for attribution and limit-setting rather than for pricing a new trade. Quoting marginal VaR for a trade that doubles a concentration is the standard error here, and it understates the cost.",
+      "technique": "Choosing the right VaR sensitivity measure",
+      "difficultyRationale": "Three similar measures that are routinely confused; the discriminating question is the size of the change."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A book holds £60m of asset A (daily vol 1%) and £40m of asset B (daily vol 2%), uncorrelated. Compute the 99% VaR and each position's component VaR.",
+      "canonicalAnswer": "Portfolio VaR = £2.33m. Component VaR is £0.84m for A and £1.49m for B.",
+      "explanation": "Cash standard deviations: A gives 60(0.01) = £0.6m, B gives 40(0.02) = £0.8m. With zero correlation, sigma_p = sqrt(0.36 + 0.64) = £1.0m, so VaR = 2.326(1.0) = £2.33m. At zero correlation each component's share of variance is (sigma_i V_i)^2 / sigma_p^2, giving 0.36 and 0.64. So C_A = 2.326(0.36) = £0.84m and C_B = 2.326(0.64) = £1.49m, which sum to the total. The lesson: B is 40% of the notional but 64% of the risk. Notional tells you almost nothing; the risk contribution scales with the SQUARE of the volatility-weighted exposure.",
+      "technique": "Component VaR from variance shares",
+      "difficultyRationale": "Two-step computation plus the interpretation that notional and risk share diverge."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Your loss distribution has skewness +0.5 rather than zero. Use the Cornish-Fisher expansion to adjust a 99% VaR built on a normal quantile, and comment on the size of the effect.",
+      "canonicalAnswer": "z_CF = z + (1/6)(z^2 - 1) * S = 2.326 + (1/6)(4.410)(0.5) = 2.69. VaR rises by about 16% relative to the normal figure.",
+      "explanation": "Cornish-Fisher corrects a normal quantile for the higher moments of the actual distribution, the leading term being (1/6)(z^2 - 1)S for skewness. Here 2.326^2 - 1 = 4.410, so the adjustment is +0.367 and the quantile moves from 2.326 to 2.693 — a 16% larger VaR from a modest skew. Watch the sign convention: this is the LOSS distribution, where positive skew means a long right tail of large losses. There is a further kurtosis term, (1/24)(z^3 - 3z)(K-3), which for fat-tailed returns pushes the quantile up again. Cornish-Fisher is cheap and adds real accuracy for mildly non-normal books, but it breaks down for strongly non-normal ones — at that point you simulate.",
+      "technique": "Cornish-Fisher quantile adjustment",
+      "difficultyRationale": "Requires the expansion, correct sign convention on the loss distribution, and judgement about its validity range."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Walk through the steps of a Monte Carlo VaR calculation, and say when you would choose it over historical simulation.",
+      "canonicalAnswer": "Estimate the risk factor distribution and covariance matrix; decompose the covariance matrix (Cholesky) to generate correlated draws; simulate many joint factor scenarios; fully revalue the portfolio under each; sort the resulting P&Ls and read off the quantile. Choose it when you need more scenarios than history provides, or want to impose a distribution history does not contain.",
+      "explanation": "The distinguishing feature versus historical simulation is that the scenarios are GENERATED rather than observed, which is both the strength and the weakness. Strength: you can produce 100,000 scenarios instead of 500, you can stress the correlation structure directly, and you can price path-dependent instruments properly. Weakness: everything now depends on the distributional assumption you imposed, so you have swapped sampling error for model error. In practice it is the default for books full of exotics where full revaluation matters and the analytic route is hopeless.",
+      "technique": "Monte Carlo VaR procedure",
+      "difficultyRationale": "Multi-step procedure plus a judgement about when it is the right tool."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does a Monte Carlo VaR need a Cholesky decomposition of the covariance matrix, and what goes wrong if the matrix is not positive definite?",
+      "canonicalAnswer": "Cholesky writes Sigma = LL', so multiplying a vector of independent standard normals by L produces draws with exactly the target covariance. If Sigma is not positive definite the decomposition fails — there is no real matrix square root, because some portfolio would have negative variance.",
+      "explanation": "You can only simulate independent normals directly; L is what imprints the correlation structure on them. The failure mode is common in practice: correlations estimated pairwise from different sample windows, or overridden by a risk manager's judgement, routinely produce a matrix that is not a valid covariance matrix of anything. The symptom is a Cholesky routine hitting a negative number under a square root. The standard repairs are eigenvalue flooring — decompose, set negative eigenvalues to a small positive number, rebuild and renormalise — or fitting the nearest valid correlation matrix. Silently patching it without telling anyone is how a risk system starts reporting numbers nobody can reproduce.",
+      "technique": "Simulating correlated risk factors",
+      "difficultyRationale": "Links a linear-algebra property to a concrete production failure."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You run 10,000 Monte Carlo trials and want to halve the standard error of your VaR estimate. What do you do, and what does that tell you about Monte Carlo as a method?",
+      "canonicalAnswer": "Run 40,000 trials — four times as many. Monte Carlo error falls as 1/sqrt(N), so accuracy is expensive: each extra decimal place costs a hundredfold increase in trials.",
+      "explanation": "The 1/sqrt(N) rate is the central limit theorem applied to the simulation average, and crucially it does NOT depend on the dimension of the problem — which is exactly why Monte Carlo beats grid methods for high-dimensional portfolios, where a lattice would need points exponential in the number of factors. The rate is the reason variance-reduction techniques exist: antithetic variates, control variates and importance sampling all attack the constant in front of the 1/sqrt(N) rather than the rate itself. For tail quantiles specifically, importance sampling matters most, because plain sampling wastes almost all its effort on scenarios that never approach the 99th percentile.",
+      "technique": "Monte Carlo convergence rate",
+      "difficultyRationale": "One rate, but the implications (dimension-independence, variance reduction) are the substance."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Your covariance matrix is estimated from 250 equally weighted days. A single extreme day drops out of the window and VaR falls sharply with no change in positions. What is this called, and how do you avoid it?",
+      "canonicalAnswer": "The ghost feature (or echo effect). It happens because equal weighting gives a day full weight for 250 days and zero thereafter. Avoid it by using exponentially weighted estimates (EWMA or GARCH), where a shock's influence decays smoothly.",
+      "explanation": "With equal weights an observation's influence is a step function, so the estimate jumps twice for one event — once when the shock arrives and once, in reverse, when it leaves the window. Risk limits get breached and released for reasons that have nothing to do with the book. EWMA replaces the step with a geometric decay, so the shock's influence fades continuously and the estimate is smooth. The same reasoning explains why a naive VaR often falls to its lowest just as a crisis window rolls off, which is precisely the wrong time to be reporting a comfortable number.",
+      "technique": "Weighting schemes in covariance estimation",
+      "difficultyRationale": "Requires recognising an artefact of the estimator rather than a change in risk, and naming the fix."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "RiskMetrics uses lambda = 0.94 for daily EWMA volatility. Where does that number come from, and what would using 0.97 instead do?",
+      "canonicalAnswer": "It was chosen empirically to minimise forecast error across a wide range of series. A higher lambda like 0.97 puts more weight on older data, giving a smoother estimate that reacts more slowly to new shocks.",
+      "explanation": "Lambda controls the memory of the estimator. The effective window is roughly 1/(1-lambda) days, so 0.94 corresponds to about 17 days of meaningful history and 0.97 to about 33. Lower lambda means faster reaction and a noisier, more volatile VaR series; higher lambda means a stable number that is slow to recognise a regime change. RiskMetrics landed on 0.94 for daily data and 0.97 for monthly. It is a smoothing choice, not a law of nature, and a bank that picks lambda to make its VaR look calm is making a model-risk decision it should be documenting.",
+      "technique": "EWMA decay parameter",
+      "difficultyRationale": "Requires understanding lambda as a memory-length choice with a trade-off, not a constant to memorise."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Model-building VaR assumes a zero mean return over one day. Why is that acceptable at a one-day horizon but not at a one-year horizon?",
+      "canonicalAnswer": "Because the mean scales with time while the standard deviation scales with its square root. Over one day the drift is negligible next to the volatility; over a year it is comparable and cannot be dropped.",
+      "explanation": "Put numbers on it. An equity with 8% expected annual return and 20% annual volatility has a daily drift of about 0.03% against a daily volatility of about 1.26% — the drift is 2.5% of the noise, immaterial to a quantile. Over a year the drift is 8% against 20%, or 40% of the noise, and ignoring it would overstate the loss quantile substantially. The general point is that the signal-to-noise ratio of a drift grows like sqrt(T), which is also why estimating expected returns is so much harder than estimating volatility: you need decades of data to pin down a mean that volatility reveals in months.",
+      "technique": "Scaling of drift versus diffusion",
+      "difficultyRationale": "Requires the sqrt(T) argument and the ability to put rough numbers on when the drift starts to matter."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Daily returns are positively autocorrelated with first-order coefficient rho = 0.2. Does square-root-of-time scaling from 1-day to 10-day VaR overstate or understate the risk, and by how much?",
+      "canonicalAnswer": "It understates it. The variance of the 10-day sum exceeds 10 times the daily variance when returns are positively autocorrelated; the correct multiplier is about sqrt(14.5)/sqrt(10) = 1.20 times the naive figure.",
+      "explanation": "Var(sum of T returns) = T*sigma^2 + 2*sigma^2*sum over lags of (T-k)*rho_k. With only first-order autocorrelation rho = 0.2 and T = 10, the correction is 2(0.2)(9) = 3.6 extra units, plus higher-lag terms if the autocorrelation decays geometrically — taking the total to roughly 14.5 sigma^2 rather than 10. The scaling factor is therefore sqrt(14.5) = 3.81 instead of sqrt(10) = 3.16, about 20% higher. Positive autocorrelation means trends persist, so multi-day losses compound; negative autocorrelation (mean reversion) would go the other way. Since the square-root rule assumes independent returns, any serial dependence makes it wrong in a direction you can at least sign.",
+      "technique": "Time scaling with autocorrelated returns",
+      "difficultyRationale": "Requires the variance-of-a-sum formula with covariance terms, not just the iid shortcut."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you map a single-stock equity position into a model-building VaR system that only carries index risk factors, and what does the mapping throw away?",
+      "canonicalAnswer": "Map it to a beta-weighted index exposure: a position of value V with beta b to the index is treated as b*V of index exposure. It throws away idiosyncratic risk — everything in the stock's return not explained by the index.",
+      "explanation": "The decomposition is r_stock = b*r_index + e, so total variance is b^2 * var(index) + var(e). Beta mapping keeps the first term and discards the second. For a well-diversified book that is defensible, because the idiosyncratic terms are largely independent and wash out. For a concentrated position it is a serious understatement — a single stock's variance is typically dominated by its idiosyncratic component, often 60-70% of it. The fix is to keep a specific-risk term alongside the mapped exposure, which is exactly what the regulatory specific-risk charge is for.",
+      "technique": "Risk-factor mapping and specific risk",
+      "difficultyRationale": "Standard technique, but the discriminating part is quantifying what the mapping loses."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Decompose a forward contract to buy USD 10m for GBP in six months into the risk factors a VaR system would use.",
+      "canonicalAnswer": "Three: a long USD 10m spot FX exposure, a long position in a six-month USD zero-coupon bond, and a short position in a six-month GBP zero-coupon bond. Equivalently it is spot FX risk plus the two interest rate exposures implied by the forward points.",
+      "explanation": "A forward is a spot position plus two funding legs, which is exactly what covered interest parity says: F = S * (1 + r_USD*t)/(1 + r_GBP*t). Decomposing it this way means the VaR system needs no separate 'forward FX' factor — it reuses the spot rate and the two yield curves it already carries. That is the whole point of risk-factor mapping: express every instrument in terms of a small common set of factors so the covariance matrix stays tractable. It also explains why a forward's risk is not purely FX: a parallel move in either rate curve changes its value even with spot unchanged.",
+      "technique": "Risk-factor decomposition of a forward",
+      "difficultyRationale": "Requires seeing the instrument as a portfolio of primitives rather than as one thing."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A long straddle is delta-neutral and has large positive gamma. Does the delta-gamma VaR approximation overstate or understate its risk, and why?",
+      "canonicalAnswer": "It overstates the LOSS, because positive gamma means the quadratic term is positive for a move in either direction — the position profits from large moves. The real risk is the reverse: theta decay and a fall in implied volatility, neither of which the delta-gamma approximation contains.",
+      "explanation": "With delta zero, dP = (1/2)*gamma*(dS)^2, which is positive whatever the sign of dS, so a pure delta-gamma model reports the straddle as having essentially no downside from spot moves. That is directionally right — a long straddle really does want movement — but it means the model is measuring the wrong risk entirely. The actual losses come from time passing with nothing happening (theta) and from implied volatility falling (vega). This is the clearest illustration of why an options book needs a vega risk factor and why FRTB treats volatility as a risk factor in its own right rather than a parameter.",
+      "technique": "Limits of delta-gamma for volatility positions",
+      "difficultyRationale": "Requires recognising that the approximation is not merely inaccurate but is measuring the wrong exposure."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A desk starts trading a new product with no price history. How do you get it into a model-building VaR, and what are the risks of each approach?",
+      "canonicalAnswer": "Either proxy it with a related instrument that does have history, or decompose it into existing risk factors and price it from those. Proxying risks a basis that only shows up in stress; decomposition risks missing a factor the product is genuinely exposed to.",
+      "explanation": "Decomposition is preferred where possible, because it reuses factors already in the covariance matrix and keeps the product consistent with the rest of the book. Proxying is the fallback, and its danger is that the proxy and the real instrument track closely in normal conditions and decouple exactly when it matters — proxying a peripheral sovereign with a core one worked fine until 2011. Either way the treatment should be documented as a model limitation with a proxy-basis reserve or an add-on, and FRTB addresses this directly through the non-modellable risk factor regime, which forces a separate stress-based capital charge for factors without sufficient real price observations.",
+      "technique": "Proxying and non-modellable risk factors",
+      "difficultyRationale": "Open-ended judgement question; a good answer names both routes and their distinct failure modes."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In cash-flow mapping, a £100 cash flow at 4 years is split between the 3-year and 5-year standard tenors. The split is chosen to preserve:",
+      "options": [
+        "The present value and the variance of the cash flow",
+        "The nominal amount and the maturity",
+        "The nominal amount only",
+        "The duration only"
+      ],
+      "correctOption": 0,
+      "explanation": "The mapping must not change what the position is worth, so present value is preserved by construction; and it must not change how risky it is, so the weights are chosen so the mapped pair has the same variance as the original flow — which requires knowing the correlation between the 3-year and 5-year rates. Preserving nominal amount is wrong because a nearer cash flow is worth more, and preserving duration alone would leave the variance unmatched whenever the two tenors are less than perfectly correlated.",
+      "technique": "Cash-flow mapping constraints",
+      "difficultyRationale": "Tests the two constraints together; the common error is remembering only present value."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your book has a large position in a currency pegged to the dollar. Historical volatility is near zero, so model-building VaR reports almost nothing. What is wrong with that number?",
+      "canonicalAnswer": "A peg suppresses observed volatility without removing the risk — it converts continuous small moves into a rare, large jump if the peg breaks. A model calibrated to the pegged period is measuring the peg's success, not the exposure.",
+      "explanation": "This is the sharpest example of history being the wrong guide. Under the peg the sample variance is genuinely tiny and every statistical test agrees the risk is small, right up until the devaluation, which is a move of 20-30% in a day. The distribution is bimodal and no Gaussian fitted to the quiet regime describes it. The treatment is not to adjust the volatility input but to handle it outside VaR entirely: a stress scenario for a break of the peg, sized on comparable historical breaks, plus a concentration limit. The same reasoning applies to any managed rate, credit position with no defaults in sample, or short-deep-out-of-the-money option book — all show low variance because the loss has not happened yet.",
+      "technique": "Peso problems and regime-dependent volatility",
+      "difficultyRationale": "Requires recognising that a low sample variance can be evidence of hidden risk rather than its absence."
+    },
+    {
+      "topicId": "var-model-building",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under the variance-covariance model, when is a position's component VaR negative, and what does that tell you?",
+      "canonicalAnswer": "When the position's beta to the portfolio is negative — its returns are negatively correlated with the rest of the book. It means the position is a genuine hedge: increasing it would REDUCE total VaR.",
+      "explanation": "Component VaR is VaR * w_i * beta_i, so its sign is the sign of beta_i. A negative component identifies a position that pays when the rest of the book suffers, and it is one of the few outputs of a VaR system that gives a trader something directly actionable — it says where to add rather than where to cut. Two cautions. The beta is estimated from a sample correlation, so a marginally negative component may be noise. And correlations that hold on average often go to one in a crisis, which means the hedge you are being credited for may not be there when it is needed. Component VaR describes the book under normal conditions, and it should be read alongside a stress test, not instead of one.",
+      "technique": "Sign of the risk contribution",
+      "difficultyRationale": "Requires linking the sign of a formula to a portfolio interpretation, plus the caveats on estimated correlation."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many days of history would you use for a 1-day 99% historical simulation VaR, and what is the trade-off?",
+      "canonicalAnswer": "Typically 250 to 750 days (one to three years). More data gives a more stable tail estimate but assumes the market regime has not changed; less data reacts faster but leaves too few observations in the tail.",
+      "explanation": "At 99% only 1% of the sample sits beyond the quantile, so 250 days gives you 2 or 3 observations to estimate from — statistically almost nothing. Going to 750 days gives 7 or 8, which is better, but you are now asserting that market conditions from three years ago are relevant to tomorrow. Basel's requirement is at least one year of daily data. The tension is real and unavoidable, which is why the usual answer is to use a longer window with age weighting or volatility scaling, so old data contributes without being treated as equally informative.",
+      "technique": "Sample window choice",
+      "difficultyRationale": "One trade-off, with the numbers making the point."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "In historical simulation, what exactly is applied to the current portfolio?",
+      "options": [
+        "The historical percentage changes in each risk factor",
+        "The historical P&L the desk actually made",
+        "The historical levels of each risk factor",
+        "A random sample drawn from the fitted distribution of each risk factor"
+      ],
+      "correctOption": 0,
+      "explanation": "Each historical day supplies a set of factor MOVES, which are applied to today's factor levels to produce a hypothetical revalued portfolio. Option 2 is the past P&L of a past portfolio and answers a different question. Option 3 would price today's book at prices from years ago, which is meaningless. Option 4 describes Monte Carlo — the defining feature of historical simulation is that no distribution is fitted at all.",
+      "technique": "Historical simulation mechanics",
+      "difficultyRationale": "One mechanic, with the three standard confusions as distractors."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain age-weighted historical simulation (the Boudoukh-Richardson-Whitelaw approach) and how the VaR is read off.",
+      "canonicalAnswer": "Each historical scenario gets a weight decaying geometrically with age — weight proportional to lambda^(i-1) for the i-th most recent day, normalised to sum to one. Sort the losses from worst to best, accumulate weights, and take the loss at which the cumulative weight first reaches 1%.",
+      "explanation": "Plain historical simulation gives a day from three years ago exactly the same weight as yesterday, which contradicts everything known about volatility clustering. Age weighting fixes that without discarding the old data entirely — the tail estimate keeps its observations but they count for less. Reading the quantile changes from 'the 5th worst of 500' to a weighted cumulative sum, which is the only fiddly part. A useful side effect is that the ghost feature disappears: a shock's influence decays smoothly instead of dropping out of the window in one step. The cost is a shorter effective sample, so the tail is estimated from fewer effective observations.",
+      "technique": "Age-weighted historical simulation",
+      "difficultyRationale": "Requires both the weighting scheme and the modified quantile-reading procedure."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain filtered historical simulation: what gets filtered, and what is the filter for?",
+      "canonicalAnswer": "Standardise each historical return by the volatility estimate for that day, sample from the standardised residuals, then rescale by TODAY'S volatility. It solves the problem that a return drawn from a calm period understates risk in a turbulent one, and vice versa.",
+      "explanation": "The procedure is: fit a volatility model (usually GARCH or EWMA), divide each historical return by its contemporaneous volatility to get residuals that are approximately identically distributed, then multiply the sampled residual by the current volatility forecast. The shape of the tail comes from history; the SCALE comes from today. Plain historical simulation implicitly assumes the distribution is unconditional and unchanging, so after a quiet six months it reports a comfortable VaR just as a regime is turning. Filtering is also what makes EVT usable in practice, since the theory assumes identically distributed observations and raw returns plainly are not.",
+      "technique": "Volatility filtering of historical scenarios",
+      "difficultyRationale": "Three-step procedure whose justification (restoring the iid assumption) is the substance."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish the block maxima and peaks-over-threshold approaches in EVT. Which is normally used in market risk, and why?",
+      "canonicalAnswer": "Block maxima takes the single largest loss from each block (say each month) and fits a generalised extreme value distribution. Peaks-over-threshold keeps every loss above a high threshold and fits a generalised Pareto. Market risk normally uses peaks-over-threshold, because it uses the data far more efficiently.",
+      "explanation": "Block maxima throws away information: if a month contains three catastrophic days it keeps one and discards two, and if a month is quiet it keeps a maximum that is not extreme at all. Peaks-over-threshold keeps exactly the observations that carry tail information and no others. Given how little data there is in a financial tail to begin with, that efficiency matters. Block maxima survives mainly in hydrology and insurance, where the natural blocking (annual maxima) is meaningful and the record is long.",
+      "technique": "Block maxima vs POT",
+      "difficultyRationale": "Two methods to contrast, with data efficiency as the discriminating argument."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Name the three extreme value distributions and say which describes financial returns.",
+      "canonicalAnswer": "Gumbel (xi = 0, thin tail, e.g. normal), Frechet (xi > 0, heavy power-law tail) and Weibull (xi < 0, bounded tail). Financial returns are Frechet.",
+      "explanation": "The Fisher-Tippett theorem says a normalised block maximum can only converge to one of these three, and the generalised extreme value distribution unifies them through the single shape parameter xi. The sign of xi is the whole story: xi = 0 for distributions whose tails decay exponentially, xi > 0 for power-law tails where extreme events are far more likely than a normal would suggest, and xi < 0 where the variable has a hard upper bound. Equity returns consistently fit xi in the range 0.1 to 0.4, which is squarely Frechet, and that is the formal statement of 'financial returns have fat tails'.",
+      "technique": "Fisher-Tippett and the GEV family",
+      "difficultyRationale": "Recall of a classification, with the sign of xi carrying the meaning."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A GPD fit to losses above a £5m threshold gives xi = 0.2 and beta = 2 (£m), with 25 exceedances in 500 days. The 99.9% VaR from this fit is £16.9m. What is the corresponding expected shortfall?",
+      "canonicalAnswer": "About £22.4m. ES = VaR/(1 - xi) + (beta - xi*u)/(1 - xi) = 16.9/0.8 + (2 - 1)/0.8 = 21.13 + 1.25 = 22.38.",
+      "explanation": "The generalised Pareto has a closed form for expected shortfall, which is one of the reasons it is convenient. Substituting: 16.9/0.8 = 21.13, and (2 - 0.2*5)/0.8 = 1/0.8 = 1.25, summing to £22.4m. The ratio ES/VaR is 1.32 here, against about 1.15 under normality at the same confidence — that gap is precisely the extra tail severity a fat-tailed fit reveals and a Gaussian model hides. Note the formula requires xi < 1; if xi >= 1 the mean of the tail is infinite and expected shortfall does not exist, which is a genuine possibility for some operational-loss datasets though not for market returns.",
+      "technique": "Expected shortfall from a fitted GPD",
+      "difficultyRationale": "Requires the closed form, correct substitution, and awareness of the xi < 1 condition."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A fitted GPD gives xi = 0.5. What does that imply about the moments of the loss distribution, and why should it worry you?",
+      "canonicalAnswer": "Moments of order 1/xi = 2 and above do not exist, so the variance is infinite. Any risk measure or statistical procedure that relies on a finite variance is invalid for that tail.",
+      "explanation": "For a generalised Pareto tail, the k-th moment is finite only when k < 1/xi. At xi = 0.5 the mean exists but the variance does not, so a sample standard deviation computed from the data is not estimating anything — it will simply grow as you add observations. That invalidates volatility-based risk measures, any normal approximation, and the central limit theorem in its usual form. Expected shortfall still exists (it needs only xi < 1), which is one argument for preferring it. Values that high are more typical of operational and insurance losses than of daily equity returns, where xi is usually 0.1 to 0.4 — so a market-risk fit returning 0.5 is more likely a sign of too low a threshold or too little data than a real finding.",
+      "technique": "Moment existence and the tail index",
+      "difficultyRationale": "Requires the moment condition and the judgement to treat an extreme estimate as a possible fitting artefact."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a mean excess plot, and how do you use it to choose the GPD threshold?",
+      "canonicalAnswer": "Plot the mean of (loss - u) over all losses exceeding u, against u. For a generalised Pareto tail this is linear in u, so you choose the lowest threshold above which the plot is approximately straight.",
+      "explanation": "The GPD has the property that its mean excess function is linear with slope xi/(1-xi), so linearity in the plot is direct evidence the asymptotic approximation has taken hold. Below that point the plot curves, meaning the threshold is in the body of the distribution where the theory does not apply. Choosing the LOWEST such threshold matters, because you want as many exceedances as possible for the fit. The plot gets noisy at the right-hand end simply because few observations remain, so the last stretch should be ignored rather than interpreted. It is a judgement call dressed up as a diagnostic, and different analysts will pick different thresholds from the same plot — which is itself a model risk worth disclosing.",
+      "technique": "Threshold selection diagnostics",
+      "difficultyRationale": "Requires knowing why linearity is the signal, and the practical caveats on reading the plot."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You compute a 99% VaR by historical simulation from 500 days and want a confidence interval around it. How do you get one?",
+      "canonicalAnswer": "Bootstrap: resample 500 days with replacement many times, compute the VaR for each resample, and take the 2.5th and 97.5th percentiles of the resulting distribution. Alternatively use the analytic standard error of an order statistic.",
+      "explanation": "The bootstrap is the practical route because it makes no distributional assumption and reuses the machinery you already have. The analytic version uses the fact that a sample quantile is asymptotically normal with standard error sqrt(q(1-q)/n)/f(x_q), where f is the density at the quantile — which exposes the problem directly: at q = 0.99 the density in the denominator is tiny, so the standard error is large. Expect intervals of plus or minus 10-20% around a 99% VaR from 500 days. Quoting a VaR to three significant figures without that context implies a precision the estimate does not have.",
+      "technique": "Bootstrapping a quantile estimate",
+      "difficultyRationale": "Two routes to the same answer, and the point is the size of the resulting uncertainty."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Would you use EVT to estimate a 95% VaR? Explain.",
+      "canonicalAnswer": "No. At 95% roughly 5% of the sample sits beyond the quantile, so historical simulation already has plenty of observations and the empirical estimate is reliable. EVT earns its place at 99% and beyond, where data runs out.",
+      "explanation": "EVT is an extrapolation tool, and extrapolation costs you a distributional assumption. Where the empirical distribution has adequate data there is no reason to pay that cost. Worse, applying EVT at 95% means setting a threshold low enough that it sits in the BODY of the distribution, where the Pickands-Balkema-de Haan convergence result does not apply, so the GPD fit is simply misspecified. The rule of thumb is that EVT is for the region where you have single-digit numbers of observations — 99%, 99.9%, and the economic capital quantiles beyond.",
+      "technique": "When extrapolation is warranted",
+      "difficultyRationale": "Requires knowing the theory's domain of validity rather than treating it as universally better."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two risk managers compute a 99% historical simulation VaR in March 2020, one with a 500-day window and one with a 1,000-day window. Whose number is higher, and which is more useful?",
+      "canonicalAnswer": "In March 2020 the 500-day window gives the HIGHER number, because the crash days are a larger fraction of a smaller sample. The shorter window is more useful at that moment because it reflects the current regime.",
+      "explanation": "A given set of extreme days carries twice the weight in a 500-day sample as in a 1,000-day one, so the shorter window responds faster to a regime change — in both directions. The corollary is uncomfortable: run the same comparison in January 2020 and the 500-day window gives the LOWER number, because it has already dropped the 2018 selloff. Window length is not a question with a right answer, it is a choice about how quickly you want the measure to react, and a firm that shortens its window in a crisis and lengthens it afterwards is managing its reported number rather than its risk. This is the main argument for age weighting or volatility filtering, which get the responsiveness without the arbitrary cliff.",
+      "technique": "Window length and regime sensitivity",
+      "difficultyRationale": "Requires reasoning about the same choice in two opposite regimes, not just naming the trade-off."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In the peaks-over-threshold method, doubling the threshold u will typically:",
+      "options": [
+        "Reduce estimation error from model misspecification but increase it from having fewer observations",
+        "Reduce both sources of estimation error",
+        "Increase both sources of estimation error",
+        "Leave the fitted shape parameter unchanged"
+      ],
+      "correctOption": 0,
+      "explanation": "This is the bias-variance trade-off in its purest form. A higher threshold means the GPD approximation is closer to exact, since the asymptotic result holds as u tends to infinity — that reduces bias. But it also discards observations, so the parameters are fitted on less data — that increases variance. Threshold choice is the whole art of applying EVT, and neither extreme works: too low and you are fitting a Pareto to the body of the distribution, too high and you are fitting two parameters to five points.",
+      "technique": "Bias-variance trade-off in threshold choice",
+      "difficultyRationale": "Requires seeing both error sources moving in opposite directions."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Historical simulation gives every scenario equal probability. What does that imply about the correlations embedded in the resulting VaR?",
+      "canonicalAnswer": "The correlations are whatever actually occurred in the sample period, jointly and simultaneously, and are never specified anywhere. Each scenario preserves the exact combination of factor moves observed on that day.",
+      "explanation": "This is historical simulation's quiet strength. Because a scenario is a whole day's set of moves applied together, the method automatically captures the real joint behaviour — including non-linear dependence and the tendency of correlations to rise in crashes — without anyone estimating a correlation matrix, checking it is positive semi-definite, or choosing a copula. The corresponding weakness is that it can only reproduce dependence structures that appeared in the window. If equities and gold never sold off together in your sample, the method assigns that scenario probability zero, and no amount of extra data makes an unobserved combination appear. That gap is the argument for pairing it with hypothetical stress scenarios.",
+      "technique": "Implicit dependence structure",
+      "difficultyRationale": "Requires articulating what the method assumes by NOT assuming anything, plus the corresponding blind spot."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your 99% historical simulation VaR has been flat for eight months, then jumps 40% in a single day with no material change in positions. Give two explanations and say how you would tell them apart.",
+      "canonicalAnswer": "Either a new extreme day entered the sample and displaced the quantile, or the portfolio's sensitivity to an existing scenario changed. Distinguish them by re-running yesterday's VaR with today's positions, and today's VaR with yesterday's positions.",
+      "explanation": "The two-way re-run is the standard attribution: holding positions fixed isolates the scenario effect, and holding scenarios fixed isolates the position effect. The 'flat for eight months' detail is itself the tell — a quantile read off an unweighted sample only moves when the identity of the 5th-worst scenario changes, so it sits still and then steps, rather than drifting. That step behaviour is not a bug in the calculation but it is a bad property for a limit-monitoring measure, and it is another argument for age weighting or volatility scaling, which produce a number that moves continuously with market conditions.",
+      "technique": "VaR attribution between scenario and position effects",
+      "difficultyRationale": "Diagnostic question requiring a concrete decomposition procedure, not just a list of possible causes."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Set up the maximum likelihood estimation of the generalised Pareto parameters from a set of threshold exceedances.",
+      "canonicalAnswer": "For exceedances y_i = x_i - u, the GPD density is f(y) = (1/beta)(1 + xi*y/beta)^(-1/xi - 1). The log-likelihood is L = -n*ln(beta) - (1/xi + 1) * sum of ln(1 + xi*y_i/beta), maximised numerically over xi and beta.",
+      "explanation": "There is no closed-form solution, so it is a two-parameter numerical optimisation — trivial computationally, but with two things worth knowing. The support condition 1 + xi*y/beta > 0 must hold for every observation, which constrains the search when xi is negative. And for xi < -0.5 the maximum likelihood estimator loses its usual asymptotic properties, so standard errors from the Hessian are unreliable there; in market risk xi comes out positive so this rarely bites. Alternatives worth naming are probability-weighted moments, which are more stable in small samples, and the Hill estimator, which estimates the tail index directly but assumes xi > 0.",
+      "technique": "Maximum likelihood for the GPD",
+      "difficultyRationale": "Requires writing the likelihood correctly and knowing the conditions under which the estimator misbehaves."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Economic capital is often set at a 99.9% one-year confidence level. Why is that quantile essentially impossible to estimate from data, and what is done instead?",
+      "canonicalAnswer": "A 99.9% one-year event is a once-in-a-thousand-years loss, and no institution has anything like that history — even a century of annual data gives 100 observations and zero at the quantile. Instead the tail is modelled parametrically, usually with EVT or a structural model, and cross-checked with stress scenarios.",
+      "explanation": "The honest position is that the number is a model output, not a measurement, and its confidence interval is enormous. That is why supervisors pair it with things that do not depend on extrapolation: stress tests with named scenarios, a leverage ratio that ignores risk weights entirely, and floors on modelled outputs. It also explains a genuine tension in the framework — the same regulators who require a 99.9% figure also constrain how much a bank may rely on it. Being able to say 'here is the number, and here is why I do not trust it to better than a factor of two' is the answer that lands in an interview.",
+      "technique": "Limits of extrapolation at extreme quantiles",
+      "difficultyRationale": "Requires quantifying why the estimate is unreliable and naming the compensating controls."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What is the Hill estimator, and when would you reach for it rather than fitting a full generalised Pareto?",
+      "canonicalAnswer": "It estimates the tail index directly from the k largest order statistics: the Hill estimate of xi is the average of ln(x_(i)) - ln(x_(k+1)) over the top k observations. Use it when you only need the tail index, believe xi > 0, and want a fast estimate with no numerical optimisation.",
+      "explanation": "The Hill estimator is a one-line average of log-ratios, so there is no likelihood to maximise and no convergence to worry about. The cost is that it assumes a strictly positive shape parameter — it cannot represent a thin or bounded tail at all — and it is notoriously sensitive to k, the number of upper order statistics used. The standard diagnostic is a Hill plot of the estimate against k, and the standard disappointment is that it rarely shows the clean stable region the textbooks promise. Use it as a quick cross-check on a GPD fit rather than as the primary estimate: if maximum likelihood says xi = 0.25 and Hill says 0.24, you have some comfort that the threshold choice is not driving the answer.",
+      "technique": "Hill estimator for the tail index",
+      "difficultyRationale": "Requires the estimator's form plus its two known weaknesses, and the judgement to use it as a cross-check."
+    },
+    {
+      "topicId": "extreme-value-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Under historical simulation, what is the largest loss your 99% VaR can ever report, and why does that matter?",
+      "canonicalAnswer": "The worst loss observed in the sample window — the method cannot produce a scenario it has never seen. It matters because it puts a hard ceiling on the measure that has nothing to do with the portfolio's actual risk.",
+      "explanation": "Every quantile historical simulation reports is one of the observed P&Ls, so the whole measure is bounded above by the worst day in the window. If the window contains no crash, the 99.9% figure is barely distinguishable from the 99% one, and both are understatements. That ceiling is the single clearest argument for EVT, which fits a parametric tail and can extrapolate past the sample maximum, and for stress testing, which drops the sample entirely. It is also why a firm that shortened its lookback window in 2007 was, quite literally, unable to compute a 2008-sized loss.",
+      "technique": "The sample-maximum ceiling",
+      "difficultyRationale": "Requires recognising a structural limit of the estimator rather than a tuning problem."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A 10-year zero-coupon bond yields 5%. What is its Macaulay duration, and what is its modified duration?",
+      "canonicalAnswer": "Macaulay duration is 10 years — for a zero there is only one cash flow. Modified duration is 10/1.05 = 9.52 (annual compounding).",
+      "explanation": "Macaulay duration is the present-value-weighted average time to the cash flows, so for a zero-coupon bond it equals maturity exactly. That makes zeros the reference point: any coupon bond of the same maturity has a SHORTER duration, because some value arrives earlier. Modified duration divides by (1 + y/k) for k compounding periods, converting a weighted average time into a price sensitivity: dP/P = -D_mod * dy. Under continuous compounding the two coincide, which is why quant texts often use them interchangeably and practitioners do not.",
+      "technique": "Macaulay vs modified duration",
+      "difficultyRationale": "One definition and one division, with the zero-coupon case as the anchor."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define convexity and explain why a bondholder values it. When would you be willing to give it up?",
+      "canonicalAnswer": "Convexity is the second derivative of price with respect to yield, scaled by price: C = (1/P) * d2P/dy2. Positive convexity means you gain more when yields fall than you lose when they rise. You give it up when it is priced too expensively — when the yield give-up for the convex bond exceeds what the expected volatility justifies.",
+      "explanation": "The second-order price change is +(1/2)*C*(dy)^2, positive for either sign of dy, so convexity is a free option on volatility — which is exactly why it is not free. Convex bonds trade at lower yields, and the yield concession you pay is the market's price for that optionality. The trade-off is therefore a volatility view: if you think rates will stay in a narrow range, sell convexity and collect the yield; if you expect large moves, buy it. Note also that convexity grows with duration and with dispersion of cash flows, so a barbell has more convexity than a bullet of the same duration — the standard way to express the view without changing your rate exposure.",
+      "technique": "Convexity as an option on rate volatility",
+      "difficultyRationale": "Requires framing convexity as a priced optionality rather than an unambiguous good."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A mortgage-backed security has NEGATIVE convexity. Explain what causes it and what it means for the holder when rates fall sharply.",
+      "canonicalAnswer": "Borrowers hold a prepayment option: when rates fall they refinance, so the security's cash flows shorten exactly when long duration would have been valuable. The holder's price appreciation is capped, and duration falls as rates fall.",
+      "explanation": "The holder is effectively short a call option on the underlying bond. As rates fall the option moves into the money for the borrower, prepayments accelerate, and the investor is handed principal back to reinvest at the new lower rates. Price rises much less than a comparable non-callable bond, and can plateau entirely. The mirror image is worse: when rates rise, prepayments slow and duration EXTENDS, so the holder is left with more rate exposure precisely when it hurts. That two-way effect is called extension risk, and hedging it requires a dynamic hedge whose size changes with the market — which is why MBS desks are large consumers of swaptions.",
+      "technique": "Negative convexity from embedded prepayment options",
+      "difficultyRationale": "Requires identifying the embedded short option and tracing its effect in both rate directions."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is key rate duration, and what does it give you that a single duration number does not?",
+      "canonicalAnswer": "Key rate duration is the sensitivity of a portfolio's value to a shift in one specific point on the yield curve, holding the others fixed. It decomposes total duration into tenor buckets, so you can see and hedge curve shape risk rather than only parallel-shift risk.",
+      "explanation": "A single duration compresses the whole curve exposure into one number and therefore assumes every rate moves together. Key rate durations at, say, 2y, 5y, 10y and 30y reveal that a duration-neutral book can be long the front end and short the back — a steepener in disguise. In practice the shifts are triangular: bump the 5-year point and let the effect taper linearly to the neighbouring key rates, so the bumps sum to a parallel shift. The alternative decomposition is PCA, which produces fewer, statistically independent factors (level, slope, curvature); key rate durations are less parsimonious but map directly onto tradeable hedging instruments, which is why trading desks prefer them.",
+      "technique": "Key rate durations vs a single duration",
+      "difficultyRationale": "Requires contrasting two decompositions and knowing why desks use one over the other."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A bank's assets have duration 4 and its liabilities duration 1.5, with liabilities equal to 90% of assets. What is the duration gap, and what happens to equity if rates rise 1%?",
+      "canonicalAnswer": "Duration gap = D_A - (L/A)*D_L = 4 - 0.9(1.5) = 2.65 years. Equity falls by about 2.65% of ASSETS for a 1% rate rise — which, on equity of 10% of assets, is a 26.5% hit to equity.",
+      "explanation": "The change in equity is -(D_A - (L/A)D_L) * A * dy. With a positive gap the bank is asset-sensitive in duration terms — it borrows short and lends long, the classic banking book position — so rising rates hurt. The arithmetic is the alarming part: a 2.65-year gap looks modest until you express it against a thin equity layer, where a 1% rate move wipes out a quarter of book equity. This is exactly the 2023 US regional bank story, where long-duration securities funded by deposits produced enormous unrealised losses. It is also why supervisors run an economic value of equity test alongside the earnings-based one.",
+      "technique": "Duration gap analysis",
+      "difficultyRationale": "Requires the gap formula plus the leverage step that turns a small percentage into a large one."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish the two standard supervisory measures of banking-book rate risk: economic value of equity and net interest income. Why can they point in opposite directions?",
+      "canonicalAnswer": "EVE is the present value of all future cash flows — a balance-sheet, long-horizon measure. NII is projected earnings over the next 1-2 years — a short-horizon, accrual measure. They diverge because a position can improve near-term earnings while destroying long-term value, or the reverse.",
+      "explanation": "Take a bank that shortens asset duration by moving into floating-rate loans. If rates rise, NII improves immediately because assets reprice faster than deposits — good on the earnings measure. But EVE may barely move, because the bank has given up the long-duration assets that were carrying value. Conversely, a bank holding long fixed-rate securities funded by deposits shows stable NII while rates are low and catastrophic EVE deterioration when they rise. Supervisors require both precisely because either one alone is gameable, and the IRRBB framework specifies six prescribed rate scenarios (parallel up and down, steepener, flattener, short up, short down) run against both.",
+      "technique": "EVE vs NII",
+      "difficultyRationale": "Requires constructing a case where the two measures disagree, not just defining them."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What are non-maturity deposits, why are they the hardest part of banking-book rate risk, and how are they modelled?",
+      "canonicalAnswer": "Deposits with no contractual maturity that can be withdrawn on demand but in practice stay for years. They are hard because their true duration is behavioural, not contractual. They are modelled by splitting them into a stable 'core' portion with an assumed long duration and a volatile portion treated as overnight.",
+      "explanation": "Contractually a current account is overnight money, which would give it zero duration and make the bank look enormously exposed to rising rates. Behaviourally, balances persist for years and the rate paid on them moves only partially with market rates — the deposit beta. So the modelled duration comes from two estimated parameters, the beta and the assumed decay of the core balance, and both are calibrated on a history that may not repeat. That is a model risk with a very large capital consequence, which is why supervisors cap the assumed average life (five years under the Basel IRRBB standardised approach) rather than trusting the bank's own estimate. The 2023 deposit flights showed the failure mode directly: balances assumed to be sticky moved in days once depositors could compare rates on a phone.",
+      "technique": "Behavioural modelling of non-maturity deposits",
+      "difficultyRationale": "Requires seeing that the key parameters are estimated behavioural assumptions, and naming why supervisors constrain them."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your book is long £50m DV01-equivalent in 2-year rates and short the same in 10-year rates. Name the trade and describe its P&L under a bull flattening.",
+      "canonicalAnswer": "It is a steepener — it profits if the 2s10s spread widens. A bull flattening (yields fall, long end falling more) LOSES money, because the 10-year leg you are short rallies more than the 2-year leg you are long.",
+      "explanation": "Being long the front and short the back in DV01 terms means you profit when the front outperforms, i.e. when the curve steepens. Naming the four regimes is the standard drill: bull steepening (yields down, front down more) and bear steepening (yields up, back up more) both make money; bull flattening and bear flattening both lose. Since the position is DV01-neutral overall, a parallel shift is roughly a wash — the P&L is almost entirely the SPREAD move. In practice 'roughly' matters: the two legs have different convexity, so a large parallel move leaves a residual, which is why steepeners are sometimes weighted on a beta rather than a straight DV01 basis.",
+      "technique": "Curve trades and the four curve regimes",
+      "difficultyRationale": "Requires classifying the trade and then applying one of four named regimes correctly."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does a swap have almost no duration at inception but substantial DV01?",
+      "canonicalAnswer": "At inception a par swap has zero net present value, so percentage-based duration is undefined or meaningless. DV01 is a cash sensitivity and does not need a non-zero starting value, so it is the natural measure — roughly the DV01 of the fixed leg.",
+      "explanation": "Duration is defined as a percentage price change per unit yield change, and dividing by a value of zero is not useful. This is the clearest practical reason desks quote rate risk in DV01 rather than duration: DV01 works for swaps, futures, FRAs and any other instrument entered at zero cost, and it adds across instruments without value-weighting. For a receive-fixed swap the DV01 is essentially that of the fixed-rate bond you are long, since the floating leg reprices to par at each reset and carries only the small sensitivity to the current period's fixing.",
+      "technique": "Why DV01 rather than duration",
+      "difficultyRationale": "Requires seeing that a zero-value instrument breaks the definition of one measure but not the other."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You hedge a 10-year bond position with 10-year swaps and the hedge loses money even though rates barely moved. What happened?",
+      "canonicalAnswer": "The swap spread moved — the difference between the swap rate and the government bond yield. Hedging a bond with a swap leaves you exposed to that spread, which is a separate risk factor from the level of rates.",
+      "explanation": "A government bond yield and a swap rate are different curves that usually move together and occasionally do not. The spread between them reflects the credit and funding characteristics of the interbank market, collateral scarcity, and demand from asset-liability managers — and it can move sharply on its own, as it did in 2008 and again during the 2020 dash for cash, when US swap spreads went negative. The general lesson is that a hedge constructed from a different instrument transfers your exposure into a BASIS rather than eliminating it. Basis risks are systematically underestimated because they are quiet for long periods and then move violently, which is precisely the pattern that defeats a VaR calibrated on recent history.",
+      "technique": "Basis risk in cross-instrument hedging",
+      "difficultyRationale": "Requires identifying a risk factor that was never explicitly in the hedge design."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a bond's dollar duration, and why do practitioners hedge with it rather than with modified duration?",
+      "canonicalAnswer": "Dollar duration is modified duration multiplied by the position's value: D_mod * P. It is used for hedging because cash sensitivities add directly across positions, whereas modified durations must be value-weighted before they can be combined.",
+      "explanation": "To hedge, you need the two legs' cash sensitivities to offset, and that is a statement about dollar duration (or equivalently DV01, which is dollar duration times 0.0001). Trying to work in modified duration means carrying the position values around separately and re-weighting at every step, which is error-prone and pointless. The practical rule for sizing a hedge is: notional of hedge = (dollar duration of position) / (dollar duration per unit of hedge instrument). The same logic applies to any risk measure you want to net across instruments — express it in currency, not in percentages.",
+      "technique": "Cash sensitivities for hedge sizing",
+      "difficultyRationale": "Requires articulating why additivity, not accuracy, drives the choice of measure."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "In a yield curve PCA, the first three principal components typically explain what share of the variation in yield changes?",
+      "options": [
+        "Around 95-99%",
+        "Around 50-60%",
+        "Around 75%",
+        "Essentially 100%, by construction"
+      ],
+      "correctOption": 0,
+      "explanation": "Empirically the level factor alone explains 80-90% of daily yield-curve variation, with slope adding roughly 5-10% and curvature 1-3%, taking the first three to 95-99%. That is what justifies reducing a twenty-tenor curve to three risk numbers. It is not 100% by construction — you would need as many components as tenors for that — and the residual, though small in variance terms, is exactly where butterfly and basis trades live. A desk hedged against all three factors is not hedged against everything; it has hedged the part of the curve that moves in a correlated way and retained the rest.",
+      "technique": "PCA variance explained",
+      "difficultyRationale": "Recall of an empirical magnitude, with the residual's significance as the substance."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Explain immunisation: how do you protect a known future liability from rate moves, and what does the protection NOT cover?",
+      "canonicalAnswer": "Match the duration of your asset portfolio to the duration of the liability and equate their present values. That neutralises a small parallel shift. It does NOT cover non-parallel curve moves, large moves (where convexity mismatch bites), or the need to rebalance as time passes and durations drift.",
+      "explanation": "The mechanism is that a rate rise reduces the value of the assets and the liability by roughly the same percentage, leaving the surplus unchanged. Three leaks. Duration is a first-order measure, so a large move leaves a convexity residual — and you want asset convexity to EXCEED liability convexity, which is the condition for the surplus to be locally minimised rather than maximised. A twist in the curve moves assets and liability differently unless their cash flows are matched tenor by tenor, not just in aggregate. And durations decay at different rates, so an immunised portfolio drifts out of immunisation within months and needs rebalancing, which costs money. Cash flow matching avoids all three but is usually infeasible or expensive.",
+      "technique": "Duration immunisation and its residual risks",
+      "difficultyRationale": "Requires the construction plus three distinct failure modes, including the convexity inequality."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "The 2-year rate is 3% and the 4-year rate is 4%, both annually compounded. What is the implied 2-year forward rate starting in 2 years?",
+      "canonicalAnswer": "About 5.01%. From (1.04)^4 = (1.03)^2 * (1+f)^2, we get (1+f)^2 = 1.16986/1.0609 = 1.10271, so f = 5.01%.",
+      "explanation": "No-arbitrage: investing for four years must give the same result as investing for two and rolling into the forward. Computing (1.04)^4 = 1.16986 and (1.03)^2 = 1.0609, the ratio is 1.10271, whose square root is 1.0501. The quick approximation is worth having for interviews: the forward is roughly 2*(4%) - 1*(3%) = 5% for these tenors, because the longer rate is a weighted average of the shorter one and the forward. If the forward comes out below the spot rates, the curve is inverted — and note that a forward rate is a no-arbitrage construct, not a forecast, though it is often quoted as if it were one.",
+      "technique": "Forward rates from spot rates",
+      "difficultyRationale": "One no-arbitrage identity plus careful compounding arithmetic."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish spot rates, par rates and forward rates, and say which one a bond's quoted yield to maturity actually is.",
+      "canonicalAnswer": "A spot (zero) rate discounts a single cash flow at one maturity. A par rate is the coupon that makes a bond of that maturity price at par. A forward rate is the rate contracted today for a future period. A yield to maturity is none of these exactly — it is the single rate that discounts ALL of a bond's cash flows to its price.",
+      "explanation": "Yield to maturity is a summary statistic, not a rate on the curve: it is an internal rate of return, and it implicitly assumes every coupon is reinvested at that same yield. Two bonds with identical maturities but different coupons have different yields to maturity even when discounted off the identical spot curve, which is exactly why comparing YTMs across coupons is misleading. The zero curve is the primitive object — par rates and forwards are both derived from it, and bootstrapping is the procedure that recovers it from observable par instruments.",
+      "technique": "The three curve representations",
+      "difficultyRationale": "Requires seeing that YTM sits outside the trio as a derived summary."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why did the market move from LIBOR discounting to OIS (and now SOFR/SONIA) discounting, and what did that change for rate risk?",
+      "canonicalAnswer": "Because collateralised derivatives are funded at the overnight rate paid on collateral, so the risk-free discount rate for a collateralised trade is OIS, not LIBOR. It split the single curve into a discounting curve and separate forecasting curves, adding basis risk between them.",
+      "explanation": "Before 2008 the LIBOR-OIS spread was a few basis points and one curve served for both discounting and forecasting. When the spread blew out to over 350bp the approximation became untenable, and the industry moved to multi-curve pricing: discount at OIS, forecast each floating index off its own curve. For a rate-risk system this means a swap now has sensitivity to at least two curves, and the SPREAD between them is a risk factor in its own right. The subsequent transition to overnight risk-free rates (SOFR, SONIA, ESTR) reinforced the same structure, and left a residual basis between legacy LIBOR-linked and new RFR-linked instruments that desks still hedge explicitly.",
+      "technique": "Multi-curve discounting",
+      "difficultyRationale": "Requires the funding argument for the change and the concrete consequence for risk decomposition."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A pension fund is short duration relative to its liabilities and rates fall sharply. Describe the mechanism by which this can force it to sell assets.",
+      "canonicalAnswer": "Falling rates raise the present value of the long-duration liabilities more than the assets, widening the deficit. If the fund uses leveraged interest rate swaps or gilt repo to close the duration gap, those hedges lose value as rates RISE, triggering collateral calls — and meeting them forces asset sales into a falling market.",
+      "explanation": "The two directions are worth keeping separate. Falling rates worsen the funding position of an underhedged scheme, which is the slow problem. The fast problem is the mirror image: a scheme that has hedged with leverage is long duration through derivatives, so a sharp RISE in rates generates immediate variation margin calls on those hedges even though the economic position has improved. The 2022 UK LDI episode was exactly this — gilt yields rose, hedges required collateral, funds sold gilts to raise it, which pushed yields higher still. It is a liquidity spiral driven by a solvency-improving move, and it shows why interest rate risk and liquidity risk cannot be managed in separate silos.",
+      "technique": "Leveraged liability hedging and margin spirals",
+      "difficultyRationale": "Requires tracking the opposite signs of the economic and cash-flow effects, which is where most answers go wrong."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is gamma risk on a rates book, and where does it typically come from?",
+      "canonicalAnswer": "Gamma is the rate of change of DV01 as rates move — the second-order exposure. On a rates book it comes from options: swaptions, caps and floors, callable bonds, and the prepayment options embedded in mortgages.",
+      "explanation": "A linear rates book has constant DV01 and no gamma; the moment options enter, DV01 becomes a function of the rate level and the hedge must be adjusted as the market moves. Short gamma means your DV01 moves against you — you become more exposed as rates go the wrong way, forcing you to hedge at progressively worse levels, which is why short-gamma books amplify rate moves. Convexity on a plain bond is closely related but not identical: bond convexity is positive and passive, whereas option gamma changes sign with the position and is concentrated near the strike. Vega sits alongside it, since an options book loses from a fall in implied volatility even with rates unchanged.",
+      "technique": "Second-order rate exposure from optionality",
+      "difficultyRationale": "Requires distinguishing option gamma from bond convexity and naming the hedging consequence."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A trader claims the yield curve's upward slope predicts that short rates will rise. What is the counterargument?",
+      "canonicalAnswer": "The slope also reflects a term premium — the extra return investors demand for holding longer-duration bonds. An upward-sloping curve is consistent with expected rates being flat or even falling, if the term premium is large enough.",
+      "explanation": "The forward rate decomposes into an expectation plus a term premium, and the two are not separately observable, so reading forwards as pure forecasts is a well-documented error — forwards have historically been poor predictors of realised short rates. The expectations hypothesis in its pure form (zero term premium) is rejected empirically. Two competing explanations for the premium are liquidity preference, where investors demand compensation for locking money up, and market segmentation, where supply and demand at particular tenors set rates independently. In practice the premium varies over time and has occasionally been negative, which is why estimating it is its own research literature rather than a settled number.",
+      "technique": "Term premium vs expectations",
+      "difficultyRationale": "Requires knowing that two unobservable components are conflated in one observable, and that the pure theory is rejected."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two assets have correlation 0.6. What fraction of one asset's variance is explained by the other in a linear regression?",
+      "canonicalAnswer": "36%. The R-squared of a simple linear regression is the square of the correlation: 0.6^2 = 0.36.",
+      "explanation": "Squaring is the step people skip, and it changes the impression considerably — a correlation of 0.6 sounds like a strong relationship but leaves nearly two-thirds of the variation unexplained. Useful anchors: 0.3 explains 9%, 0.7 explains 49%, and you need 0.9 before you are explaining 81%. Note also that correlation is symmetric while the regression framing is not — regressing Y on X and X on Y gives different slopes but the same R-squared.",
+      "technique": "Correlation and R-squared",
+      "difficultyRationale": "One squaring, with the interpretive point carrying the weight."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define tail dependence, and state the tail dependence of the Gaussian copula.",
+      "canonicalAnswer": "Tail dependence is the limiting probability that one variable is extreme given the other is extreme: lambda = lim as q tends to 1 of P(X > F_X inverse of q | Y > F_Y inverse of q). For the Gaussian copula it is ZERO for any correlation below 1.",
+      "explanation": "This is the single most consequential fact about the Gaussian copula. However high you set the correlation — 0.9, 0.99 — the probability of a JOINT extreme event vanishes asymptotically, meaning the model says truly catastrophic co-movements essentially cannot happen. The Student-t copula has strictly positive tail dependence, increasing as its degrees of freedom fall, and so does the Clayton copula in the lower tail. Choosing a Gaussian copula for a portfolio of correlated credits is therefore not a neutral technical choice; it is an assumption that they will not all default together, which is precisely what CDO models assumed before 2008.",
+      "technique": "Tail dependence coefficients",
+      "difficultyRationale": "Requires the definition as a limit plus the counterintuitive Gaussian result."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why would you use Kendall's tau or Spearman's rho instead of Pearson correlation?",
+      "canonicalAnswer": "Because they are rank-based, so they are invariant to any strictly increasing transformation of the marginals and are not distorted by outliers or non-linear relationships. Pearson measures only linear association and depends on the marginal distributions.",
+      "explanation": "The invariance property is what makes rank correlations the natural partners of copulas: a copula IS the dependence structure stripped of the marginals, and Kendall's tau depends only on the copula, whereas Pearson correlation changes if you take logs of your data. That matters practically, since returns and log returns should not have different dependence. Rank measures are also robust — one extreme joint observation can move a Pearson correlation substantially and barely moves a tau. The cost is that Pearson slots directly into portfolio variance algebra and rank measures do not, so the usual workflow is to estimate dependence with tau and convert to a copula parameter.",
+      "technique": "Rank correlation measures",
+      "difficultyRationale": "Requires the invariance argument, which is what connects rank measures to copulas."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Explain the correlation-smile phenomenon in CDO tranche pricing and what it revealed about the Gaussian copula model.",
+      "canonicalAnswer": "Implied correlations backed out of traded tranche prices differed by tranche — equity and senior tranches implied higher correlation than mezzanine — producing a smile. Since one model should give one correlation for one portfolio, the smile was direct evidence the model was misspecified.",
+      "explanation": "The logic mirrors the volatility smile in options. If the one-factor Gaussian copula described reality, the same correlation parameter would price every tranche of the same capital structure. It did not, and the shape of the disagreement was informative: the market was pricing more joint-default risk in the senior tranches than a Gaussian copula could generate — which is exactly the zero tail dependence problem showing up in prices. The industry response was base correlation, a quoting convention that made the numbers consistent without fixing the model, which is a fair description of where things stood in 2007. The transferable lesson is that when a model's implied parameter has to vary by instrument to fit the market, the parameter is absorbing the model's error.",
+      "technique": "Implied correlation and model misspecification",
+      "difficultyRationale": "Requires the parallel with the volatility smile and the diagnosis of what the smile was compensating for."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean for a correlation matrix to be positive semi-definite, and give two ways an estimated matrix can fail the test.",
+      "canonicalAnswer": "It means w'Cw >= 0 for every weight vector w, so no portfolio has negative variance. Estimation can break it when correlations are estimated pairwise over different sample periods, or when a risk manager overrides individual entries by hand.",
+      "explanation": "The mathematical requirement is that all eigenvalues are non-negative. Pairwise estimation over mismatched windows is the commonest cause in production, because each pair is internally consistent but the set is not mutually consistent — correlation is not transitive, but it is constrained: if A and B are 0.9 correlated and B and C are 0.9, then A and C cannot be -0.9. Manual overrides break it for the same reason. The consequences are concrete: Cholesky decomposition fails so Monte Carlo cannot run, and a mean-variance optimiser will find the negative-variance direction and load into it, producing an absurd portfolio. Repairs are eigenvalue flooring or projection onto the nearest valid correlation matrix.",
+      "technique": "Validity of estimated correlation matrices",
+      "difficultyRationale": "Requires the definition, two realistic causes, and the downstream failures."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Your equity-bond correlation has been reliably negative for two decades and turns positive. What are the implications for a standard balanced portfolio, and why might the sign have changed?",
+      "canonicalAnswer": "The diversification a 60/40 portfolio relies on disappears, so its volatility rises sharply and both legs can fall together. The sign typically flips when inflation rather than growth is the dominant shock driving both markets.",
+      "explanation": "The mechanism is about which shock dominates. When growth shocks drive markets, weak growth hurts equities and helps bonds (rates fall) — negative correlation. When inflation shocks dominate, rising inflation hurts both, because bonds sell off on rate expectations and equities sell off on discount rates and margin pressure — positive correlation. 2022 was the clean demonstration, with a 60/40 portfolio suffering one of its worst years precisely because the hedge stopped working. The risk-management lesson is that a correlation used as a structural assumption should be understood mechanistically, not just estimated: knowing WHY it is negative tells you the conditions under which it will not be.",
+      "technique": "Regime dependence of correlation",
+      "difficultyRationale": "Requires a causal account of the sign, not just the observation that correlations are unstable."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a Clayton copula, and when is it the right choice?",
+      "canonicalAnswer": "An Archimedean copula with strong LOWER tail dependence and weak upper tail dependence — the variables cluster in their joint left tail. It is the right choice when losses coincide but gains do not, which is the empirical pattern for equity returns.",
+      "explanation": "Its defining feature is asymmetry. A Gaussian copula is symmetric and has no tail dependence at all; a Student-t copula is symmetric with tail dependence in both tails; Clayton is asymmetric, concentrating dependence where the losses are. That matches the well-documented observation that equity markets crash together but rally separately, and it makes Clayton attractive for downside risk measures. The Gumbel copula is its mirror image, with upper tail dependence, useful where the joint extreme of interest is on the upside. Choosing between them is a modelling decision that should be justified by the shape of the risk you are measuring, not by which one fits the middle of the data best.",
+      "technique": "Archimedean copulas and tail asymmetry",
+      "difficultyRationale": "Requires placing one copula within a family by its tail behaviour and matching it to an empirical fact."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Describe how you would simulate correlated defaults for a loan portfolio using a one-factor Gaussian copula.",
+      "canonicalAnswer": "For each obligor write a latent variable X_i = sqrt(rho)*M + sqrt(1-rho)*Z_i, where M is a common factor and Z_i idiosyncratic, both standard normal. Obligor i defaults when X_i falls below N-inverse of its default probability. Draw M once per scenario and the Z_i independently.",
+      "explanation": "The construction gives every pair of obligors correlation rho through the single shared factor M, which is what makes it tractable for thousands of names — you draw one common factor instead of a full correlation matrix. Conditional on M the defaults are independent, which is the property that yields the Vasicek closed form for the large-portfolio loss distribution and underpins the Basel IRB capital formula. Two limitations are worth stating alongside it. Because the copula is Gaussian, there is no tail dependence beyond what the single factor produces, so genuinely simultaneous extreme defaults are underweighted. And a single rho for the whole portfolio ignores sector structure, which multi-factor versions restore at the cost of the closed form.",
+      "technique": "One-factor Gaussian copula simulation",
+      "difficultyRationale": "Requires the latent-variable construction, the default trigger via the inverse normal, and the conditional-independence property."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A risk report shows the average pairwise correlation across a book rising from 0.3 to 0.7 during a selloff. Give two explanations, only one of which is a real change in dependence.",
+      "canonicalAnswer": "Either dependence genuinely increased, or you are seeing sample selection: correlations measured conditional on large moves are biased upward even when the true joint distribution is unchanged. The second is a measurement artefact.",
+      "explanation": "The artefact is well documented and counterintuitive. If you take a bivariate normal with constant correlation and compute the correlation only over observations where both variables are large, the conditional correlation is higher than the unconditional one — conditioning on the tail truncates the sample in a way that inflates the estimate. So a rise from 0.3 to 0.7 measured across a crisis window is partly mechanical. Distinguishing the two requires comparing against what a constant-correlation model would produce under the same conditioning, which is the standard test in the literature. The finding that survives it is that correlations DO rise genuinely in crises, but by less than naive conditional estimates suggest — and getting this right matters, because overstating the effect leads to hedges being abandoned as useless when they are merely weaker.",
+      "technique": "Conditional correlation bias",
+      "difficultyRationale": "Requires knowing that conditioning on extremes biases the estimate, which most answers miss entirely."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Sklar's theorem guarantees that a copula representation of a joint distribution is unique when:",
+      "options": [
+        "The marginal distributions are continuous",
+        "The variables are independent",
+        "The joint distribution is elliptical",
+        "The correlation matrix is positive definite"
+      ],
+      "correctOption": 0,
+      "explanation": "Sklar's theorem says every joint distribution can be written as a copula applied to its marginals, and that the copula is unique when the marginals are continuous. With discrete marginals the decomposition still exists but the copula is not uniquely determined, which is a genuine complication for modelling default indicators and other discrete risks — two different copulas can produce the same joint distribution, so 'the' implied correlation is not well defined. The other options are irrelevant to uniqueness: independence is a special case, ellipticality is a property of a particular family, and positive definiteness is a condition on a correlation matrix rather than on the theorem.",
+      "technique": "Sklar's theorem uniqueness condition",
+      "difficultyRationale": "Tests the condition rather than the headline statement, and the discrete case is the practically important exception."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you fit a copula to data in practice? Describe the standard two-stage approach.",
+      "canonicalAnswer": "First transform each variable to uniform margins — either with its fitted parametric CDF or with the empirical CDF (the semi-parametric route). Then fit the copula parameters to the transformed data by maximum likelihood or by matching Kendall's tau.",
+      "explanation": "The two-stage structure is exactly what Sklar's theorem licenses: marginals and dependence are separable, so you can model them separately. The semi-parametric version, using empirical CDFs for the margins, is popular because it makes no assumption about the marginal shapes and isolates any misspecification in the copula. Two practical cautions. The transformation uses estimated margins, so the second-stage standard errors are understated unless you account for the first-stage estimation. And with only one or two parameters, most copula families are fitted overwhelmingly by the BODY of the data, while the property you usually care about — tail dependence — is determined by the family you chose rather than by the fit. Choosing the family is the real modelling decision.",
+      "technique": "Two-stage (inference functions for margins) copula estimation",
+      "difficultyRationale": "Requires the procedure plus the observation that the fit does not determine the tail behaviour."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which portfolio has the greater exposure to a 1bp parallel shift: £10m of a bond with modified duration 3, or £4m of a bond with modified duration 8?",
+      "options": [
+        "The £4m position, at £3,200 per bp against £3,000",
+        "The £10m position, because notional dominates",
+        "They are identical",
+        "Cannot be determined without the yields"
+      ],
+      "correctOption": 0,
+      "explanation": "Work in DV01, not duration or notional. The first position is 10m x 3 x 0.0001 = £3,000 per basis point; the second is 4m x 8 x 0.0001 = £3,200. The £4m position carries MORE rate risk despite being under half the size, because duration more than compensates. This is the whole reason desks quote rate exposure in cash sensitivity — neither notional nor duration alone ranks two positions correctly, and only their product does.",
+      "technique": "Ranking positions by DV01",
+      "difficultyRationale": "Two multiplications, with notional size as the intuitive trap."
+    },
+    {
+      "topicId": "interest-rate-risk",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A trader says a 5-year bond has \"good carry and roll-down\" on an upward-sloping curve. Explain both terms and how each earns money.",
+      "canonicalAnswer": "Carry is the net income from holding the position — coupon received less funding cost — earned simply by time passing. Roll-down is the price gain from the bond ageing into a lower point on the curve: a 5-year bond becomes a 4-year bond, and if the 4-year yield is lower, the price rises even with the curve unchanged.",
+      "explanation": "Both are returns you earn if NOTHING happens, which is what makes them the baseline for any relative-value rates trade. Carry depends on the slope at the front (the funding rate versus the coupon); roll-down depends on the slope at the position's own tenor, so the steepest part of the curve offers the most. Two cautions worth stating. Carry and roll-down are exactly what you give up when you hedge, so a duration-neutral trade often has near-zero carry by construction. And a steep curve may be steep because the market EXPECTS rates to rise, in which case the carry is compensation for a risk rather than free money — the classic carry-trade failure mode.",
+      "technique": "Decomposing the return to a rates position when the curve is unchanged",
+      "difficultyRationale": "Two distinct sources of return that are routinely conflated, plus the reason the free lunch is not free."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Relate a stock's beta to the market and its correlation with the market. When are they numerically equal?",
+      "canonicalAnswer": "beta = rho * (sigma_stock / sigma_market). They are equal only when the stock and the market have the same volatility.",
+      "explanation": "Beta is a regression slope and therefore carries units of relative volatility; correlation is a scale-free measure of association bounded by 1. The distinction matters in practice: a stock can have a beta of 2 with a correlation of only 0.5, if it is four times as volatile as the market — high beta, weak relationship. Or a utility with correlation 0.9 and half the market's volatility has a beta of 0.45 — strong relationship, low beta. Confusing the two leads to the wrong hedge ratio, because hedging uses beta, while diversification reasoning uses correlation.",
+      "technique": "Beta as a scaled correlation",
+      "difficultyRationale": "Requires knowing the scaling factor and constructing the case where they diverge."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two asset PRICES have a correlation of 0.95 but their RETURNS are uncorrelated. How is that possible, and which number should a risk manager use?",
+      "canonicalAnswer": "Both price series trend, so their levels move together over time even though day-to-day changes are independent — spurious correlation between non-stationary series. The risk manager must use the return correlation.",
+      "explanation": "Correlating two random walks produces a large coefficient purely because both drift, and the result is not evidence of any relationship — the classic demonstration correlates two independently simulated random walks and gets |rho| above 0.8 routinely. Levels are non-stationary, so the sample correlation does not converge to anything and standard significance tests are invalid. Differencing to returns restores stationarity and gives an estimate that means something. The same trap appears with any two series sharing a trend, which is why spurious regressions of macro variables on each other are so easy to produce.",
+      "technique": "Spurious correlation between non-stationary series",
+      "difficultyRationale": "Requires diagnosing non-stationarity as the cause rather than treating it as a genuine relationship."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You estimate a 500x500 correlation matrix from 750 daily observations. Why is most of it noise, and what does random matrix theory say about it?",
+      "canonicalAnswer": "You are estimating about 125,000 parameters from 375,000 numbers, so the ratio N/T is 0.67 and the sampling error is enormous. Random matrix theory says the eigenvalues of a PURE NOISE correlation matrix spread over the Marchenko-Pastur range (1 +/- sqrt(N/T))^2, so any eigenvalue inside that band carries no information.",
+      "explanation": "With N = 500 and T = 750, the noise band runs from (1 - 0.816)^2 = 0.034 to (1 + 0.816)^2 = 3.30. Typically only a handful of eigenvalues — the market factor and a few sector factors — sit above 3.30; everything else is indistinguishable from noise. This has a direct consequence for portfolio optimisation: the optimiser loads into the SMALLEST eigenvalue directions, believing them to be low-risk combinations, and those are precisely the directions that are pure estimation error. The standard remedies are eigenvalue clipping (replace the in-band eigenvalues with their average), shrinkage towards a structured target such as constant correlation, or imposing a factor model so you estimate a handful of loadings rather than 125,000 pairs.",
+      "technique": "Marchenko-Pastur noise bounds on estimated correlation matrices",
+      "difficultyRationale": "Requires the parameter count, the noise-band formula, and the reason it breaks optimisers specifically."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is shrinkage estimation of a covariance matrix, and why does a deliberately biased estimate outperform the sample one?",
+      "canonicalAnswer": "Shrinkage takes a weighted average of the noisy sample covariance matrix and a structured, low-variance target such as a constant-correlation or single-factor matrix. The bias it introduces is more than repaid by the reduction in variance, giving lower total estimation error.",
+      "explanation": "This is the bias-variance trade-off applied to matrix estimation. The sample covariance matrix is unbiased but has enormous variance when N is comparable to T; the structured target is heavily biased but stable. Ledoit and Wolf's contribution was to derive the shrinkage intensity that minimises expected squared error, so the weight is chosen rather than guessed — more shrinkage when N/T is large, less when data is plentiful. The result is a matrix that is guaranteed positive definite (unlike the sample matrix when T < N) and that consistently produces better out-of-sample portfolios. It is the standard illustration that unbiasedness is not the objective; accuracy is.",
+      "technique": "Ledoit-Wolf shrinkage",
+      "difficultyRationale": "Requires articulating why accepting bias improves the estimate, which is counterintuitive on first encounter."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How would you back out an implied correlation from index option prices and single-name option prices, and what trade does a rich implied correlation suggest?",
+      "canonicalAnswer": "Use the portfolio variance identity: for an index of weights w_i, sigma_index^2 = sum of w_i^2 sigma_i^2 + correlation term. Assuming one common correlation rho and solving gives roughly rho = sigma_index^2 / (sum of w_i sigma_i)^2 for a large index. If implied correlation is rich, sell index volatility and buy single-name volatility — a dispersion trade.",
+      "explanation": "The approximation comes from noting that for a large, well-diversified index the own-variance terms are negligible, so index variance is essentially rho times the square of the weighted average volatility. Implied correlation is persistently ABOVE realised correlation, because index puts are in structural demand from investors hedging portfolios while single-name options are less bid — so the dispersion trade (short index vol, long constituent vol) has a positive expected return that is really a risk premium for being short correlation. Its risk profile is the important part: it loses precisely in a crash, when correlations converge to one and the index moves more than the sum of the parts. Short correlation is a short tail position dressed as a relative-value trade.",
+      "technique": "Implied correlation and dispersion trading",
+      "difficultyRationale": "Requires the variance identity, the approximation for large N, and the risk profile of the resulting trade."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "For a Gaussian copula, how do you convert an estimated Kendall's tau into the copula's correlation parameter?",
+      "canonicalAnswer": "rho = sin(pi * tau / 2), inverting the relationship tau = (2/pi) * arcsin(rho).",
+      "explanation": "This identity is why the two-stage fitting procedure is so convenient: estimate tau from the ranks, which is robust and needs no distributional assumption, then map it to the parameter the model wants in closed form — no optimisation at all. A worked example: tau = 0.5 gives rho = sin(pi/4) = 0.707. Note the two are not equal, and the gap is largest in the middle of the range. The same identity holds for the Student-t copula, since it depends only on the elliptical structure, which is what makes tau the natural estimator for that whole family. Spearman's rho has its own mapping, rho = 2*sin(pi*rho_S/6).",
+      "technique": "Rank correlation to copula parameter",
+      "difficultyRationale": "Requires the specific identity and awareness that it holds for the elliptical family generally."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Describe how you would compute a two-asset VaR using a Student-t copula rather than the variance-covariance approach.",
+      "canonicalAnswer": "Fit a marginal distribution to each asset separately; fit the t-copula's correlation and degrees of freedom to the rank-transformed data; simulate many correlated draws from the copula; map each uniform draw back through the inverse marginal CDFs to get returns; revalue the portfolio and read off the quantile.",
+      "explanation": "The point of the exercise is that the marginals and the dependence are chosen independently — you can give each asset a fat-tailed marginal AND give the pair tail dependence, neither of which the variance-covariance approach permits. The degrees of freedom parameter controls how much: low values produce strong joint extremes, and as it grows the t-copula converges to the Gaussian. Expect the resulting VaR to exceed the variance-covariance figure at high confidence and to be similar at low confidence, since the difference lives entirely in the tail. The cost is that there is no closed form, so it is a simulation exercise, and the answer depends on two modelling choices (marginal family and copula family) rather than on a covariance matrix alone.",
+      "technique": "Copula-based VaR by simulation",
+      "difficultyRationale": "Multi-step procedure whose value lies in seeing which assumptions have been decoupled."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does a DCC-GARCH model add over EWMA for tracking correlations?",
+      "canonicalAnswer": "It lets each asset have its own GARCH volatility process and models the correlation dynamics separately, with mean reversion towards a long-run correlation matrix — where EWMA imposes a single decay parameter on everything and has no long-run level.",
+      "explanation": "Dynamic conditional correlation splits the problem in two: fit a univariate GARCH to each series to get conditional volatilities, then model the standardised residuals' correlation with its own persistence and mean-reversion parameters. The advantages over EWMA are that different assets can have genuinely different volatility dynamics, and that correlation forecasts revert to a long-run level instead of extrapolating today's estimate flat forever. It also guarantees a positive definite matrix by construction. The costs are estimation complexity and the fact that DCC still imposes a common correlation dynamic across all pairs — every pair mean-reverts at the same rate, which is a strong assumption in a large book.",
+      "technique": "Dynamic conditional correlation",
+      "difficultyRationale": "Requires comparing two estimators on several dimensions, including what DCC still assumes."
+    },
+    {
+      "topicId": "correlations-copulas",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You estimate a correlation matrix for 300 assets from 200 daily observations. What is necessarily true of the result?",
+      "options": [
+        "It is singular — at least 100 eigenvalues are exactly zero",
+        "It is positive definite but poorly conditioned",
+        "It is not a valid correlation matrix at all",
+        "The estimates are unbiased and the only issue is noise"
+      ],
+      "correctOption": 0,
+      "explanation": "With T observations you can estimate a matrix of rank at most T-1, so a 300x300 matrix from 200 observations has at least 101 zero eigenvalues by construction. It is positive SEMI-definite and therefore a valid correlation matrix, but it cannot be inverted — which breaks mean-variance optimisation, Mahalanobis distances, and anything else needing the precision matrix. Worse, the zero eigenvalues correspond to portfolios the estimate claims have exactly zero variance, and an unconstrained optimiser will find them and take an enormous position. The fix is to reduce dimension (a factor model) or regularise (shrinkage), not to gather a little more data.",
+      "technique": "Rank deficiency when T < N",
+      "difficultyRationale": "Requires the rank bound and its concrete consequence, rather than a general statement that the estimate is noisy."
     }
   ]
 }
