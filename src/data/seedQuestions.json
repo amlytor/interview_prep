@@ -10367,6 +10367,1612 @@
       "explanation": "The constraint applies to PRICES, not to everything: a Markov chain modelling volatility regimes, liquidity states or credit ratings is perfectly consistent with efficiency, because knowing the state does not tell you the direction. That is the same asymmetry that makes volatility forecastable and returns not. Where price-level Markov models do appear legitimately, they carry a risk premium interpretation rather than an arbitrage — a state with a higher expected return is one where risk is higher or investors are more risk-averse. Distinguishing 'predictable because inefficient' from 'predictable because risky' is the central difficulty in this whole area.",
       "technique": "Efficiency constraints on price models",
       "difficultyRationale": "Requires the distinction between predictable direction and predictable risk."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "You have 100 observations with sample standard deviation 20. What is the standard error of the mean?",
+      "canonicalAnswer": "2. SE = s / sqrt(n) = 20 / 10 = 2.",
+      "explanation": "The standard deviation describes the spread of one observation; the standard error describes the spread of the MEAN of n of them, and it shrinks as sqrt(n). Confusing the two is the single commonest error in applied statistics — a report saying 'returns averaged 2% with a standard deviation of 20%' tells you about the volatility of a return, not the precision of the 2%. Note also what the sqrt(n) implies about data collection: quadrupling the sample only halves the error, which is why precision is expensive.",
+      "technique": "Standard error of the mean",
+      "difficultyRationale": "One division, with the distinction from standard deviation as the substance."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A 95% confidence interval for a mean is [2, 8]. Which statement is correct?",
+      "options": [
+        "If the procedure were repeated many times, 95% of such intervals would contain the true mean",
+        "There is a 95% probability the true mean lies between 2 and 8",
+        "95% of the data lies between 2 and 8",
+        "The true mean is 5 with 95% certainty"
+      ],
+      "correctOption": 0,
+      "explanation": "The 95% is a property of the PROCEDURE across hypothetical repetitions, not of this particular interval — in the frequentist framework the true mean is a fixed number, so it either is or is not in [2, 8] and no probability attaches. Option 2 is the Bayesian statement, which is what a credible interval provides and what most people intend; the two often coincide numerically but mean different things. Option 3 confuses a confidence interval with a prediction interval, which is far wider because it must cover an individual observation rather than a mean.",
+      "technique": "Interpreting a confidence interval",
+      "difficultyRationale": "One interpretation, with the three standard misreadings as distractors."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain the bias-variance decomposition of expected prediction error.",
+      "canonicalAnswer": "Expected squared error = bias^2 + variance + irreducible noise. Bias is the error from the model being systematically wrong; variance is the error from the fit changing with the training sample; noise is the part no model can remove.",
+      "explanation": "The decomposition explains why more flexible models are not automatically better. A linear model on curved data has high bias and low variance; a deep tree has low bias and high variance, because a different sample would produce a very different tree. Total error is minimised somewhere in between, and that is what regularisation, shrinkage and model selection are all navigating. The irreducible term matters too: it sets the floor, so a model whose error is close to the noise level cannot be improved by better fitting, only by better data or better features.",
+      "technique": "Bias-variance trade-off",
+      "difficultyRationale": "Requires all three components and the reason the trade-off has an interior optimum."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between Type I and Type II error, and what does statistical power mean?",
+      "canonicalAnswer": "Type I is rejecting a true null (a false positive), with probability alpha. Type II is failing to reject a false null (a false negative), with probability beta. Power is 1 - beta: the probability of detecting an effect that is really there.",
+      "explanation": "The two are in tension — lowering alpha raises beta for a fixed sample size — so the choice of significance level is a statement about which error is more costly. In trading strategy research the asymmetry is stark: a Type I error means deploying a strategy with no edge and losing money, while a Type II error means missing an opportunity, so a stringent alpha is justified. Power depends on the effect size, the noise level and the sample size, and low power is the under-recognised problem: an underpowered study that DOES reach significance has almost certainly overstated the effect size, because only the largest sampling flukes cleared the bar.",
+      "technique": "Error types and power",
+      "difficultyRationale": "Requires the trade-off plus the non-obvious consequence of low power for effect-size estimates."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You test 100 strategies at the 5% level and 6 come out significant. What can you conclude?",
+      "canonicalAnswer": "Essentially nothing. Under the null that none has an edge, you would expect 5 significant results by chance, so 6 is entirely consistent with no strategy working at all.",
+      "explanation": "This is the multiple comparisons problem, and it is the dominant failure mode in quantitative research. The corrections come in two flavours: Bonferroni controls the family-wise error rate by testing at 0.05/100, which is very conservative, while Benjamini-Hochberg controls the false discovery rate — the expected proportion of discoveries that are false — and has far more power. In finance the problem is worse than the arithmetic suggests, because the number of specifications actually tried is usually unrecorded and much larger than the number reported. That is what motivates the deflated Sharpe ratio and the requirement to state the size of the search.",
+      "technique": "Multiple testing",
+      "difficultyRationale": "Requires computing the expected false positives and naming the corrections with their different guarantees."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is maximum likelihood estimation, and what are its main asymptotic properties?",
+      "canonicalAnswer": "Choose the parameters that make the observed data most probable — maximise the likelihood, in practice the log-likelihood. Asymptotically the MLE is consistent, asymptotically normal, and efficient (attaining the Cramer-Rao lower bound).",
+      "explanation": "Efficiency is the strongest claim: no other consistent estimator has smaller asymptotic variance, which is why MLE is the default. The properties are ASYMPTOTIC, though, and small-sample MLE can be badly biased — the maximum likelihood estimator of a normal variance divides by n rather than n-1, which is exactly such a bias. The standard errors come from the inverse Hessian of the log-likelihood at the optimum, so a flat likelihood surface means large standard errors, and a likelihood with several local maxima means the reported estimate depends on the starting point. Consistency also assumes the model is correctly specified; under misspecification MLE converges to the closest wrong model in a Kullback-Leibler sense, which is sometimes useful and sometimes disastrous.",
+      "technique": "MLE and its asymptotics",
+      "difficultyRationale": "Requires the three properties plus the caveats that they are asymptotic and specification-dependent."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish the bootstrap from a parametric confidence interval. When is the bootstrap preferable?",
+      "canonicalAnswer": "A parametric interval assumes a distributional form and uses its formula; the bootstrap resamples the observed data with replacement and reads the interval off the resulting distribution of the statistic. Prefer the bootstrap when the statistic has no tractable sampling distribution, or when the distributional assumption is doubtful.",
+      "explanation": "The bootstrap's appeal is that it works for statistics where no formula exists — a maximum drawdown, a ratio of quantiles, a Sharpe ratio of a serially correlated series — by substituting computation for analysis. Two limitations that matter. Plain resampling destroys serial dependence, so for time series you need a block bootstrap that resamples contiguous chunks and preserves local structure. And the bootstrap cannot rescue a sample that is unrepresentative: resampling 500 days that contain no crash will never produce a crash, so it estimates sampling error and not model or regime error.",
+      "technique": "Bootstrap versus parametric inference",
+      "difficultyRationale": "Requires when to prefer it and the two situations where it fails."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does R-squared measure in a regression, and why is a high R-squared not necessarily good?",
+      "canonicalAnswer": "The proportion of the dependent variable's variance explained by the model. A high value is not necessarily good because it can come from overfitting, from spurious regression between trending series, or from including the answer among the predictors.",
+      "explanation": "R-squared never decreases when you add a regressor, however irrelevant, which is why adjusted R-squared penalises the parameter count — and even that is a weak guard. Two specific traps. Regressing one non-stationary series on another routinely produces an R-squared above 0.9 with no relationship at all, which is why you difference to returns before regressing. And an R-squared near 1 in a forecasting model is nearly always leakage: a predictor that quietly contains the target. Conversely a low R-squared is entirely normal for return prediction — a genuine edge might explain 1% of variance and still be extremely valuable.",
+      "technique": "Interpreting R-squared",
+      "difficultyRationale": "Requires several distinct reasons a high value misleads, plus the reverse case."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What are heteroskedasticity and autocorrelation in regression residuals, and what do they break?",
+      "canonicalAnswer": "Heteroskedasticity is non-constant residual variance; autocorrelation is residuals correlated across observations. Neither biases the OLS coefficients, but both invalidate the standard errors, so t-statistics and p-values are wrong.",
+      "explanation": "The distinction matters because the fix differs from what people expect: your point estimates are still unbiased, so you do not need a different estimator, you need different standard errors. Newey-West (HAC) standard errors correct for both, and White standard errors for heteroskedasticity alone. Financial data has both in abundance — volatility clustering is heteroskedasticity by definition, and overlapping return windows create mechanical autocorrelation. The practical consequence is severe: uncorrected standard errors on overlapping data can understate the true uncertainty several-fold, turning noise into apparent significance.",
+      "technique": "Violations of OLS assumptions and their remedies",
+      "difficultyRationale": "Requires knowing that estimates survive but inference does not, plus the specific corrections."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You regress fund returns on a market index using overlapping 12-month windows of monthly data. What goes wrong?",
+      "canonicalAnswer": "Overlapping windows share 11 of 12 months, so consecutive observations are mechanically correlated. The effective sample size is roughly n/12 rather than n, so standard errors are badly understated and t-statistics inflated by roughly sqrt(12).",
+      "explanation": "The overlap induces autocorrelation by construction — nothing about the data generating process is responsible, and no amount of extra history removes it. Reported significance can be several times too high, which has produced a long history of published results that fail to replicate. Three responses: use non-overlapping windows and accept the smaller sample, apply Newey-West standard errors with a lag length at least as long as the overlap, or model at the monthly frequency and aggregate afterwards. The general warning is that any transformation creating dependence between observations must be reflected in the inference.",
+      "technique": "Overlapping observations and effective sample size",
+      "difficultyRationale": "Requires quantifying the inflation and naming remedies, not just spotting the correlation."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Compare mean, median and trimmed mean as estimators of centre for financial returns.",
+      "canonicalAnswer": "The mean is efficient under normality but has a breakdown point of zero — one extreme observation moves it arbitrarily. The median has a 50% breakdown point but discards information. A trimmed mean removes a fixed fraction from each tail, keeping most of the efficiency while bounding the influence of outliers.",
+      "explanation": "For financial returns, which are fat-tailed, the robustness question is not academic: a single crash day can dominate a sample mean computed over years. But there is a genuine tension, because in finance the extreme observations are often the most informative rather than errors to be discarded — trimming a crash out of a return series removes the very thing a risk manager cares about. So the rule of thumb is to use robust estimators when the extremes are contamination (bad prints, stale data) and the full sample when they are real. Reporting both and explaining the difference is usually more informative than choosing.",
+      "technique": "Robust estimators of location",
+      "difficultyRationale": "Requires the breakdown-point framing plus the finance-specific caveat about discarding real extremes."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What are skewness and excess kurtosis, and what are typical values for daily equity returns?",
+      "canonicalAnswer": "Skewness is the standardised third moment, measuring asymmetry; excess kurtosis is the standardised fourth moment minus 3, measuring tail heaviness relative to a normal. Daily equity index returns typically show mild negative skew (around -0.5) and large excess kurtosis (4 to 10).",
+      "explanation": "The excess kurtosis is the more consequential of the two: a value of 6 means extreme moves are far more frequent than a normal implies, which is exactly why a Gaussian VaR understates tail risk. The subtraction of 3 is because a normal distribution has kurtosis exactly 3, so excess kurtosis measures the departure. Both statistics are estimated from high powers of the data and are therefore extremely sensitive to the few largest observations — a kurtosis estimate from 250 days is dominated by two or three points and has an enormous standard error. Quote them as evidence of non-normality, not as precisely estimated parameters.",
+      "technique": "Higher moments of return distributions",
+      "difficultyRationale": "Requires the definitions, typical magnitudes, and the estimation-fragility caveat."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you test whether a return series is normally distributed, and what would you expect to find?",
+      "canonicalAnswer": "Use a QQ plot against the normal as the primary diagnostic, supported by a Jarque-Bera test on skewness and kurtosis or a Kolmogorov-Smirnov or Anderson-Darling test. For daily returns you would expect a decisive rejection, driven almost entirely by the tails.",
+      "explanation": "The QQ plot is more informative than any test statistic because it shows WHERE the departure is: financial returns produce the characteristic S-shape with points curving away at both ends, indicating tails heavier than normal while the centre fits well. Jarque-Bera targets exactly those moments and rejects easily. Anderson-Darling is preferable to Kolmogorov-Smirnov here because it weights the tails more. One caution: with several thousand observations any test will reject normality for economically trivial departures, so the question worth asking is not whether the data is normal but whether the departure matters for the decision at hand.",
+      "technique": "Testing distributional assumptions",
+      "difficultyRationale": "Requires knowing which diagnostic shows what, and that significance is not the right criterion at large n."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain Simpson's paradox with an example relevant to fund performance.",
+      "canonicalAnswer": "A relationship present in every subgroup can reverse when the groups are combined. Example: a manager may outperform in both bull and bear markets, yet underperform overall — if their allocation was largest in the regime with the lower average return.",
+      "explanation": "The mechanism is a confounding variable, here regime, that is associated with both the grouping and the outcome. The aggregate figure mixes performance with allocation timing, so it is answering a different question from the within-regime figures. The general lesson is that neither the aggregate nor the disaggregate is automatically 'correct' — it depends on whether the confounder is something you want held fixed. For manager evaluation the usual answer is that you DO want the aggregate, because allocation was the manager's decision, but for evaluating stock-picking skill specifically you want the within-regime numbers.",
+      "technique": "Simpson's paradox and confounding",
+      "difficultyRationale": "Requires an example plus the judgement about which figure answers which question."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A strategy's Sharpe ratio is 1.2 over three years of daily data. Construct a rough confidence interval for it.",
+      "canonicalAnswer": "The standard error of an annualised Sharpe over T years is approximately sqrt((1 + S^2/2)/n) annualised, or roughly sqrt(1/T) for modest S. With T = 3, SE is about 0.6, so the interval is roughly 1.2 +/- 1.2, or [0, 2.4].",
+      "explanation": "The rough version worth remembering is that the standard error of an annualised Sharpe ratio is about 1/sqrt(years). Three years therefore gives a standard error near 0.58, and a 95% interval that comfortably includes zero — so a Sharpe of 1.2 over three years is not statistically distinguishable from no skill at all. That is the uncomfortable arithmetic behind manager selection: distinguishing a Sharpe of 1 from a Sharpe of 0 at conventional significance takes roughly four years, and distinguishing 1 from 0.5 takes far longer. The formula also shows that more frequent sampling does not help, since the annualised standard error depends on the span of time, not the number of observations within it.",
+      "technique": "Sampling error of the Sharpe ratio",
+      "difficultyRationale": "Requires the standard error formula and the counterintuitive point that higher frequency does not help."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is regression to the mean, and how does it create a false impression that criticism works better than praise?",
+      "canonicalAnswer": "An extreme observation is likely to be followed by a less extreme one, because part of the extremity was chance. So a poor performance criticised will usually improve, and an excellent one praised will usually decline — regardless of the intervention.",
+      "explanation": "The mechanism is that any measurement is signal plus noise, and an extreme value is likely to have had extreme noise, which will not repeat. Kahneman's flight-instructor example is the classic illustration. The finance versions are everywhere: the best-performing fund of last year underperforms this year, a trader on a hot streak reverts, and any strategy selected because of exceptional backtest results disappoints live. The methodological remedy is a control group or a pre-specified comparison, since without one you cannot separate the intervention's effect from the reversion that would have happened anyway.",
+      "technique": "Regression to the mean",
+      "difficultyRationale": "Requires the signal-plus-noise mechanism and the reason it fools causal inference."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish a frequentist and a Bayesian answer to \"what is the probability this strategy has positive expected return?\"",
+      "canonicalAnswer": "A frequentist cannot answer it directly — the expected return is a fixed unknown, not a random variable, so it has no probability. They would report a p-value or confidence interval instead. A Bayesian combines a prior with the data to produce a posterior distribution over the expected return and reads the probability off it.",
+      "explanation": "The question as asked is a Bayesian one, which is why frequentist outputs are so often misinterpreted as answering it. The Bayesian route requires a prior, and in this setting the prior does real work: a sceptical prior centred near zero, reflecting that most proposed strategies have no edge, will pull a modest positive result substantially towards zero. That is a feature rather than a nuisance, because it formalises the multiple-testing correction that a raw t-statistic ignores. The cost is that the answer depends on a prior someone chose, so it must be stated and its influence tested.",
+      "technique": "Frequentist versus Bayesian inference",
+      "difficultyRationale": "Requires explaining why one framework cannot answer the question and what the other's answer costs."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "The law of large numbers and the central limit theorem describe different things. Which pairing is correct?",
+      "options": [
+        "LLN: the sample mean converges to the true mean. CLT: the SCALED deviation of the sample mean is asymptotically normal",
+        "LLN: the sample is asymptotically normal. CLT: the sample mean converges",
+        "Both say the sample mean converges, at different rates",
+        "LLN applies to independent data, CLT to dependent data"
+      ],
+      "correctOption": 0,
+      "explanation": "The LLN says where the sample mean ends up; the CLT says how it fluctuates on the way, and at what scale — specifically that sqrt(n) times the deviation converges to a normal. So the LLN is a statement about the limit and the CLT about the error around it, which is why the CLT is what gives you confidence intervals and the LLN gives you none. Both have versions for dependent data under mixing conditions, so option 4 is wrong, and both concern the MEAN rather than the raw sample, ruling out option 2.",
+      "technique": "LLN versus CLT",
+      "difficultyRationale": "Requires separating a convergence statement from a distributional one."
+    },
+    {
+      "topicId": "statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is survivorship bias a problem in fund performance data, and how large can it be?",
+      "canonicalAnswer": "Databases typically drop funds that close, so the surviving sample over-represents winners and the average reported return overstates what an investor would have earned. Estimates of the bias in hedge fund and mutual fund indices run to 1-3 percentage points a year.",
+      "explanation": "Two related biases compound it. Backfill bias arises when a fund joins a database and its prior history is added retroactively — funds only do this when the history is good. And self-selection means poor performers stop reporting while continuing to operate. The combined effect is large enough to change conclusions about whether a whole category of managers adds value. The correction is a database that retains dead funds, and the honest practice is to report results on the full sample including closures. The same reasoning applies to any backtest run on a current index membership list, since today's constituents are survivors by construction.",
+      "technique": "Survivorship and related selection biases",
+      "difficultyRationale": "Requires the mechanism, related biases, and a sense of the magnitude."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the efficient frontier, and what does it mean for a portfolio to lie below it?",
+      "canonicalAnswer": "The set of portfolios with the highest expected return for each level of risk. A portfolio below the frontier is dominated — another portfolio offers more return for the same risk, or the same return for less risk.",
+      "explanation": "The frontier is the upper boundary of the feasible set in mean-standard-deviation space, and its curvature comes entirely from correlations below 1: with perfectly correlated assets it collapses to a straight line and diversification buys nothing. Adding a risk-free asset changes the picture qualitatively, replacing the curved frontier with the straight capital market line tangent to it — which is the two-fund separation result, that every investor should hold the same risky portfolio and vary only their allocation to cash. Being below the frontier is not always a mistake in practice, since real constraints, transaction costs and estimation error all move the achievable set.",
+      "technique": "The efficient frontier",
+      "difficultyRationale": "One definition, with dominance as the operative concept."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Under CAPM, an asset with beta 0 and very high idiosyncratic volatility should have an expected return of:",
+      "options": [
+        "The risk-free rate",
+        "The market return",
+        "Above the risk-free rate, because it is volatile",
+        "Zero"
+      ],
+      "correctOption": 0,
+      "explanation": "CAPM pays you only for risk you cannot diversify away, and beta measures exactly that. Idiosyncratic volatility, however large, vanishes in a diversified portfolio and therefore earns nothing. The prediction is testable and is one of CAPM's weaker points empirically — the low-beta anomaly finds that low-beta stocks have delivered HIGHER risk-adjusted returns than the model implies, which is one of several results that motivated multi-factor models.",
+      "technique": "Systematic versus idiosyncratic risk pricing",
+      "difficultyRationale": "One implication of CAPM, with the intuitive but wrong answer as the lead distractor."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is mean-variance optimisation notoriously unstable in practice, and what is usually done about it?",
+      "canonicalAnswer": "Because it is extremely sensitive to the expected return estimates, which are the hardest inputs to estimate. Small changes produce large swings in weights, often with extreme long and short positions. Remedies include shrinking expected returns, constraining weights, shrinking the covariance matrix, or using approaches that avoid return estimates altogether.",
+      "explanation": "The mechanism is that the optimiser inverts the covariance matrix, so it loads heavily into directions with small estimated variance — which are precisely the directions estimated with most error. It then combines that with return estimates whose standard errors are enormous. The result has been called an error-maximiser, and it is why unconstrained optimisation is rarely used raw. The standard responses fall into three groups: better inputs (Ledoit-Wolf shrinkage, Black-Litterman, which anchors on equilibrium returns and tilts by explicit views), constraints (long-only and position caps, which act as implicit shrinkage), or dropping return estimates entirely (minimum variance, risk parity).",
+      "technique": "Estimation error in portfolio optimisation",
+      "difficultyRationale": "Requires the matrix-inversion mechanism and several structurally different remedies."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is risk parity, and what is the main criticism of it?",
+      "canonicalAnswer": "Allocating so that each asset or asset class contributes equally to portfolio risk, rather than equally by capital. The main criticism is that it requires leverage to reach an equity-like return, since it holds far more bonds than a conventional portfolio.",
+      "explanation": "The motivation is that a 60/40 portfolio is roughly 90% equity risk by contribution, so it is far less diversified than its weights suggest. Equalising risk contributions typically means a large bond allocation, which is then levered to reach a target volatility. Three criticisms follow. Leverage introduces funding and margin-call risk that the unlevered comparison does not have. The approach uses no return forecasts at all, which is a virtue for robustness and a limitation if you have genuine views. And its historical performance owed a great deal to a four-decade bond bull market, so the backtest is not evidence that the structure works in a rising-rate regime — as 2022 demonstrated.",
+      "technique": "Risk parity",
+      "difficultyRationale": "Requires the construction, the leverage consequence, and an honest reading of the backtest."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Distinguish the Sharpe ratio, the information ratio and the Sortino ratio.",
+      "canonicalAnswer": "Sharpe is excess return over the risk-free rate divided by total volatility. Information ratio is excess return over a BENCHMARK divided by tracking error. Sortino replaces the volatility denominator with downside deviation, penalising only returns below a threshold.",
+      "explanation": "The three answer different questions. Sharpe evaluates a standalone portfolio against cash. Information ratio evaluates an active manager against the benchmark they were hired to beat, which is the right measure when the client already holds the benchmark. Sortino addresses the objection that volatility punishes upside as well as downside — reasonable in principle, though for a roughly symmetric return distribution it mostly reorders funds by the same amount, and it is estimated from half the data, so it is noisier. A practical warning applies to all three: any ratio with return in the numerator is easy to game with a strategy that produces small steady gains and rare large losses, such as selling deep out-of-the-money options.",
+      "technique": "Risk-adjusted performance measures",
+      "difficultyRationale": "Requires the different questions each answers plus the shared gaming vulnerability."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does the Black-Litterman model do, and what problem does it solve?",
+      "canonicalAnswer": "It starts from the expected returns implied by market equilibrium (reverse-optimised from market-cap weights) and tilts them towards an investor's explicit views, weighted by the confidence in each. It solves the instability of mean-variance optimisation caused by unreliable return estimates.",
+      "explanation": "The insight is to change the default. Plain optimisation treats your estimates as the truth and produces extreme weights; Black-Litterman treats the market portfolio as the prior — the position you hold if you have no view — so absent views the output is the market, and each view moves you away from it in proportion to your stated confidence. That is a Bayesian structure, and it produces intuitive, well-behaved portfolios where the tilts are traceable to specific opinions. It also lets you express relative views ('European equities will beat Japanese by 2%') rather than requiring a full return vector, which is how investors actually think.",
+      "technique": "Black-Litterman",
+      "difficultyRationale": "Requires the equilibrium prior as the key design choice, not just the mechanics."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Name the Fama-French three factors and explain what each captures.",
+      "canonicalAnswer": "Market excess return (the CAPM factor), SMB or small-minus-big (size — small caps outperforming large), and HML or high-minus-low (value — high book-to-market stocks outperforming low). Later work adds profitability and investment factors.",
+      "explanation": "The factors were constructed to explain patterns CAPM could not: small and value stocks had delivered returns above what their betas predicted, so the model adds portfolios capturing those tilts. Whether the premia represent compensation for risk or a behavioural mispricing is a genuinely open debate — the risk story says value stocks are distressed and riskier in bad times, the behavioural story says investors overextrapolate growth. Two practical points: the value premium has been weak for over a decade, which is either evidence of decay after publication or an unusually long drawdown, and factor definitions vary enough between providers that reported exposures are not directly comparable.",
+      "technique": "Multi-factor models",
+      "difficultyRationale": "Requires the factors, their motivation, and the unresolved interpretation."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does arbitrage pricing theory differ from CAPM in its assumptions?",
+      "canonicalAnswer": "APT assumes only that returns follow a factor structure and that no arbitrage exists, giving expected return as a linear function of factor exposures. CAPM requires stronger assumptions — mean-variance optimising investors, a single period, and identification of the market portfolio.",
+      "explanation": "APT is more general and less prescriptive, which is both its strength and its weakness: it does not say what the factors ARE, so it cannot be tested without additional assumptions, and any set of factors that fits can be claimed to satisfy it. CAPM makes a sharp, falsifiable prediction and is empirically rejected in several respects — which is more scientific progress than an untestable framework offers. The practical descendants are the factor models used in risk systems, which are APT in spirit: choose factors that explain covariance well, without claiming they are the unique true ones.",
+      "technique": "APT versus CAPM",
+      "difficultyRationale": "Requires comparing the assumption sets and seeing that generality costs testability."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A portfolio of 20 stocks each with 30% volatility and average pairwise correlation 0.4 — what is the portfolio volatility, and what would it be with 200 stocks?",
+      "canonicalAnswer": "About 19.7% with 20 stocks and 19.0% with 200. Using Var = sigma^2 * [1/n + (1 - 1/n)*rho]: for n=20, 0.09 * [0.05 + 0.95(0.4)] = 0.09(0.43) = 0.0387, so 19.7%; for n=200, 0.09(0.403) = 0.0363, so 19.0%.",
+      "explanation": "The formula for an equally weighted portfolio is Var = sigma^2 * [1/n + (1 - 1/n)*rho]. With n = 20: 0.05 + 0.95(0.4) = 0.43, so volatility is 0.30*sqrt(0.43) = 19.7%. With n = 200: 0.005 + 0.995(0.4) = 0.403, giving 19.0%. The striking part is how little the extra 180 stocks bought — going from 20 to 200 names reduced volatility by 0.7 percentage points, because the diversifiable component was already nearly exhausted. The floor is sigma*sqrt(rho) = 0.30*0.632 = 19.0%. That is the practical answer to 'how many stocks do I need': 20 to 30 gets you most of the way, and the rest is systematic risk you cannot remove by adding names.",
+      "technique": "Diversification limits with a common correlation",
+      "difficultyRationale": "Requires the equal-weight variance formula and the interpretation that the benefit saturates quickly."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the Kelly criterion, and why do practitioners usually bet a fraction of it?",
+      "canonicalAnswer": "The bet size maximising the expected LOG of wealth, which maximises the long-run growth rate: f* = edge/odds, or for a normally distributed return, mu/sigma^2. Practitioners use half-Kelly or less because full Kelly produces very large drawdowns and is extremely sensitive to estimation error in the edge.",
+      "explanation": "Full Kelly is optimal only if you know your edge exactly and can tolerate the resulting path — the expected time to halve your capital at some point is short, and the volatility of wealth is uncomfortable. Betting more than Kelly is strictly worse in both growth and risk, which is the useful asymmetry: overbetting is punished twice. Since the edge is always estimated, and overestimating it moves you towards overbetting, half-Kelly gives up only about a quarter of the growth rate while roughly halving the volatility and providing a margin for estimation error. The same logic underlies volatility targeting in systematic funds.",
+      "technique": "Kelly sizing and fractional Kelly",
+      "difficultyRationale": "Requires the criterion plus the asymmetry that makes underbetting the safer error."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why can a portfolio's realised return differ from the weighted average of its holdings' returns?",
+      "canonicalAnswer": "Because of rebalancing. A buy-and-hold portfolio's return IS the initial-weight average, but a rebalanced one sells winners and buys losers, which changes the outcome — producing a rebalancing bonus when assets mean-revert and a drag when they trend.",
+      "explanation": "The effect is sometimes called volatility pumping: rebalancing between volatile, imperfectly correlated assets can generate a geometric return above the weighted average of the individual geometric returns. It works because rebalancing systematically sells high and buys low relative to a drifting portfolio. But it is not free money — the same mechanism loses in a trending market, where you keep trimming the asset that continues to rise, and it incurs transaction costs. The related point is that the arithmetic average of returns always exceeds the geometric average, and only the geometric one describes what an investor actually earned.",
+      "technique": "Rebalancing effects on realised return",
+      "difficultyRationale": "Requires knowing the effect has both signs and depends on the return process."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is tracking error, and what are the two ways it is commonly defined?",
+      "canonicalAnswer": "The volatility of the difference between a portfolio's return and its benchmark's. It is usually the standard deviation of active returns, but some define it as the root mean square of active returns, which differs when the average active return is not zero.",
+      "explanation": "The distinction matters more than it sounds. Standard deviation measures dispersion around the AVERAGE active return, so a fund that beats its benchmark by exactly 2% every year has zero tracking error by that definition — which is odd for a measure of how closely it tracks. The root-mean-square version counts the persistent 2% as tracking error. In practice the standard-deviation version dominates because it pairs with the information ratio, which puts the average active return in the numerator. Tracking error is also the natural unit for risk budgeting: a mandate is often expressed as a tracking error limit rather than a volatility limit, because the client's risk is relative to the benchmark they would otherwise hold.",
+      "technique": "Tracking error definitions",
+      "difficultyRationale": "Requires spotting that two reasonable definitions disagree in a specific case."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two managers both have an information ratio of 0.5, but one has 3% tracking error and the other 8%. How do you compare them?",
+      "canonicalAnswer": "They deliver the same skill per unit of risk, but different amounts of risk: expected active returns are 1.5% and 4%. Which is preferable depends on the risk budget — you can lever the low-tracking-error manager or size them differently to equalise.",
+      "explanation": "The information ratio is the scale-free measure of skill, so equal ratios mean equal skill in the sense that matters. The tracking error is a sizing decision, and in principle you would allocate more capital to the 3% manager to reach the same active risk. Two practical qualifications. Leverage is not always available in a long-only mandate, so the higher-tracking-error manager may be the only way to reach an ambitious target. And an information ratio estimated over a short period has a large standard error — the same 1/sqrt(years) arithmetic as the Sharpe ratio — so a difference in tracking error is measured far more precisely than the ratios themselves, which should temper any confident ranking.",
+      "technique": "Separating skill from risk-taking",
+      "difficultyRationale": "Requires treating tracking error as a sizing choice rather than a quality difference."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the minimum variance portfolio, and why is it popular despite ignoring expected returns?",
+      "canonicalAnswer": "The portfolio on the efficient frontier with the lowest variance, obtained by minimising w'Sigma*w subject to weights summing to 1. It is popular because it requires no expected return estimates — the input that estimation error most damages.",
+      "explanation": "Since expected returns have far larger standard errors than covariances, a portfolio that avoids them entirely can outperform an 'optimal' one out of sample, even though it is suboptimal in theory. That is the practical case for it, and it is a good illustration that theoretical optimality under known parameters is a different objective from good performance under estimated ones. It has empirically delivered attractive risk-adjusted returns, which is related to the low-volatility anomaly. Its weaknesses are that it still inverts the covariance matrix, so it inherits that instability, and that it tends to concentrate in low-volatility sectors — usually requiring constraints to remain investable.",
+      "technique": "Minimum variance portfolios",
+      "difficultyRationale": "Requires the estimation-error argument for why dropping an input can improve results."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Your risk model says the portfolio's volatility is 12%, but realised volatility over the last year was 20%. Give three explanations.",
+      "canonicalAnswer": "The covariance inputs were estimated over a calmer period and understate current volatility; correlations rose above their estimates, so diversification delivered less than modelled; or the portfolio has exposures the factor model does not capture, so its risk is invisible to the model.",
+      "explanation": "The three are distinguishable with work. Compare the model's forecast against a realised-volatility estimate for each individual holding: if the components are also understated, it is a level problem in the volatility inputs. If the components are right but the portfolio is not, the correlation structure is at fault. If neither explains it, look at the residual — a factor model attributes what it can and leaves specific risk, and a large realised residual means a missing factor or a concentration the model treats as diversifiable. There is a fourth possibility worth checking first: that the portfolio changed during the year, so the comparison is between a current forecast and the realised path of a different portfolio.",
+      "technique": "Diagnosing risk model underprediction",
+      "difficultyRationale": "Requires distinct causes and a procedure that separates them."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does two-fund separation say, and what real-world assumption does it lean on most heavily?",
+      "canonicalAnswer": "With a risk-free asset, every investor holds some combination of the same tangency portfolio of risky assets and cash — they differ only in the proportion. It leans most heavily on all investors sharing the same estimates of returns, variances and correlations.",
+      "explanation": "The result is elegant and its assumptions are heroic: homogeneous expectations, no transaction costs or taxes, and unrestricted borrowing and lending at the risk-free rate. Each failure breaks it in a recognisable way. Heterogeneous beliefs give different tangency portfolios, which is why active management exists at all. Restricted borrowing means leverage-constrained investors buy high-beta assets instead, bidding up their prices — the standard explanation for the low-beta anomaly. And taxes make the optimal portfolio investor-specific. The theorem's real value is as a benchmark: it tells you what the world would look like if these frictions did not matter, so deviations point at which friction does.",
+      "technique": "Two-fund separation and its assumptions",
+      "difficultyRationale": "Requires mapping each failed assumption to an observable market phenomenon."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A manager's portfolio has beta 1.2 and returned 15% when the market returned 12%, with a risk-free rate of 2%. What is their alpha?",
+      "options": [
+        "1.0%",
+        "3.0%",
+        "0.6%",
+        "13.0%"
+      ],
+      "correctOption": 0,
+      "explanation": "Expected return under CAPM is 2% + 1.2(12% - 2%) = 2% + 12% = 14%. Alpha is the excess over that: 15% - 14% = 1%. The tempting 3% is the raw outperformance versus the market, which credits the manager for taking more beta rather than for skill. This is the whole point of alpha as a measure — leverage or a high-beta tilt produces outperformance in rising markets without any stock-picking ability, and beta adjustment strips it out. Note the estimate is only as good as the beta, and a beta estimated from noisy data has its own error that propagates straight into the alpha.",
+      "technique": "Jensen's alpha",
+      "difficultyRationale": "Two steps, with the raw outperformance as the intuitive trap."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is maximum drawdown a poor basis for comparing two funds, and what would you use instead?",
+      "canonicalAnswer": "Because it is a single extreme order statistic, so it depends heavily on the sample period and its length — a longer track record almost mechanically produces a larger maximum drawdown. Use a distribution of drawdowns, average drawdown, time under water, or a volatility-based measure that uses all the data.",
+      "explanation": "Maximum drawdown discards every observation except the two defining the worst peak-to-trough, so its standard error is enormous and it is not comparable across funds with different histories. It is also path-dependent in a way that rewards luck: two funds with identical return distributions can post very different maxima. It survives because it is intuitive and speaks directly to an investor's tolerance for pain, which is a genuine merit. The sensible compromise is to report it alongside measures that use the whole series, and to compare drawdowns only over a common period.",
+      "technique": "Limitations of maximum drawdown",
+      "difficultyRationale": "Requires the order-statistic argument and the sample-length dependence."
+    },
+    {
+      "topicId": "portfolio-theory",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A fund's returns are 50%, -50%, 50%, -50% over four periods. What is its arithmetic mean return and what did an investor actually earn?",
+      "canonicalAnswer": "The arithmetic mean is 0%, but the investor lost 43.75%: 1.5 x 0.5 x 1.5 x 0.5 = 0.5625.",
+      "explanation": "Only the geometric return describes what an investor earned, and it is always below the arithmetic mean whenever returns vary — approximately by half the variance, which is the same volatility drag that appears in the Ito correction. Here the drag is severe because the volatility is enormous. Two practical consequences. Any performance figure quoted as an average of periodic returns overstates the outcome, which is why regulators require compounded returns. And it explains why reducing volatility can raise the compounded return even with no change in the average — the basis of volatility targeting and part of the case for risk parity.",
+      "technique": "Arithmetic versus geometric return",
+      "difficultyRationale": "One compounding computation, with the volatility-drag interpretation as the payload."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What are the rank and the trace of a matrix, and what does each tell you?",
+      "canonicalAnswer": "Rank is the number of linearly independent columns (equivalently rows) — the dimension of the space the matrix maps onto. Trace is the sum of the diagonal entries, and equals the sum of the eigenvalues.",
+      "explanation": "Rank tells you about degeneracy: a covariance matrix of rank less than its size means some portfolio has exactly zero variance, so one asset is a linear combination of the others. Trace is useful as a quick check on an eigen-decomposition — the eigenvalues must sum to the trace, and for a correlation matrix that means they sum to n. It also gives the total variance in a PCA, so the fraction of variance explained by the first k components is the sum of their eigenvalues divided by the trace.",
+      "technique": "Rank and trace",
+      "difficultyRationale": "Two definitions, with their use as diagnostics as the substance."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The eigenvalues of a correlation matrix for 5 assets must:",
+      "options": [
+        "Be non-negative and sum to 5",
+        "Be non-negative and sum to 1",
+        "All lie between 0 and 1",
+        "All be distinct"
+      ],
+      "correctOption": 0,
+      "explanation": "Non-negativity comes from positive semi-definiteness — a correlation matrix must not imply a negative-variance portfolio. The sum equals the trace, and a correlation matrix has ones on the diagonal, so the trace is n = 5. Eigenvalues can and usually do exceed 1: the first eigenvalue of an equity correlation matrix is typically close to n times the average correlation, reflecting the market factor, so for 5 assets averaging 0.5 correlation it would be around 3. Repeated eigenvalues are perfectly possible, arising whenever the structure has a symmetry.",
+      "technique": "Constraints on correlation matrix eigenvalues",
+      "difficultyRationale": "Requires both constraints and the recognition that eigenvalues above 1 are normal."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the singular value decomposition, and how does it relate to eigen-decomposition?",
+      "canonicalAnswer": "Any matrix A factors as U*S*V' with U and V orthogonal and S diagonal with non-negative singular values. For a symmetric positive semi-definite matrix the SVD coincides with the eigen-decomposition; in general the singular values of A are the square roots of the eigenvalues of A'A.",
+      "explanation": "The advantage of SVD is generality: eigen-decomposition needs a square matrix and may not exist over the reals, while SVD exists for every matrix including rectangular ones. That makes it the tool for data matrices, where rows are observations and columns are variables. PCA is exactly the SVD of the centred data matrix, which is numerically preferable to forming the covariance matrix and decomposing that, because squaring the data squares the condition number. Truncating the SVD to its largest singular values gives the best low-rank approximation in a precise sense, which is the basis of noise reduction and compression.",
+      "technique": "SVD and its relation to eigen-decomposition",
+      "difficultyRationale": "Requires the relationship in both directions plus the numerical argument for preferring SVD."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the condition number of a matrix, and why does it matter when inverting a covariance matrix?",
+      "canonicalAnswer": "The ratio of the largest to the smallest singular value (or eigenvalue, for a symmetric positive definite matrix). A large condition number means the inverse amplifies small errors in the inputs enormously.",
+      "explanation": "It is a direct measure of how much relative error in the data becomes relative error in the answer: a condition number of 10^6 means you can lose six digits of accuracy. For covariance matrices this is not a numerical curiosity, it is the mechanism behind unstable portfolio optimisation — the smallest eigenvalues correspond to directions estimated with the most noise, and inverting the matrix divides by them. That is why an optimiser loads into apparently low-risk combinations that are actually pure estimation error. The remedies all attack the small eigenvalues: shrinkage lifts them, eigenvalue clipping replaces them, and constraints prevent the optimiser from exploiting them.",
+      "technique": "Conditioning and error amplification",
+      "difficultyRationale": "Requires linking a numerical property to the specific failure of portfolio optimisation."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why are the eigenvalues of a real symmetric matrix always real, and its eigenvectors orthogonal?",
+      "canonicalAnswer": "This is the spectral theorem. Realness follows because for symmetric A, the quantity x*'Ax is real for any x, forcing the eigenvalue to be real. Orthogonality follows because eigenvectors with different eigenvalues satisfy lambda_1 (v1'v2) = lambda_2 (v1'v2), which forces v1'v2 = 0 when the eigenvalues differ.",
+      "explanation": "The orthogonality argument is worth being able to reproduce: v1'Av2 can be grouped two ways, giving lambda_2(v1'v2) and lambda_1(v1'v2), so their difference times the inner product is zero. The practical consequence is enormous for finance, because covariance and correlation matrices are symmetric by construction: their eigenvectors form an orthonormal basis, which is exactly what makes PCA produce UNCORRELATED components. Without symmetry there is no such guarantee, and the whole interpretation of principal components as independent sources of variation would fail.",
+      "technique": "Spectral theorem",
+      "difficultyRationale": "Requires reproducing the short orthogonality argument, not just citing the theorem."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain principal component analysis in terms of the covariance matrix.",
+      "canonicalAnswer": "PCA finds the orthogonal directions of maximum variance: the eigenvectors of the covariance matrix, ordered by eigenvalue. The k-th component's variance is the k-th eigenvalue, and the components are uncorrelated by construction.",
+      "explanation": "The optimisation view makes it concrete: maximise w'Sigma*w subject to w'w = 1, whose solution by Lagrange multipliers is the eigenvector of the largest eigenvalue. Repeating under an orthogonality constraint gives the rest. Two practical matters. Scaling matters enormously — PCA on a covariance matrix is dominated by the highest-variance variables, so if the variables have different units you should use the correlation matrix instead. And the components are statistical constructs with no guaranteed interpretation; the yield curve is the happy case where the first three come out looking like level, slope and curvature, and most applications are not that clean.",
+      "technique": "PCA as eigen-decomposition of the covariance matrix",
+      "difficultyRationale": "Requires the optimisation formulation plus the scaling caveat."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You need to simulate three correlated normal variables. Describe the procedure using a Cholesky factor.",
+      "canonicalAnswer": "Factor the covariance matrix as Sigma = L*L' with L lower triangular. Draw a vector Z of three independent standard normals and set X = L*Z. Then X has covariance L*E[ZZ']*L' = L*L' = Sigma.",
+      "explanation": "The one-line verification is the whole justification, and it works because the covariance of a linear transform is L*Cov(Z)*L' with Cov(Z) = I. To add a mean, just shift afterwards. Two practical notes. Cholesky requires positive DEFINITE, so a singular or noise-corrupted correlation matrix fails and must be repaired first by eigenvalue flooring. And for non-normal marginals this construction is not enough — transforming the correlated normals through inverse marginal CDFs gives a Gaussian copula, which imposes the normal dependence structure regardless of the marginals you attach, so it will have no tail dependence.",
+      "technique": "Cholesky for correlated simulation",
+      "difficultyRationale": "Requires the verification and both practical caveats."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the geometric interpretation of the OLS solution beta = (X'X)^{-1}X'y?",
+      "canonicalAnswer": "It is a projection: X*beta is the orthogonal projection of y onto the column space of X, i.e. the closest point in the space spanned by the regressors. The residual is orthogonal to every regressor.",
+      "explanation": "The normal equations X'(y - X*beta) = 0 say exactly that the residual is perpendicular to each column of X, which is the defining property of an orthogonal projection. Several standard results follow immediately. The residual having zero correlation with the fitted values is a consequence of the geometry rather than an assumption. R-squared is the squared cosine of the angle between y and its projection. And multicollinearity is the case where the columns of X are nearly parallel, so the projection is well determined but the COEFFICIENTS splitting it between the near-duplicate regressors are not — which is why collinear models predict fine and have unstable, uninterpretable coefficients.",
+      "technique": "OLS as orthogonal projection",
+      "difficultyRationale": "Requires reading several regression facts off the geometry."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a quadratic form, and how do you read off whether a matrix is positive definite from a small example?",
+      "canonicalAnswer": "A quadratic form is x'Ax for symmetric A. For a 2x2 matrix it is positive definite exactly when the top-left entry is positive AND the determinant is positive (Sylvester's criterion on leading principal minors).",
+      "explanation": "For [[a, b], [b, c]] the conditions are a > 0 and ac - b^2 > 0. Applied to a covariance matrix that reads as: variances positive, and the covariance not too large relative to them — which is exactly the requirement |rho| < 1. Sylvester's criterion generalises: all leading principal minors positive means positive definite. In portfolio terms the quadratic form IS portfolio variance, w'Sigma*w, so positive definiteness is the statement that no portfolio has zero or negative variance, and checking it is the same as checking the correlation inputs are mutually consistent.",
+      "technique": "Sylvester's criterion",
+      "difficultyRationale": "Requires the criterion plus its translation into a familiar correlation constraint."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Three assets have pairwise correlations rho_12 = 0.9, rho_13 = 0.9. What range of values is rho_23 allowed to take?",
+      "canonicalAnswer": "Roughly 0.62 to 1. The constraint is that the correlation matrix be positive semi-definite, whose determinant condition gives rho_23 between rho_12*rho_13 - sqrt((1-rho_12^2)(1-rho_13^2)) and rho_12*rho_13 + sqrt(...), i.e. 0.81 - 0.19 = 0.62 up to 0.81 + 0.19 = 1.",
+      "explanation": "Correlation is not transitive but it is CONSTRAINED, and the bound comes from requiring the 3x3 determinant to be non-negative: 1 + 2*rho12*rho13*rho23 - rho12^2 - rho13^2 - rho23^2 >= 0. With rho_12 = rho_13 = 0.9, sqrt((1-0.81)^2) = 0.19, giving the interval [0.62, 1]. The intuition is that if two assets are each strongly tied to a third, they cannot be weakly tied to each other. This is the formal reason a risk manager cannot override individual correlation entries by hand — an internally inconsistent set produces a matrix that is not a covariance matrix of anything and breaks Cholesky.",
+      "technique": "Positive semi-definiteness as a constraint on correlations",
+      "difficultyRationale": "Requires the determinant condition and careful algebra to extract the interval."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean to say a matrix is idempotent, and where does one appear in regression?",
+      "canonicalAnswer": "A matrix H with H*H = H. The hat matrix H = X(X'X)^{-1}X' in OLS is idempotent — projecting twice onto the same space changes nothing after the first time.",
+      "explanation": "Idempotence is the algebraic signature of a projection, which is why it appears here. Two useful consequences follow. Its eigenvalues are all 0 or 1, since lambda^2 = lambda, so its trace equals its rank — which is the number of regressors, and that is where the degrees of freedom in a regression come from. And I - H is also idempotent and projects onto the residual space, which is what makes the residual sum of squares have a chi-squared distribution under normality. The leverage of observation i is the i-th diagonal entry of H, measuring how much that point pulls its own fitted value.",
+      "technique": "Idempotent matrices and the hat matrix",
+      "difficultyRationale": "Requires connecting an algebraic property to degrees of freedom and leverage."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is ridge regression doing in linear-algebra terms, and why does it help?",
+      "canonicalAnswer": "It solves (X'X + lambda*I)^{-1}X'y instead of (X'X)^{-1}X'y — adding lambda to every eigenvalue of X'X. That makes the matrix invertible even when X'X is singular and reduces its condition number, stabilising the coefficients.",
+      "explanation": "Adding lambda*I lifts every eigenvalue by lambda, so the smallest ones — the directions where the data carries least information and the estimate is least stable — are affected proportionally most. The result is biased but has far lower variance, and for a suitable lambda the total error is lower, which is the bias-variance trade-off again. The same operation appears throughout: it is exactly the eigenvalue flooring used to repair correlation matrices, and it is why ridge is sometimes described as shrinking towards zero along the least-determined directions. Note the contrast with lasso, whose L1 penalty sets coefficients exactly to zero and so performs selection rather than shrinkage.",
+      "technique": "Ridge regression as eigenvalue lifting",
+      "difficultyRationale": "Requires seeing the penalty's effect on the spectrum, not just its formula."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a factor model r = B*f + e, what is the implied covariance matrix, and why is that a useful structure?",
+      "canonicalAnswer": "Sigma = B*Omega*B' + D, where Omega is the factor covariance and D the diagonal matrix of specific variances. It is useful because it reduces the number of parameters from n(n+1)/2 to n*k + k(k+1)/2 + n, and guarantees a positive semi-definite, invertible result.",
+      "explanation": "For 500 assets the full covariance matrix needs about 125,000 parameters; a 10-factor model needs around 5,500. That is the difference between an estimate dominated by noise and one that is usable. The structure also guarantees good behaviour: as long as the specific variances in D are positive, the sum is positive definite even if the factor part is rank-deficient, so Cholesky and inversion always succeed. The cost is model risk of a different kind — any covariance not generated by the chosen factors is forced into D and treated as diversifiable, so a missing factor shows up as underestimated portfolio risk for exactly the portfolios loading on it.",
+      "technique": "Factor structure for covariance estimation",
+      "difficultyRationale": "Requires the parameter count and the specific way the structure fails."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is it usually wrong to compute a matrix inverse explicitly when solving a linear system?",
+      "canonicalAnswer": "Because solving Ax = b directly — by LU or Cholesky factorisation — is faster and numerically more accurate than forming A^{-1} and multiplying. Explicit inversion does more arithmetic and amplifies rounding error.",
+      "explanation": "Forming the inverse costs roughly three times the work of a factorisation and then still requires a matrix-vector product, and each extra operation is an opportunity to lose precision — the accumulated error in an explicitly formed inverse is typically worse than solving directly. The rule generalises: whenever you see A^{-1}b in a formula, read it as 'solve Ax = b'. The exception is when you genuinely need the inverse itself as an object, for instance the covariance matrix of OLS estimates, which is (X'X)^{-1} times sigma^2 — and even there you usually want only its diagonal, which can be extracted from the factorisation.",
+      "technique": "Solve rather than invert",
+      "difficultyRationale": "Requires the accuracy and cost arguments plus the legitimate exception."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Two matrices A and B are both positive semi-definite. Which is guaranteed to be positive semi-definite?",
+      "options": [
+        "A + B",
+        "A * B",
+        "A - B",
+        "All of these"
+      ],
+      "correctOption": 0,
+      "explanation": "For any vector x, x'(A+B)x = x'Ax + x'Bx, a sum of two non-negative numbers — so the sum is PSD. The product need not even be symmetric, so it is generally not a candidate. And the difference is easily indefinite: take A as the identity and B as twice the identity. This matters practically because it justifies a common construction — building a covariance matrix as a factor part plus a diagonal specific part is guaranteed valid, whereas subtracting an estimated hedge covariance from a portfolio covariance is not.",
+      "technique": "Operations preserving positive semi-definiteness",
+      "difficultyRationale": "One property to verify and two counterexamples to rule out."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A yield curve PCA gives eigenvalues 8.5, 1.1, 0.3 and then much smaller values. Interpret this.",
+      "canonicalAnswer": "The first three components explain (8.5 + 1.1 + 0.3) / total of the eigenvalues — here about 98% if the remainder is small. They correspond to level, slope and curvature, with level alone explaining roughly 85%.",
+      "explanation": "The eigenvalue is the variance along each component, so the ratios tell you directly how curve risk is distributed: level dominates, which is why duration hedging captures most of it, and slope adds enough to matter for any book with tenor structure. Curvature at 0.3 is small in variance terms but is exactly the exposure a butterfly trade isolates, so a desk running those trades cannot ignore it. The steep drop after the third eigenvalue is the empirical justification for reducing a twenty-tenor curve to three risk factors — and the residual, though small, is where basis and idiosyncratic tenor risk lives.",
+      "technique": "Reading a PCA eigenvalue spectrum",
+      "difficultyRationale": "Requires converting eigenvalues to variance shares and attaching the financial interpretation."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Show that the variance of a portfolio, w'Sigma*w, can be written in terms of the eigen-decomposition, and say what that tells you.",
+      "canonicalAnswer": "With Sigma = Q*Lambda*Q', write c = Q'w for the portfolio's coordinates in the eigenbasis. Then w'Sigma*w = c'Lambda*c = sum of lambda_i * c_i^2 — a weighted sum of eigenvalues, with weights given by the portfolio's squared loading on each principal component.",
+      "explanation": "The decomposition says portfolio risk is entirely determined by how much of the portfolio sits along each principal component. Three readings follow. The minimum variance direction is the eigenvector of the smallest eigenvalue, which is why an optimiser is drawn there — and why that is dangerous, since small eigenvalues are the noisiest estimates. A portfolio orthogonal to the first component has no market-factor exposure, which is the formal meaning of market-neutral. And risk attribution by component, rather than by asset, is often far more informative, because it shows whether a book's risk is one big bet on a common factor or genuinely spread across independent sources.",
+      "technique": "Portfolio variance in the eigenbasis",
+      "difficultyRationale": "Requires the change of basis and three distinct interpretations of the resulting sum."
+    },
+    {
+      "topicId": "linear-algebra",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the Moore-Penrose pseudoinverse, and when would you need one?",
+      "canonicalAnswer": "A generalisation of the inverse that exists for any matrix, including singular and rectangular ones. Computed from the SVD as V*S^+*U', where S^+ inverts the non-zero singular values and leaves the zeros alone. It gives the minimum-norm least-squares solution.",
+      "explanation": "When X'X is singular — collinear regressors, or more variables than observations — the normal equations have infinitely many solutions, and the pseudoinverse selects the one with the smallest coefficient norm. That is a defensible choice but it is a CHOICE, not a unique answer, and it should be stated rather than assumed. The practical relevance for covariance work is direct: a rank-deficient covariance matrix cannot be inverted, so anything requiring the precision matrix must either use a pseudoinverse, regularise, or reduce dimension. Note that the pseudoinverse leaves the zero singular values at zero, which means it discards those directions entirely rather than stabilising them — ridge regression, which lifts them instead, is often the better answer.",
+      "technique": "Pseudoinverse for singular systems",
+      "difficultyRationale": "Requires the construction and the observation that it makes an implicit choice."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Differentiate f(x) = x * e^{-x} and find where it is largest for x >= 0.",
+      "canonicalAnswer": "f'(x) = e^{-x}(1 - x), which is zero at x = 1. Since f' is positive below 1 and negative above, x = 1 is the maximum, with value 1/e = 0.368.",
+      "explanation": "Product rule: the derivative of x times e^{-x} plus x times the derivative of e^{-x} gives e^{-x} - x*e^{-x} = e^{-x}(1-x). Factoring is what makes the root obvious — e^{-x} is never zero, so only 1-x = 0 matters. The sign-of-derivative argument classifies it faster than computing f''. This particular function is the exponential density's shape and appears wherever a growing term competes with a decaying one, which is also the structure of a bond's cash flow contribution to duration.",
+      "technique": "Product rule and first-derivative test",
+      "difficultyRationale": "One product rule and a sign argument."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "A function is convex on an interval. Which statement follows?",
+      "options": [
+        "Its second derivative is non-negative there, and it lies below the chord joining any two of its points",
+        "Its first derivative is non-negative there",
+        "It has no maximum on the interval",
+        "It is increasing"
+      ],
+      "correctOption": 0,
+      "explanation": "Convexity means f'' >= 0 where the second derivative exists, and equivalently that the function lies below any chord joining two of its points while lying above every tangent line. Convexity says nothing about whether the function is increasing — x^2 is convex and decreases on the negatives. The finance relevance is Jensen's inequality, E[f(X)] >= f(E[X]) for convex f, which is why a bond's price gains more from a yield fall than it loses from an equal rise, and why the mean of a lognormal exceeds its median.",
+      "technique": "Convexity and Jensen's inequality",
+      "difficultyRationale": "One definition, with 'convex implies increasing' as the standard confusion."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State Jensen's inequality and give a finance example where it matters.",
+      "canonicalAnswer": "For a convex function f, E[f(X)] >= f(E[X]), with the inequality reversed for concave f. Example: an option payoff is convex in the underlying, so the expected payoff exceeds the payoff at the expected price — which is why volatility has value.",
+      "explanation": "The gap between the two sides is the value of uncertainty under a convex transformation, and it grows with the variance of X. Several standard results are the same statement in different clothing: the mean of a lognormal exceeds its median (exp is convex), a bond's convexity makes its expected price exceed the price at the expected yield, and the arithmetic mean return exceeds the geometric mean (log is concave, so the inequality reverses). Recognising a question as a Jensen question usually collapses it to one line.",
+      "technique": "Jensen's inequality",
+      "difficultyRationale": "Requires the statement, the direction for concave functions, and a mapping to a finance fact."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Evaluate the integral of e^{-x^2/2} over the whole real line, and say why the answer matters.",
+      "canonicalAnswer": "sqrt(2*pi). It matters because it is the normalising constant of the standard normal density — the density is e^{-x^2/2} divided by sqrt(2*pi) precisely so that it integrates to 1.",
+      "explanation": "The trick is to square the integral and switch to polar coordinates: the product of two copies becomes a double integral of e^{-(x^2+y^2)/2} over the plane, which in polar form is an integral of r*e^{-r^2/2} dr d(theta) — and the r factor from the Jacobian makes it elementary, giving 2*pi. Taking the square root gives sqrt(2*pi). It is worth knowing because the function has no elementary antiderivative, so this is one of the few definite integrals of it available in closed form, and it explains the otherwise mysterious constant in the normal density.",
+      "technique": "Gaussian integral via polar coordinates",
+      "difficultyRationale": "Requires the squaring-and-polar trick, which is not discoverable by routine methods."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is integration by parts, and use it to find the integral of x*e^{-x} from 0 to infinity.",
+      "canonicalAnswer": "The integral of u dv equals uv minus the integral of v du. With u = x and dv = e^{-x}dx: the answer is [-x*e^{-x}] from 0 to infinity plus the integral of e^{-x}, which is 0 + 1 = 1.",
+      "explanation": "The boundary term vanishes at both ends — at zero because x = 0, and at infinity because the exponential dominates the linear factor. What remains is the integral of e^{-x}, which is 1. The result is the mean of an exponential distribution with rate 1, and the same technique generalises: repeated integration by parts on x^n e^{-x} gives n!, which is the definition of the gamma function at integer arguments. The rule for choosing u is to pick the factor that simplifies when differentiated, which here is the polynomial.",
+      "technique": "Integration by parts",
+      "difficultyRationale": "One application with boundary terms to check at both limits."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Use L'Hopital's rule to find the limit of (e^x - 1 - x) / x^2 as x approaches 0.",
+      "canonicalAnswer": "1/2. Both numerator and denominator go to 0, so differentiate twice: (e^x - 1)/(2x), still 0/0, then e^x/2 which tends to 1/2.",
+      "explanation": "Two applications are needed because the numerator vanishes to second order. The series route is quicker and less error-prone: e^x - 1 - x = x^2/2 + x^3/6 + ..., so dividing by x^2 leaves 1/2 plus terms that vanish. That is generally true — for limits at a point where you know the expansions, series beat L'Hopital, which requires re-checking the indeterminate form at each step and can loop forever on some problems. Reach for L'Hopital when no expansion is handy, and always verify the form really is 0/0 or infinity/infinity before applying it.",
+      "technique": "L'Hopital versus series expansion",
+      "difficultyRationale": "Two applications of the rule, with the series alternative as the better method."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the chain rule for a function of several variables, and where does it appear in option Greeks?",
+      "canonicalAnswer": "df/dt = (df/dx)(dx/dt) + (df/dy)(dy/dt) — the total derivative sums the contributions through each variable. In Greeks it is what lets you compute the sensitivity of a portfolio to an underlying factor that moves several inputs at once.",
+      "explanation": "The clearest financial instance is a hedged position whose value depends on spot and on implied volatility, both of which move together: the total P&L is delta times the spot move plus vega times the vol move, plus the second-order terms. The chain rule is also how you convert between sensitivities — for example turning a sensitivity to a bond price into one to its yield requires multiplying by dP/dy, which is where DV01 comes from. And it is what makes 'shadow' Greeks meaningful: a shadow delta accounts for the fact that the vol surface moves when spot moves, adding a vega times dvol/dspot term to the plain delta.",
+      "technique": "Multivariate chain rule",
+      "difficultyRationale": "Requires the total-derivative form and a concrete application to sensitivity conversion."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you differentiate under an integral sign, and why is it useful?",
+      "canonicalAnswer": "Leibniz's rule: for fixed limits, d/dt of the integral of f(x,t)dx equals the integral of df/dt dx, subject to regularity conditions. It is useful because it turns a hard integral into an easier one by introducing and then eliminating a parameter.",
+      "explanation": "The technique — sometimes called Feynman's trick — is to embed the integral you want in a family indexed by a parameter, differentiate with respect to that parameter to get something tractable, integrate back, and set the parameter to recover the original. In finance the direct application is computing Greeks: vega is the derivative of an expectation with respect to volatility, and moving the derivative inside the expectation gives the pathwise estimator, which converges far faster in Monte Carlo than bumping the input and re-simulating. When the payoff is not differentiable — a digital, for instance — the derivative cannot be taken inside and you need the likelihood ratio method instead.",
+      "technique": "Leibniz rule and pathwise derivatives",
+      "difficultyRationale": "Requires the rule plus its Monte Carlo application and the case where it fails."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does a Lagrange multiplier represent, beyond being a device for solving constrained optimisation?",
+      "canonicalAnswer": "It is the shadow price: the rate of change of the optimal objective value with respect to relaxing the constraint by one unit.",
+      "explanation": "That interpretation is what makes the multiplier worth reporting rather than discarding. In portfolio optimisation with a budget constraint, the multiplier tells you what an extra unit of capital would be worth; with a risk constraint, it tells you the marginal return available per unit of additional risk — which is exactly the information needed to decide whether the limit should be raised. The mechanics follow the envelope theorem: at the optimum, the indirect effects through the choice variables vanish, so only the direct effect of loosening the constraint remains. In a risk system the multipliers on binding limits are often more actionable than the optimal weights themselves.",
+      "technique": "Shadow price interpretation of multipliers",
+      "difficultyRationale": "Requires going beyond the mechanical use to the economic reading."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Minimise w'Sigma*w subject to w'1 = 1 using Lagrange multipliers, and state the solution.",
+      "canonicalAnswer": "Form L = w'Sigma*w - lambda(w'1 - 1). Setting the gradient to zero gives 2*Sigma*w = lambda*1, so w is proportional to Sigma^{-1}*1, and normalising gives w = Sigma^{-1}1 / (1'Sigma^{-1}1). That is the minimum variance portfolio.",
+      "explanation": "The gradient of the quadratic form is 2*Sigma*w, which is the only step requiring care. The solution says the minimum variance weights are the inverse covariance matrix applied to a vector of ones, rescaled to sum to one — so assets that are highly correlated with everything else get small or negative weights. Two observations follow directly. No expected returns appear, which is why the portfolio is popular when returns are hard to estimate. And it depends on the INVERSE covariance matrix, so it inherits all the conditioning problems: a near-singular Sigma produces extreme weights, which is why the practical version adds constraints or shrinkage.",
+      "technique": "Constrained quadratic optimisation",
+      "difficultyRationale": "Requires the matrix gradient and normalisation, then reading the properties off the result."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the gradient of a scalar function, and what does it tell you geometrically?",
+      "canonicalAnswer": "The vector of partial derivatives. It points in the direction of steepest increase, its magnitude is the rate of increase in that direction, and it is perpendicular to the level sets of the function.",
+      "explanation": "The perpendicularity to level sets is the fact that makes constrained optimisation work: at a constrained optimum the objective's gradient must be parallel to the constraint's gradient, since any component along the constraint surface could be exploited to improve — and that parallelism is exactly what the Lagrange condition states. Gradient descent follows the negative gradient, and its slow convergence on ill-conditioned problems is the same condition-number issue that appears in matrix inversion: the contours are elongated ellipses and the steepest direction points across the valley rather than along it.",
+      "technique": "Gradients and level sets",
+      "difficultyRationale": "Requires the geometric properties and their link to the Lagrange condition."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the Hessian, and how do you use it to classify a stationary point of a function of two variables?",
+      "canonicalAnswer": "The matrix of second partial derivatives. At a stationary point: positive definite Hessian means a local minimum, negative definite a local maximum, and indefinite (eigenvalues of both signs) a saddle point.",
+      "explanation": "For two variables the test reduces to the determinant and the top-left entry: determinant positive with f_xx > 0 gives a minimum, determinant positive with f_xx < 0 gives a maximum, and determinant negative gives a saddle regardless. Determinant zero is inconclusive and needs higher-order analysis. This is the multivariate second-derivative test and it is Sylvester's criterion again. It also connects to optimisation practice: Newton's method uses the inverse Hessian to choose a step, which is fast near an optimum and unreliable far from it, precisely because the Hessian may not be positive definite there.",
+      "technique": "Hessian classification of stationary points",
+      "difficultyRationale": "Requires the definiteness conditions and the 2x2 shortcut."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Approximate the value of a call option's price change using a second-order Taylor expansion in the underlying, and name the terms.",
+      "canonicalAnswer": "dC = delta*dS + 0.5*gamma*(dS)^2 + higher order. Delta is the first derivative with respect to spot, gamma the second.",
+      "explanation": "This is a Taylor series with financial names attached, and the full version adds terms in the other variables: theta*dt for time, vega*dsigma for volatility, plus cross terms such as vanna (the sensitivity of delta to volatility) and volga. The reason the second-order term matters so much more here than in most applications is that options desks hedge away the first-order term deliberately — a delta-hedged book has no delta, so gamma becomes the leading term rather than a correction. That is also why delta-gamma VaR exists as a distinct method and why pure delta-normal VaR reports nothing for a delta-neutral options book.",
+      "technique": "Taylor expansion as the Greeks",
+      "difficultyRationale": "Requires seeing that hedging away the first-order term promotes the second."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between a Taylor series and a Taylor polynomial with remainder, and why does the distinction matter?",
+      "canonicalAnswer": "A Taylor series is an infinite sum that may or may not converge to the function; a Taylor polynomial with remainder is a finite, exact statement — f(x) equals the polynomial plus a remainder term you can bound. The distinction matters because it tells you how large an error you are making.",
+      "explanation": "Lagrange's form of the remainder is f^{(n+1)}(c)*(x-a)^{n+1}/(n+1)! for some c between a and x, so bounding the (n+1)-th derivative bounds the error. Without it, truncating a series is a hope rather than an estimate. The distinction also matters because a function can have a Taylor series that converges to the WRONG thing: e^{-1/x^2} extended by zero has every derivative zero at the origin, so its Taylor series is identically zero while the function is not. In practice the remainder is what tells you a two-term expansion of ln(1+x) is fine at x = 0.02 and useless at x = 0.5.",
+      "technique": "Taylor's theorem with remainder",
+      "difficultyRationale": "Requires the remainder form and a case where the series fails entirely."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Compute the derivative of the standard normal CDF, and use it to write vega for a call in terms of N'(d1).",
+      "canonicalAnswer": "N'(x) = phi(x) = e^{-x^2/2}/sqrt(2*pi), the standard normal density. Vega for a Black-Scholes call is S*phi(d1)*sqrt(T).",
+      "explanation": "The CDF is the integral of the density, so by the fundamental theorem of calculus its derivative is the density itself. Vega then follows from differentiating the Black-Scholes formula with respect to sigma, where most terms cancel through a well-known identity — S*phi(d1) equals K*e^{-rT}*phi(d2) — leaving the clean single-term result. Two readings: vega is always positive for both calls and puts, since phi is positive, and it is maximised near the money and grows with sqrt(T), which is why long-dated at-the-money options are the natural instrument for taking a volatility view.",
+      "technique": "Differentiating the normal CDF; Black-Scholes vega",
+      "difficultyRationale": "Requires the fundamental theorem plus knowing the cancellation that makes vega a single term."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "For small x, which approximation is NOT correct to first order?",
+      "options": [
+        "(1+x)^n ~= 1 + n*x + x^2",
+        "e^x ~= 1 + x",
+        "ln(1+x) ~= x",
+        "1/(1-x) ~= 1 + x"
+      ],
+      "correctOption": 0,
+      "explanation": "The binomial approximation is (1+x)^n ~= 1 + n*x to first order; the stray x^2 term is both unmotivated and wrong, since the correct second-order term is n(n-1)x^2/2. The other three are the standard first-order expansions worth having automatic. They are used constantly: ln(1+r) ~= r converts between simple and log returns for small moves, 1/(1-x) ~= 1 + x is the basis of quick discount-factor arithmetic, and (1+x)^n ~= 1 + nx underlies the rule that a portfolio's return is approximately the weighted sum of its holdings' returns.",
+      "technique": "First-order approximations",
+      "difficultyRationale": "Requires knowing all four standard expansions well enough to spot the corrupted one."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Show that the arithmetic mean of positive numbers is at least their geometric mean, using calculus.",
+      "canonicalAnswer": "Since ln is concave, Jensen's inequality gives ln((x_1 + ... + x_n)/n) >= (ln x_1 + ... + ln x_n)/n = ln((x_1 * ... * x_n)^{1/n}). Exponentiating both sides, since exp is increasing, gives AM >= GM.",
+      "explanation": "The concavity of ln is verified by its second derivative, -1/x^2, which is negative for positive x. Jensen for a concave function reverses the usual direction, giving the log of the average at least the average of the logs. Equality holds only when all the numbers are equal, which follows from ln being strictly concave. The finance reading is direct: the geometric mean is what an investor actually earns over multiple periods and the arithmetic mean is what a naive average reports, so AM >= GM is the statement that reported average returns always flatter the realised outcome, with the gap growing with volatility.",
+      "technique": "AM-GM via Jensen",
+      "difficultyRationale": "Requires choosing the right function, getting the concavity direction correct, and the finance interpretation."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain continuous compounding: why does e appear, and how do you convert between a continuously compounded rate and an annually compounded one?",
+      "canonicalAnswer": "Compounding m times a year at rate r gives (1 + r/m)^m, which converges to e^r as m grows — that limit is the definition of e^r. To convert, e^{r_c} = 1 + r_a, so r_c = ln(1 + r_a) and r_a = e^{r_c} - 1.",
+      "explanation": "The limit (1 + r/m)^m tending to e^r is the origin of e in finance and is worth being able to state. The conversion shows continuously compounded rates are always slightly LOWER than the equivalent annual rate — 5% annual is 4.879% continuous — because more frequent compounding does more work. Continuous compounding is preferred in quantitative work for a specific reason: rates add across periods, so an n-period rate is just the sum, whereas annually compounded rates must be multiplied through (1+r). That additivity is the same property that makes log returns the right unit for time-series modelling.",
+      "technique": "Continuous compounding and rate conversion",
+      "difficultyRationale": "Requires the limit, the conversion in both directions, and the reason for the convention."
+    },
+    {
+      "topicId": "calculus-methods",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A quantity grows at 3% a year. Use a linear approximation to estimate how much it grows over 7 years, and compare with the exact figure.",
+      "canonicalAnswer": "The linear estimate is 7 x 3% = 21%. The exact figure is 1.03^7 - 1 = 22.99%, so the approximation understates by about 2 percentage points.",
+      "explanation": "The approximation (1+r)^n ~= 1 + nr ignores the compounding of the compounding, and the error grows with both r and n — at 10% over 20 years the linear estimate of 200% is far below the true 573%. A better quick estimate uses logs: n*ln(1.03) = 7(0.02956) = 0.2069, and e^{0.2069} = 1.2299, recovering the exact answer. The rule of 72 is the same arithmetic packaged for doubling times. Knowing when the linear version is adequate — small rate, few periods — and when it is not is the practical skill here.",
+      "technique": "Linear approximation and its error growth",
+      "difficultyRationale": "Requires the comparison and a sense of when the approximation breaks down."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "State the three axioms of probability.",
+      "canonicalAnswer": "Non-negativity: P(A) >= 0 for every event. Normalisation: P(sample space) = 1. Countable additivity: for disjoint events, the probability of their union is the sum of their probabilities.",
+      "explanation": "Everything else is derived from these three, which is worth knowing because it means results like P(not A) = 1 - P(A) and the inclusion-exclusion formula are theorems rather than separate rules. The additivity axiom is the one that carries a condition — DISJOINT events — and almost every elementary error comes from applying it to overlapping ones. Note the axioms say nothing about what probability MEANS; frequentist and Bayesian interpretations both satisfy them, which is why the mathematics is uncontroversial while its interpretation is not.",
+      "technique": "Kolmogorov axioms",
+      "difficultyRationale": "Recall of three statements, with the disjointness condition as the operative detail."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two events have P(A) = 0.6 and P(B) = 0.5. What are the possible values of P(A and B)?",
+      "canonicalAnswer": "Between 0.1 and 0.5. The maximum is min(0.6, 0.5) = 0.5, when B is contained in A. The minimum is P(A) + P(B) - 1 = 0.1, since the union cannot exceed 1.",
+      "explanation": "The upper bound is obvious — the intersection cannot be larger than either event. The lower bound is the Frechet bound and comes from P(A or B) = P(A) + P(B) - P(A and B) <= 1. If the events were independent the intersection would be 0.30, which sits comfortably inside the range and reminds you that independence is a specific assumption rather than a default. These bounds are the elementary case of the Frechet-Hoeffding copula bounds, which say the same thing for full joint distributions.",
+      "technique": "Frechet bounds on a joint probability",
+      "difficultyRationale": "Two bounds, one of which requires the union constraint."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Events A and B are mutually exclusive with positive probabilities. Are they independent?",
+      "options": [
+        "No — mutually exclusive events with positive probability are always dependent",
+        "Yes, mutual exclusivity implies independence",
+        "Only if P(A) = P(B)",
+        "It cannot be determined"
+      ],
+      "correctOption": 0,
+      "explanation": "Mutually exclusive means P(A and B) = 0, while independence requires P(A and B) = P(A)P(B), which is strictly positive here — so the two conditions are incompatible. Intuitively, knowing A occurred tells you B definitely did not, which is maximal information, the opposite of independence. Confusing the two terms is one of the most common errors in elementary probability, and it is worth fixing the mental model: mutually exclusive events are strongly NEGATIVELY dependent.",
+      "technique": "Mutual exclusivity versus independence",
+      "difficultyRationale": "One comparison of definitions, resolving a very common confusion."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the law of total probability and the law of total expectation, and say how they are used.",
+      "canonicalAnswer": "For a partition B_1..B_n: P(A) = sum of P(A|B_i)P(B_i), and E[X] = sum of E[X|B_i]P(B_i), which is also written E[X] = E[E[X|Y]]. Both are used to break an intractable problem into cases you can handle.",
+      "explanation": "Conditioning is the single most useful move in probability, and these two identities are what license it. The tower property E[X] = E[E[X|Y]] is the more powerful form because Y can be anything — the first step, the number of successes, an unobserved regime. Two standard applications: computing an expectation by conditioning on the first step, which is how every recursive-states problem is set up, and mixture distributions, where conditioning on the component recovers the mixture's moments. The companion identity for variance, Var(X) = E[Var(X|Y)] + Var(E[X|Y]), decomposes uncertainty into within-group and between-group parts and is worth knowing alongside.",
+      "technique": "Conditioning identities",
+      "difficultyRationale": "Requires both laws, the tower form, and the variance decomposition."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the law of total variance and interpret each term.",
+      "canonicalAnswer": "Var(X) = E[Var(X|Y)] + Var(E[X|Y]). The first term is the average within-group variance; the second is the variance of the group means — within-group and between-group variation.",
+      "explanation": "It is the probabilistic version of the ANOVA decomposition, and it is genuinely useful for reasoning about risk. Applied to returns conditioned on a volatility regime, the first term is the average variance within regimes and the second captures how much variance comes from regimes differing — which is precisely why a mixture of two normals is fat-tailed even though neither component is. It also gives an immediate proof that conditioning reduces expected variance: E[Var(X|Y)] <= Var(X), so more information never increases your average remaining uncertainty, though it can increase it for a particular outcome.",
+      "technique": "Variance decomposition by conditioning",
+      "difficultyRationale": "Requires the formula and an interpretation of both terms."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are offered a bet: win £100 with probability 0.5, lose £90 with probability 0.5. The expected value is positive. Should you take it?",
+      "canonicalAnswer": "It depends on size relative to your wealth and on whether the bet is repeatable. The expected value is +£5, but a single bet risking a large fraction of your capital can be worth declining, and repeated at full size it can lead to ruin despite the positive edge.",
+      "explanation": "Expected value is the right criterion only when the stake is small relative to wealth and the bet is repeated many times, so the law of large numbers applies. For large stakes, expected UTILITY is the relevant object, and for a concave utility the certainty equivalent of this bet can be negative. The Kelly framing makes it concrete: with a 5.3% edge on a near-even-money bet the optimal fraction of wealth to risk is small, and betting a large fraction repeatedly produces a growth rate that is negative even though the expected value per bet is positive. That gap between expected value and expected log wealth is why 'positive EV' is a necessary rather than sufficient condition.",
+      "technique": "Expected value versus expected utility and growth",
+      "difficultyRationale": "Requires knowing that a positive expectation is not by itself decisive, and why."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is inclusion-exclusion, and use it to find the probability that at least one of three events occurs.",
+      "canonicalAnswer": "P(A or B or C) = P(A) + P(B) + P(C) - P(AB) - P(AC) - P(BC) + P(ABC). Add the singles, subtract the pairs, add back the triple.",
+      "explanation": "The alternating pattern corrects for over- and under-counting: adding the three singles counts each pairwise overlap twice, so subtract them, but that removes the triple overlap once too often, so add it back. The general form alternates signs across all subset sizes. It is the tool for 'at least one' problems where the events are not disjoint and complementary counting is awkward — the classic being the derangement problem, where the probability that no letter goes in the right envelope comes out at 1/e. For many events the formula becomes unwieldy, and the Bonferroni inequalities, which truncate it, give usable bounds instead.",
+      "technique": "Inclusion-exclusion",
+      "difficultyRationale": "Requires the three-event form and the counting rationale for the alternating signs."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define independence for three events, and give an example showing pairwise independence is not enough.",
+      "canonicalAnswer": "Mutual independence requires every subset to factorise, including P(ABC) = P(A)P(B)P(C), not just the pairs. Example: flip two fair coins, and let A = first is heads, B = second is heads, C = the two match. Each pair is independent, but P(ABC) = 1/4 while P(A)P(B)P(C) = 1/8.",
+      "explanation": "The example is worth memorising because it is the standard counterexample and it is easy to reconstruct: any two of the three events tell you nothing about each other, but any two together determine the third completely. That is why the definition demands ALL subsets factorise rather than just pairs. The practical relevance is that pairwise correlation checks — which is what a correlation matrix contains — cannot establish that a set of risk factors is jointly independent, so a portfolio can look well diversified pairwise and still have a hidden three-way dependence.",
+      "technique": "Mutual versus pairwise independence",
+      "difficultyRationale": "Requires the full definition and a constructed counterexample."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A fair coin is flipped 100 times. Roughly how likely is it that heads exceeds 60?",
+      "canonicalAnswer": "About 2.5%. The count is approximately normal with mean 50 and standard deviation sqrt(100 x 0.25) = 5, so 60 is two standard deviations above the mean, giving roughly 2.5% in the upper tail.",
+      "explanation": "The binomial standard deviation sqrt(npq) is the number to have automatic: with n = 100 and p = 0.5 it is exactly 5, which makes this kind of estimate instant. The normal approximation is excellent here since np and n(1-p) both comfortably exceed 10. Applying a continuity correction — using 60.5 rather than 60 — gives 2.1%, and the exact binomial answer is 1.8%, so the crude estimate is the right order and slightly high. The same arithmetic answers backtesting questions: exceptions in a VaR backtest are binomial, and this is how you judge whether a count is surprising.",
+      "technique": "Normal approximation to the binomial",
+      "difficultyRationale": "Requires sqrt(npq) and a tail probability from the 68-95-99.7 rule."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between a probability mass function, a probability density function, and a cumulative distribution function?",
+      "canonicalAnswer": "A PMF gives P(X = x) for a discrete variable. A PDF is the derivative of the CDF for a continuous variable, and is NOT a probability — only its integral over an interval is. The CDF gives P(X <= x) and exists for both types.",
+      "explanation": "The CDF is the most general object, always defined and always non-decreasing from 0 to 1, which is why theory is often stated in terms of it. The key trap is treating a density as a probability: a density can exceed 1 — a uniform on [0, 0.5] has density 2 everywhere — and P(X = x) is exactly zero for any continuous variable. That is why, for continuous distributions, strict and non-strict inequalities give the same probability, while for discrete ones they do not. Mixed distributions, common in finance where a payoff has an atom at zero, need the CDF because neither a pure PMF nor a pure PDF describes them.",
+      "technique": "PMF, PDF and CDF",
+      "difficultyRationale": "Requires the density-is-not-a-probability point and the mixed-distribution case."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you compute the variance of a sum of two random variables, and when does the simple version apply?",
+      "canonicalAnswer": "Var(X + Y) = Var(X) + Var(Y) + 2*Cov(X,Y). The covariance term vanishes when X and Y are uncorrelated, which independence implies but does not require.",
+      "explanation": "The distinction in the last clause matters: uncorrelatedness is sufficient for variances to add, and it is strictly weaker than independence. Note also the sign convention people get wrong — for a DIFFERENCE, Var(X - Y) = Var(X) + Var(Y) - 2Cov(X,Y), so subtracting a positively correlated variable reduces variance, which is the whole basis of hedging. In n dimensions the same identity is w'Sigma*w, and that is why portfolio variance is a quadratic form rather than a weighted sum.",
+      "technique": "Variance of a sum",
+      "difficultyRationale": "Requires the covariance term, the correct condition for dropping it, and the sign for differences."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You place two independent bets, each winning £10 with probability 0.5 and losing £10 otherwise. Compare the expected value and standard deviation of one bet versus two.",
+      "canonicalAnswer": "Expected value is £0 for both. One bet has standard deviation £10; two independent bets have variance 100 + 100 = 200, so standard deviation £14.14 — up by sqrt(2), not by 2.",
+      "explanation": "This is the sqrt(n) scaling in its simplest form, and the ratio is what matters: total risk grew by 41% while the number of bets doubled, so risk PER BET fell from £10 to £7.07. That is diversification stated without any correlation machinery. The same arithmetic explains why a portfolio of many small positions is safer than one large one of the same total size, why volatility scales with the square root of time, and why a casino with many small bets faces almost no risk despite each individual bet being uncertain.",
+      "technique": "Independent risks add in quadrature",
+      "difficultyRationale": "One variance sum, with the per-bet interpretation as the substance."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean for an expectation to be infinite or undefined? Give an example of each.",
+      "canonicalAnswer": "Infinite: the integral or sum diverges to infinity, as for a Pareto with tail index below 1, or the St Petersburg payoff. Undefined: both the positive and negative parts are infinite, so their difference has no value — the Cauchy distribution is the standard example.",
+      "explanation": "The distinction matters because an infinite expectation is at least a definite statement, whereas an undefined one means the sample mean does not converge to anything at all. Sample means from a Cauchy distribution wander forever, and the mean of n observations has the same distribution as a single one — so more data does not help. In finance this is not purely theoretical: fitted tail indices below 2 imply infinite variance and below 1 imply infinite mean, which invalidates variance-based risk measures entirely for such tails, and is one reason expected shortfall is preferred where it exists.",
+      "technique": "Divergent and undefined expectations",
+      "difficultyRationale": "Requires distinguishing two failure modes and knowing why the Cauchy case is worse."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a moment generating function, and what two things is it good for?",
+      "canonicalAnswer": "M(t) = E[e^{tX}]. It generates moments — the n-th derivative at zero gives E[X^n] — and it uniquely determines the distribution, so the MGF of a sum of independent variables is the product of their MGFs.",
+      "explanation": "The product property is the more useful of the two: it turns convolution, which is hard, into multiplication, which is easy, and it is the standard route to results like 'the sum of independent normals is normal' or 'the sum of independent Poissons is Poisson'. Differentiating at zero recovers moments because the exponential's series expansion has E[X^n]t^n/n! as its terms. The limitation is that the MGF need not exist — a lognormal has no MGF for positive t, since the integral diverges — which is why the characteristic function E[e^{itX}], always defined, is used in serious work and is what underlies Fourier-based option pricing.",
+      "technique": "Moment generating functions",
+      "difficultyRationale": "Requires both uses and the existence caveat that motivates characteristic functions."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Which statement about correlation and causation is most defensible?",
+      "options": [
+        "Correlation is evidence consistent with causation, but equally with confounding or reverse causation",
+        "Correlation never provides any evidence about causation",
+        "A strong enough correlation does establish causation",
+        "Causation implies correlation, so correlation implies causation"
+      ],
+      "correctOption": 0,
+      "explanation": "The slogan 'correlation does not imply causation' is right but often overstated into option 2, which is too strong — correlation is genuine evidence, it just does not discriminate between several explanations. The alternatives to a causal link are a common cause (confounding), reverse causation, and selection effects. Note also that causation does NOT reliably imply correlation, since a causal relationship can be non-monotone and produce zero linear correlation. Establishing causation needs an intervention, a natural experiment, or an identifying assumption — which is exactly why backtests, being purely observational, support such weak causal conclusions.",
+      "technique": "Correlation and causal inference",
+      "difficultyRationale": "Requires avoiding both the naive and the overcorrected position."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A test for a rare event is 99% accurate in both directions and the event has a 1-in-10,000 base rate. What fraction of positive results are correct, and what does it take to make the test useful?",
+      "canonicalAnswer": "About 1%. Out of a million: 100 true cases give 99 true positives, while 999,900 non-cases give about 9,999 false positives — so 99 of 10,098 positives are real, under 1%. To be useful, either the base rate must be raised by screening a targeted population, or the false positive rate must fall by orders of magnitude.",
+      "explanation": "The arithmetic makes the design lesson concrete: with a base rate of 10^-4, a 1% false positive rate produces a hundred times more false than true positives, so accuracy in the usual sense is nearly irrelevant. The two levers are both about ratios rather than accuracy. Raising the prior — testing a population where the event is 1 in 100 rather than 1 in 10,000 — moves the precision to about 50%. Or cut the false positive rate to 0.01%, which usually means a second independent test, and the sequential application is why real screening programmes are multi-stage. The same reasoning applies to fraud detection and to any trading signal with a low hit rate.",
+      "technique": "Base rates and the precision of a rare-event test",
+      "difficultyRationale": "Requires the natural-frequency computation and the design implications of the two levers."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a sufficient statistic, and why is the concept useful?",
+      "canonicalAnswer": "A statistic T(X) is sufficient for a parameter if the conditional distribution of the data given T does not depend on the parameter — T captures everything the data says about it. It is useful because it lets you reduce a large dataset to a few numbers with no loss of information about the parameter.",
+      "explanation": "The factorisation theorem is the practical test: if the likelihood factors as g(T(x), theta) times h(x), then T is sufficient. For a normal sample the sample mean and sample variance are jointly sufficient for the mean and variance, so a thousand observations reduce to two numbers with nothing lost. The concept also explains why certain estimators are natural: the Rao-Blackwell theorem says conditioning any estimator on a sufficient statistic never makes it worse, so good estimators are functions of sufficient statistics. The caveat is that sufficiency is relative to an assumed MODEL — the sample mean is sufficient for a normal's mean and is not sufficient if the distribution is Cauchy.",
+      "technique": "Sufficiency and the factorisation theorem",
+      "difficultyRationale": "Requires the definition, the practical test, and the model-dependence caveat."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "State the multiplication rule for three events.",
+      "canonicalAnswer": "P(A and B and C) = P(A) * P(B|A) * P(C|A and B) — build up the joint probability one event at a time, conditioning on everything already assumed.",
+      "explanation": "The chain rule is just the definition of conditional probability applied repeatedly, and it is the workhorse for sequential problems. The order is free: you can condition in whichever sequence makes the probabilities easiest to write down, which is often the difference between a one-line solution and a page of casework. Worked example: the probability three cards dealt from a deck are all aces is (4/52)(3/51)(2/50) = 1/5525, where each factor conditions on the previous draws having succeeded.",
+      "technique": "Chain rule for probabilities",
+      "difficultyRationale": "One identity, with the freedom to choose the conditioning order as the useful point."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "P(A|B) = 0.9. What does that tell you about P(B|A)?",
+      "options": [
+        "Nothing without knowing P(A) and P(B)",
+        "It is also 0.9",
+        "It is at least 0.5",
+        "It is 0.1"
+      ],
+      "correctOption": 0,
+      "explanation": "The two are related by Bayes' theorem, P(B|A) = P(A|B)P(B)/P(A), so the base rates entirely determine the answer — P(B|A) can be anywhere in (0,1]. Concretely: almost everyone with a rare disease tests positive, but almost nobody who tests positive has the disease. Treating the two as interchangeable is the prosecutor's fallacy, and it is the single most consequential error in applied probability, appearing in courtrooms, medical screening and model validation alike.",
+      "technique": "Conditional probabilities are not symmetric",
+      "difficultyRationale": "One asymmetry, with the intuitive symmetric answer as the lead distractor."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is conditional expectation E[X|Y], and why is it described as a random variable?",
+      "canonicalAnswer": "It is the expected value of X given the value of Y. Because Y is random, the value of E[X|Y] depends on which value Y takes, so E[X|Y] is itself a random variable — a function of Y.",
+      "explanation": "The distinction between E[X|Y = y], a number, and E[X|Y], a random variable, is what makes the tower property E[E[X|Y]] = E[X] meaningful — you are averaging a random variable, not a constant. The deeper characterisation is that E[X|Y] is the best predictor of X given Y in the mean-squared sense, which links it directly to regression: a linear regression estimates E[X|Y] under the assumption that the relationship is linear. In finance the same object appears as a conditional forecast — tomorrow's expected return given today's information is a random variable because today's information is itself random from yesterday's viewpoint.",
+      "technique": "Conditional expectation as a random variable",
+      "difficultyRationale": "Requires the subtle distinction and its link to prediction."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two dice are rolled and you are told the sum is 8. What is the probability that at least one die shows a 5?",
+      "canonicalAnswer": "2/5. The ordered pairs summing to 8 are (2,6), (3,5), (4,4), (5,3), (6,2) — five equally likely outcomes — and two of them contain a 5.",
+      "explanation": "Conditioning restricts the sample space to the five ordered pairs summing to 8, which remain equally likely because each was equally likely to begin with. Of these, (3,5) and (5,3) contain a 5, so the answer is 2/5. Two traps. The pairs must be ORDERED — treating {3,5} as one outcome and {4,4} as another of equal weight gives the wrong answer, because (4,4) can occur only one way while 3-and-5 can occur two. And the unconditional probability of at least one 5 is 11/36, quite different, which is the point of the exercise: conditioning changes both the numerator and the denominator.",
+      "technique": "Restricting the sample space under a condition",
+      "difficultyRationale": "Requires correct enumeration of ordered outcomes within the conditioned set."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between P(A|B) and P(A, B), and when are they close?",
+      "canonicalAnswer": "P(A,B) is the probability BOTH occur; P(A|B) is the probability A occurs given B has. They differ by a factor of P(B): P(A,B) = P(A|B)P(B). They are close only when P(B) is close to 1.",
+      "explanation": "The joint probability is always the smaller of the two, and dramatically so when the conditioning event is rare. This is the error behind most misread risk reports: 'the probability of a default given a recession is 30%' and 'the probability of a recession and a default is 30%' are different claims by a factor of however likely a recession is. In a stress-testing context the distinction is the whole point — stress results are CONDITIONAL losses, and multiplying them by an unstated scenario probability to get a joint figure is exactly the step the framework deliberately avoids.",
+      "technique": "Joint versus conditional probability",
+      "difficultyRationale": "Requires the factor relating them and a case where confusing them changes a conclusion."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A coin is either fair or two-headed, with prior 50/50. You flip 5 heads in a row. What is the posterior, and how many heads would you need to reach 99% confidence?",
+      "canonicalAnswer": "After 5 heads the posterior on the two-headed coin is 32/33 = 0.970. To exceed 99% you need P(two-headed) = 2^n/(2^n + 1) > 0.99, so 2^n > 99 and n = 7 flips.",
+      "explanation": "Each head multiplies the odds in favour of the two-headed coin by the likelihood ratio 1/(1/2) = 2, so after n heads the odds are 2^n to 1. Five heads gives 32:1, or 32/33 = 97%. Seven gives 128:1, comfortably past 99%. Working in ODDS rather than probabilities is what makes this a mental calculation — each piece of independent evidence multiplies the odds, and you convert back only at the end. Note also how fast the evidence accumulates: a modest likelihood ratio applied repeatedly produces near-certainty quickly, which is the same arithmetic that makes sequential testing efficient.",
+      "technique": "Sequential Bayesian updating in odds form",
+      "difficultyRationale": "Requires the odds formulation and inverting it to find the required sample size."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain why conditioning on a collider can create a spurious association between two independent variables.",
+      "canonicalAnswer": "If two independent causes both affect a third variable, conditioning on that third variable makes the causes dependent — learning one explains away the need for the other.",
+      "explanation": "Concretely: suppose talent and luck independently determine whether a fund succeeds. Among successful funds only, talent and luck are negatively correlated, because a fund that succeeded without much luck must have had talent. Nothing about the underlying independence changed; the SELECTION created the association. This is why studying only surviving funds, only hired candidates, or only completed trades produces relationships that do not exist in the population — Berkson's paradox and survivorship bias are both instances. The practical rule is to be suspicious of any dataset defined by an outcome, and to ask what was conditioned on before interpreting a correlation within it.",
+      "technique": "Collider bias / explaining away",
+      "difficultyRationale": "Requires the causal structure and recognising selection as conditioning."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You know P(rain) = 0.3, P(umbrella | rain) = 0.9 and P(umbrella | no rain) = 0.2. What fraction of people carry umbrellas?",
+      "canonicalAnswer": "0.41. By the law of total probability: 0.9(0.3) + 0.2(0.7) = 0.27 + 0.14 = 0.41.",
+      "explanation": "The law of total probability averages the conditional probabilities weighted by how likely each condition is. It is the denominator of every Bayes calculation, which is why practising it separately is worthwhile. Running the update in the other direction as a check: P(rain | umbrella) = 0.27/0.41 = 0.66, so seeing an umbrella raises the probability of rain from 30% to 66% — a substantial but not decisive update, because a fifth of people carry umbrellas even without rain and there are more than twice as many dry days.",
+      "technique": "Law of total probability",
+      "difficultyRationale": "Two products and a sum, with the reverse update as the check."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean for two variables to be conditionally independent, and give a financial example.",
+      "canonicalAnswer": "X and Y are conditionally independent given Z if P(X, Y | Z) = P(X|Z)P(Y|Z) — once Z is known, X carries no further information about Y. Example: two firms' defaults may be dependent unconditionally but independent given the state of the economy.",
+      "explanation": "That example is exactly the structure of the one-factor credit model: conditional on the common factor, defaults are independent, which is what makes the large-portfolio loss distribution tractable and underpins the Basel IRB formula. The concept cuts both ways though — conditional independence is an ASSUMPTION, and if the common factor does not capture all the shared exposure (a supply chain link, a shared lender) the model will understate joint defaults. Note also that conditional independence neither implies nor is implied by unconditional independence; both directions have counterexamples.",
+      "technique": "Conditional independence",
+      "difficultyRationale": "Requires the definition, the credit-model application, and the failure mode."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You interview a candidate who says they have two coins, one fair. You ask them to flip a randomly chosen coin twice, getting two heads. They will not say whether the other coin is two-headed. What can you infer?",
+      "canonicalAnswer": "Very little without knowing the prior probability that the second coin is two-headed. If it is two-headed with probability p, the posterior after two heads is 4p/(3p + 1) — undefined without p.",
+      "explanation": "The point is that a Bayesian update requires a prior, and where the prior is genuinely unknown the posterior is not determined. With p = 0.5 the posterior is 2/3; with p = 0.01 it is 0.039. This is the practical limit of Bayesian reasoning and the standard objection to it — the answer depends on an input the data cannot supply. The defensible responses are to state the prior explicitly and test sensitivity to it, or to report the likelihood ratio alone (here 4:1 in favour of the trick coin), which is the evidence contributed by the data independent of any prior.",
+      "technique": "Reporting the likelihood ratio when the prior is unknown",
+      "difficultyRationale": "Tests whether the candidate identifies a missing input rather than assuming one."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a Poisson process with rate lambda, given that exactly one event occurred in [0, T], what is the distribution of its arrival time?",
+      "canonicalAnswer": "Uniform on [0, T]. Conditional on the count, the arrival times of a Poisson process are distributed as the order statistics of independent uniforms.",
+      "explanation": "The result follows from the memorylessness and independence of Poisson increments: P(arrival in [0,t] | exactly one in [0,T]) works out to t/T, with the lambda terms cancelling — which is why the rate does not appear in the answer. The general version is the one to carry: conditional on n events in [0,T], their times are distributed as n independent uniforms sorted into order. It is the standard route to simulating a Poisson process on a fixed window (draw the count, then scatter uniforms) and it is the reason a Poisson process is described as having 'completely random' arrival times.",
+      "technique": "Conditional uniformity of Poisson arrivals",
+      "difficultyRationale": "Requires the conditional result and its generalisation to n events."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A risk manager says \"given that we lose more than VaR, the average loss is 1.3 times VaR.\" What quantity is this, and what does the 1.3 depend on?",
+      "canonicalAnswer": "It is the expected shortfall expressed as a multiple of VaR. The ratio depends on the tail shape: about 1.15 under normality at 99%, and larger for fatter tails — for a generalised Pareto tail it is roughly 1/(1 - xi) plus a term in the threshold.",
+      "explanation": "The ratio is a direct read on tail heaviness, which is what makes it more informative than either number alone. Under a normal distribution at 99% the multiplier is fixed at about 1.15 by the shape of the Gaussian; a ratio of 1.3 therefore implies materially fatter tails than normal. Two practical notes. The ratio falls towards 1 as the confidence level rises for a thin-tailed distribution and stays elevated for a heavy-tailed one, so comparing it across confidence levels is diagnostic. And the estimate is based on the handful of observations beyond the quantile, so its standard error is large — treat it as an indication of tail shape rather than a precise figure.",
+      "technique": "ES/VaR ratio as a tail-shape diagnostic",
+      "difficultyRationale": "Requires identifying the quantity and knowing what determines the multiplier."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Three prisoners A, B and C know one will be pardoned. A asks the warden to name one of B or C who will be executed. The warden says B. Should A update?",
+      "canonicalAnswer": "No — A's probability of pardon stays at 1/3, while C's rises to 2/3. The warden was always going to name one of the other two, so the answer carries no information about A.",
+      "explanation": "This is Monty Hall in different clothing, and the key is the warden's protocol. Since the warden must name someone other than A who will be executed, hearing 'B' was inevitable in the case where A is pardoned (chosen with probability 1/2 between B and C), certain in the case where C is pardoned, and impossible if B is pardoned. Bayes gives P(A pardoned | says B) = (1/2)(1/3) / [(1/2)(1/3) + 1(1/3)] = (1/6)/(1/2) = 1/3. Everything hinges on the protocol: if the warden might have named the pardoned prisoner, the update is entirely different. The transferable lesson is that you must condition on HOW the information arrived, not just on its content.",
+      "technique": "Conditioning on the information-generating protocol",
+      "difficultyRationale": "Requires the full Bayes computation and identifying the protocol as the crux."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you use conditioning to compute the expected number of coin flips to get two heads in a row?",
+      "canonicalAnswer": "Define states by progress: E0 (no heads yet) and E1 (one head). E0 = 1 + 0.5*E1 + 0.5*E0 and E1 = 1 + 0.5*0 + 0.5*E0. Solving gives E0 = 6.",
+      "explanation": "From E1, the second equation gives E1 = 1 + E0/2. Substituting into the first: E0 = 1 + 0.5(1 + E0/2) + 0.5E0, so E0 = 1.5 + 0.75E0, giving 0.25E0 = 1.5 and E0 = 6. The state must capture PROGRESS towards the pattern, which is the whole modelling insight — knowing only the number of flips so far is not enough. The same construction handles any pattern once you define states by the length of the current matching prefix, and it reproduces the answer the martingale argument gives, which is 2^2 + 2^1 = 6.",
+      "technique": "State-based conditioning for pattern waiting times",
+      "difficultyRationale": "Requires choosing the right state variable, then solving two simultaneous equations."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "You observe that a trader has beaten the market for 10 consecutive years. Which additional fact would most change your assessment of their skill?",
+      "options": [
+        "How many traders were in the pool from which they were selected",
+        "The size of their average outperformance",
+        "Whether they use a systematic or discretionary process",
+        "Their educational background"
+      ],
+      "correctOption": 0,
+      "explanation": "Ten consecutive years happens by chance with probability about 1/1024 for any single trader with no skill — but in a population of 10,000 traders you would expect about ten such records purely by luck. So the selection process determines almost everything about how impressive the record is, and it is exactly the information that gets dropped when a track record is presented in isolation. This is the multiple-testing problem applied to people rather than strategies, and it is why 'how many did you look at' is the right first question about any remarkable result.",
+      "technique": "Conditioning on the selection process",
+      "difficultyRationale": "Requires identifying selection as the dominant consideration over the intuitive alternatives."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the inspection paradox, and give a financial example.",
+      "canonicalAnswer": "When you sample by observation rather than uniformly, you are more likely to land inside a long interval than a short one — so the sampled interval is longer than average. Financial example: a randomly selected DAY belongs to a long-lived position more often than to a short one, so positions observed on a random day appear longer-held than the average position.",
+      "explanation": "The mechanism is length-biased sampling: an interval of length L is L times more likely to contain your observation point than an interval of length 1. That is why the average wait for a bus exceeds half the average gap between buses, and why the average class size experienced by students exceeds the average class size. The financial versions are worth spotting: the average maturity of loans OUTSTANDING exceeds the average maturity at origination, and a survey of open positions overstates typical holding periods. The correction is to weight observations by the inverse of their length.",
+      "technique": "Length-biased sampling",
+      "difficultyRationale": "Requires the mechanism and translating it into a finance setting."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A model gives each loan a 2% default probability. Ten of your 100 loans default. Give two explanations before concluding the model is wrong.",
+      "canonicalAnswer": "The defaults may be correlated rather than independent, so the variance of the count is far larger than binomial and 10 is not extreme; or the loans may share an exposure the model conditions away, so the 2% was a conditional probability applied unconditionally.",
+      "explanation": "Under independence the count would be binomial with mean 2 and standard deviation 1.4, making 10 a six-sigma event — but loan defaults are strongly correlated through the economy, so the true distribution of the count is heavily right-skewed with a much fatter tail. A single common factor with modest loading is enough to make 10 defaults unremarkable. That is precisely why credit portfolio models are built around a common factor rather than independent draws, and why the Basel capital formula depends on an asset correlation parameter. Only after allowing for correlation is a calibration failure the leading explanation.",
+      "technique": "Correlation inflating the variance of a default count",
+      "difficultyRationale": "Requires recognising that the binomial assumption, not the probability, is the likely error."
+    },
+    {
+      "topicId": "conditional-probability",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You have two envelopes, one containing twice the other. You open one and find £100. Should you switch?",
+      "canonicalAnswer": "The naive argument says the other holds £50 or £200 with equal probability, giving an expected £125 — but that reasoning is flawed because it assumes a prior over amounts that cannot exist. With any proper prior, the answer depends on £100's position in it, and switching is not universally favourable.",
+      "explanation": "The naive calculation implicitly assumes that every pair (x, 2x) is equally likely across all scales, which is not a valid probability distribution — it cannot be normalised. Under any genuine prior there is some amount above which finding it makes the smaller-envelope hypothesis more likely, so the switching argument fails somewhere. The version WITHOUT opening the envelope is cleaner: by symmetry the two are exchangeable and switching is plainly pointless, which is the tell that the opened-envelope argument must contain an error. This is a good test of whether someone reasons through a paradox or applies expected value mechanically.",
+      "technique": "Improper priors and the two-envelope paradox",
+      "difficultyRationale": "Requires locating the flaw in a superficially valid expected-value computation."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "X is exponential with mean 5. What are P(X > 5) and the median?",
+      "canonicalAnswer": "P(X > 5) = e^{-1} = 0.368, and the median is 5*ln(2) = 3.47.",
+      "explanation": "For an exponential with mean 1/lambda, the survival function is e^{-lambda*x}, so at exactly the mean the survival probability is e^{-1} = 37% regardless of the rate. The median is always ln(2)/lambda, about 69% of the mean, so the distribution is right-skewed — most outcomes are below average and a few large ones pull the mean up. That gap between mean and median is the signature of every right-skewed distribution, and here it is a fixed ratio rather than something to compute.",
+      "technique": "Exponential survival function and median",
+      "difficultyRationale": "Two direct evaluations from the survival function."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which of these does NOT have the memoryless property?",
+      "options": [
+        "The uniform distribution on [0, 1]",
+        "The exponential distribution",
+        "The geometric distribution",
+        "None of these are memoryless"
+      ],
+      "correctOption": 0,
+      "explanation": "The exponential is the only memoryless continuous distribution and the geometric the only memoryless discrete one — those two are the complete list. The uniform is emphatically not: knowing you have already waited 0.9 into a unit interval tells you the remaining wait is at most 0.1. That contrast is the useful one, because memorylessness has a strong consequence — a constant hazard rate — and the uniform's hazard rate rises without bound as it approaches its upper limit.",
+      "technique": "Memorylessness",
+      "difficultyRationale": "Requires knowing the complete list of memoryless distributions."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a hazard rate, and what does a constant one imply?",
+      "canonicalAnswer": "h(t) = f(t)/(1 - F(t)) — the instantaneous rate of the event occurring, given it has not yet occurred. A constant hazard rate implies an exponential distribution and hence memorylessness.",
+      "explanation": "The hazard rate is often more interpretable than the density, because it answers the question actually being asked: given survival so far, how likely is failure now. An increasing hazard means ageing (a component wearing out), a decreasing one means burn-in (early failures weeded out), and a constant one means no ageing at all. In credit modelling the hazard rate is the default intensity, and the credit triangle s = h(1-R) links it directly to the observable spread. The bathtub curve — high, then flat, then rising — describes both machinery and, arguably, corporate default over the life of a bond.",
+      "technique": "Hazard rate and its shapes",
+      "difficultyRationale": "Requires the definition and the interpretation of increasing versus decreasing hazard."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you transform a uniform random variable into one with a specified distribution?",
+      "canonicalAnswer": "Inverse transform sampling: if U is uniform on [0,1] and F is the target CDF, then X = F^{-1}(U) has distribution F. The reverse also holds — F(X) is uniform for any continuous X, which is the probability integral transform.",
+      "explanation": "The proof is one line: P(F^{-1}(U) <= x) = P(U <= F(x)) = F(x). It is the standard method for simulating any distribution with an invertible CDF, and it is what generates the marginals when sampling from a copula. The probability integral transform in the other direction is equally useful: it is how you test a distributional assumption by checking that the transformed data is uniform, and how you convert data to uniform margins before fitting a copula. Where F has no closed-form inverse — the normal being the obvious case — you use a numerical approximation or a purpose-built method such as Box-Muller.",
+      "technique": "Inverse transform sampling",
+      "difficultyRationale": "Requires the transform, its one-line proof, and the reverse direction."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "If X is lognormal with parameters mu and sigma (of the underlying normal), what are its mean and variance?",
+      "canonicalAnswer": "E[X] = exp(mu + sigma^2/2) and Var(X) = exp(2mu + sigma^2)(exp(sigma^2) - 1). The median is exp(mu).",
+      "explanation": "The parameters mu and sigma describe the LOG, not the variable itself, which is the commonest source of confusion. The mean exceeds the median by the factor exp(sigma^2/2), which is Jensen's inequality applied to the exponential and is the same volatility drag that appears in the Ito correction. Two practical points: the distribution is strictly positive, which is why it models prices rather than returns; and its skewness grows rapidly with sigma, so at high volatility the mean sits far into the right tail and describes almost no actual outcome.",
+      "technique": "Lognormal moments",
+      "difficultyRationale": "Requires the correct parameterisation and the mean-median relationship."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the Student-t distribution, and why is it used in risk modelling?",
+      "canonicalAnswer": "A symmetric, bell-shaped distribution with heavier tails than the normal, indexed by degrees of freedom nu. It is used in risk modelling because financial returns have fatter tails than the normal, and t with nu around 3 to 6 fits daily equity returns far better.",
+      "explanation": "As nu grows the t converges to the normal; as it falls the tails thicken, and moments start to fail — the variance is infinite for nu <= 2 and the mean for nu <= 1. That makes the fitted nu a direct summary of tail heaviness. Its original role in inference is different: the t arises when estimating a mean with an estimated standard deviation, and the extra tail weight is exactly the penalty for that estimation. In risk work the multivariate t is more important still, because unlike the multivariate normal it has TAIL DEPENDENCE, so it produces simultaneous extreme moves across assets — the feature the Gaussian copula famously lacks.",
+      "technique": "Student-t for fat tails",
+      "difficultyRationale": "Requires the moment conditions and the multivariate tail-dependence point."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two independent normals X ~ N(2, 9) and Y ~ N(1, 16). What is the distribution of X - Y?",
+      "canonicalAnswer": "N(1, 25). Means subtract: 2 - 1 = 1. Variances ADD: 9 + 16 = 25, so the standard deviation is 5.",
+      "explanation": "The trap is the variance: subtracting a random variable adds its variance, because Var(-Y) = Var(Y). Only with correlation does a difference reduce variance, via the -2Cov term. The closure property is worth stating explicitly — any linear combination of jointly normal variables is normal, which is unusual and is a large part of why the normal dominates modelling. Note also that the notation here uses variance rather than standard deviation in the second slot, a convention worth confirming before answering any question of this kind.",
+      "technique": "Linear combinations of normals",
+      "difficultyRationale": "One computation, with the variance-adds-on-subtraction rule as the trap."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the relationship between the Poisson, exponential and gamma distributions?",
+      "canonicalAnswer": "In a Poisson process with rate lambda: the COUNT in a fixed interval is Poisson, the WAITING TIME to the next event is exponential, and the waiting time to the k-th event is gamma (Erlang) with shape k.",
+      "explanation": "They are three views of one process, which is why the connections are so clean. The gamma follows because the wait for k events is a sum of k independent exponentials, and sums of exponentials with the same rate are gamma-distributed. The link between the first two is the identity that no events in [0,t] is the same statement as the first arrival exceeding t, giving e^{-lambda t} both ways. In finance the process describes jump arrivals in a jump-diffusion model, defaults under a reduced-form intensity model, and order arrivals in microstructure work — and knowing which of the three descriptions to reach for usually decides how hard the calculation is.",
+      "technique": "The Poisson process family",
+      "difficultyRationale": "Requires all three relationships and the identity connecting count to waiting time."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How do you find the density of Y = g(X) from the density of X?",
+      "canonicalAnswer": "The change of variables formula: f_Y(y) = f_X(g^{-1}(y)) * |d g^{-1}/dy|. The Jacobian factor accounts for the transformation stretching or compressing the scale.",
+      "explanation": "The Jacobian is the part people forget, and dropping it produces a function that does not integrate to 1. Worked example: for Y = e^X with X normal, g^{-1}(y) = ln y and the derivative is 1/y, giving the lognormal density as the normal density evaluated at ln y divided by y. For non-monotone g the formula needs summing over all branches of the inverse — the density of X^2 for standard normal X, which is chi-squared with one degree of freedom, gets a contribution from both the positive and negative roots. The safest general route is to work with CDFs and differentiate at the end, which handles both cases automatically.",
+      "technique": "Change of variables for densities",
+      "difficultyRationale": "Requires the Jacobian and the multi-branch case."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a mixture distribution, and why does a mixture of two normals have fat tails?",
+      "canonicalAnswer": "A distribution formed by drawing from one of several component distributions according to given probabilities. A mixture of a low-volatility and a high-volatility normal has excess kurtosis because the high-volatility component contributes disproportionately to the extremes while the low-volatility one dominates the centre.",
+      "explanation": "The mechanism is the law of total variance: the mixture's variance includes a between-component term, and the shape is peaked in the middle and heavy in the tails compared with a single normal of the same total variance. That combination — more small moves and more very large moves than a normal — is exactly what daily return data shows, which is why mixtures are a natural model. It also gives a clean interpretation for regime-switching and stochastic volatility models: both are mixtures where the component is selected by an unobserved state, so the fat tails emerge from time-varying volatility rather than needing to be assumed.",
+      "technique": "Mixtures and excess kurtosis",
+      "difficultyRationale": "Requires explaining the shape mechanism, not just asserting fat tails."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What distribution does the ratio of two independent standard normals follow, and what is unusual about it?",
+      "canonicalAnswer": "Standard Cauchy. It is unusual because it has NO mean and no variance — the integrals defining them diverge — so the sample average of Cauchy draws does not converge and the law of large numbers fails.",
+      "explanation": "The heavy tails come from the denominator being near zero: Y has substantial density at 0, so the ratio takes enormous values often enough that the tail decays only as 1/x^2, which is too slow for the mean to exist. The striking consequence is that the average of n Cauchy variables has exactly the same distribution as a single one, so collecting more data gives no improvement at all. The practical warning is about ratio estimators generally — any statistic with an estimated quantity in the denominator that can approach zero inherits this behaviour, which is why ratios of small estimated numbers are so unstable in practice.",
+      "technique": "Ratio of normals and the failure of the LLN",
+      "difficultyRationale": "Requires identifying the distribution and explaining why the moments fail to exist."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the chi-squared distribution, and where does it appear in risk work?",
+      "canonicalAnswer": "The distribution of a sum of squared independent standard normals; with k terms it has k degrees of freedom, mean k and variance 2k. It appears in variance estimation, in likelihood ratio tests, and in the distribution of a quadratic form.",
+      "explanation": "Its role in inference is that the scaled sample variance of a normal sample is chi-squared, which is what produces confidence intervals for a variance and, combined with a normal, produces the t distribution. In risk work the likelihood ratio test statistic is asymptotically chi-squared, which is exactly how Kupiec's VaR backtest is evaluated. It also appears in delta-gamma VaR: a quadratic form in normal variables is a weighted sum of chi-squared variables, so the loss distribution of a gamma-heavy book is a chi-squared mixture rather than a normal — which is the formal reason a delta-normal quantile is the wrong shape for an options portfolio.",
+      "technique": "Chi-squared distribution and quadratic forms",
+      "difficultyRationale": "Requires the construction plus three distinct appearances in risk work."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the beta distribution used for, and what makes it convenient?",
+      "canonicalAnswer": "It is a flexible distribution on [0,1], parameterised by two shape parameters. It is convenient because it can take many shapes on the unit interval and is the conjugate prior for a binomial probability, so Bayesian updating just adds successes and failures to the parameters.",
+      "explanation": "Conjugacy is the practical attraction: start with Beta(a, b), observe s successes in n trials, and the posterior is Beta(a+s, b+n-s) — no integration required. That makes it the default prior for anything bounded in [0,1], and in finance it is the standard model for recovery rates, which are naturally bounded and empirically neither uniform nor concentrated. The two parameters give substantial flexibility: equal parameters give a symmetric distribution, both below 1 gives a U-shape (which fits recovery data surprisingly well, since recoveries cluster near the extremes), and large parameters concentrate it near the mean a/(a+b).",
+      "technique": "Beta distribution and conjugacy",
+      "difficultyRationale": "Requires the conjugacy property plus a genuine financial application."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "The sum of two independent uniform [0,1] variables is not uniform. What is its distribution, and why?",
+      "canonicalAnswer": "Triangular on [0,2], peaking at 1. The density is the convolution of the two uniforms: there are many ways to make a sum near 1 and only one way to make a sum near 0 or 2.",
+      "explanation": "The convolution integral gives density y for y in [0,1] and 2-y for y in [1,2]. The intuition — more combinations produce a middling sum than an extreme one — is the same mechanism that drives the central limit theorem, and it is worth seeing at n = 2 because the effect is already visible. Adding a third uniform gives a piecewise-quadratic density that already looks bell-shaped, which is why summing 12 uniforms and subtracting 6 was once a standard way to generate an approximate standard normal. The general lesson is that summing independent variables smooths and concentrates, regardless of the shape you started with.",
+      "technique": "Convolution and the emergence of the CLT",
+      "difficultyRationale": "Requires the convolution result and the connection to why the CLT works."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A continuous random variable has density f(x) = 3 on [0, 1/3] and 0 elsewhere. Is this valid?",
+      "options": [
+        "Yes — a density may exceed 1, it need only integrate to 1",
+        "No, because a probability cannot exceed 1",
+        "No, because the support is too narrow",
+        "Only if it is truncated"
+      ],
+      "correctOption": 0,
+      "explanation": "The integral is 3 x (1/3) = 1, so it is a perfectly valid density. The confusion arises from treating the density as a probability, which it is not — only its integral over an interval is a probability, and P(X = x) is exactly zero for any single point. A density can be arbitrarily large over a sufficiently narrow region, and in the limit of a point mass it is not a function at all. Keeping this straight matters when comparing densities across different scales, since a change of units rescales the density by the Jacobian.",
+      "technique": "Densities are not probabilities",
+      "difficultyRationale": "One check, resolving a persistent confusion."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you generate a standard normal from uniform random numbers without an inverse CDF?",
+      "canonicalAnswer": "Box-Muller: from independent uniforms U1 and U2, set Z1 = sqrt(-2 ln U1) * cos(2*pi*U2) and Z2 = sqrt(-2 ln U1) * sin(2*pi*U2). These are two independent standard normals.",
+      "explanation": "The construction works by generating the point in polar coordinates: the squared radius of a standard bivariate normal is exponential (hence -2 ln U1) and the angle is uniform, so transforming back to Cartesian coordinates gives two independent normals. It is efficient and exact, unlike an approximation to the normal inverse CDF. Two notes: the polar or Marsaglia variant avoids the trigonometric calls and is faster, and Box-Muller interacts badly with some low-discrepancy sequences, so quasi-Monte Carlo work generally uses an accurate inverse CDF approximation instead.",
+      "technique": "Box-Muller transform",
+      "difficultyRationale": "Requires the transform and the polar reasoning behind it."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between a distribution being symmetric and being unskewed?",
+      "canonicalAnswer": "Symmetry is a property of the whole distribution — the density is a mirror image about its centre. Zero skewness means only that the standardised third moment is zero, which a non-symmetric distribution can also achieve.",
+      "explanation": "Symmetry implies zero skewness but not the reverse: you can construct asymmetric distributions whose third moment happens to cancel. This matters because skewness is a single summary number and, like all moment-based measures, it can be gamed or coincidental. It is also very sensitive to outliers, being a third power, so a skewness estimate from a few hundred observations is dominated by the extremes. When symmetry matters for a decision, test the distribution shape directly — a QQ plot against a symmetric reference, or comparing the distances from the median to matching upper and lower quantiles.",
+      "technique": "Symmetry versus zero skewness",
+      "difficultyRationale": "Requires knowing the implication runs one way only, and why the moment is a weak diagnostic."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A portfolio's daily returns are normal but its volatility varies randomly day to day. Is the unconditional return distribution normal?",
+      "canonicalAnswer": "No. It is a mixture of normals with different variances, which is symmetric but has excess kurtosis — fatter tails and a more peaked centre than any single normal.",
+      "explanation": "Conditionally on the volatility the returns are normal; unconditionally they are not, and the distinction is exactly what GARCH and stochastic volatility models exploit. The excess kurtosis follows from the law of total variance applied to the fourth moment, and the intuition is that high-volatility days supply the extreme observations while low-volatility days supply the concentration near zero. This resolves an apparent contradiction in risk modelling: you can model returns as conditionally normal, which makes the mathematics tractable, and still reproduce the fat-tailed unconditional distribution that the data shows. It also means a VaR computed from the conditional model with today's volatility is legitimate, while one computed from the unconditional distribution with a normal assumption is not.",
+      "technique": "Conditional versus unconditional normality",
+      "difficultyRationale": "Requires seeing that the same data can be conditionally normal and unconditionally fat-tailed."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "State the multiplication principle, and use it to count the number of 4-digit PINs.",
+      "canonicalAnswer": "If a task has k stages with n_1, n_2, ... choices at each stage independently, the total number of outcomes is the product. A 4-digit PIN has 10^4 = 10,000 possibilities.",
+      "explanation": "It is the foundation on which every other counting formula is built — permutations and combinations are both the multiplication principle plus a correction for overcounting. The condition that matters is that the number of choices at each stage must not depend on WHICH choices were made earlier, only on the stage. When it does depend, you either restructure the count or condition on cases. The PIN example is unrestricted, so all four digits have 10 options; requiring all digits distinct makes it 10 x 9 x 8 x 7 = 5,040.",
+      "technique": "Multiplication principle",
+      "difficultyRationale": "One principle and a direct application."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "How many ways can 5 distinct books be arranged on a shelf if two particular books must be adjacent?",
+      "options": [
+        "48",
+        "24",
+        "120",
+        "60"
+      ],
+      "correctOption": 0,
+      "explanation": "Glue the two books into a single block, giving 4 objects to arrange in 4! = 24 ways, then multiply by the 2 internal orderings of the block: 24 x 2 = 48. The gluing technique is the standard move for adjacency constraints, and its complement handles the opposite requirement — the number of arrangements with those two books NOT adjacent is 120 - 48 = 72, which is much easier than counting directly.",
+      "technique": "Gluing for adjacency constraints",
+      "difficultyRationale": "One standard technique with a factor-of-2 correction."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is stars and bars, and use it to count the ways to distribute 10 identical balls into 4 distinct boxes.",
+      "canonicalAnswer": "C(n + k - 1, k - 1) for n identical items into k distinct boxes. Here C(13, 3) = 286.",
+      "explanation": "Represent the distribution as 10 stars and 3 bars separating them into 4 groups; every arrangement of the 13 symbols corresponds to exactly one distribution, so the count is the number of ways to choose which 3 of the 13 positions are bars. The variant requiring every box non-empty puts one ball in each first, leaving 6 to distribute freely: C(9,3) = 84. The technique is the standard answer to any 'identical items into distinct groups' question — which includes counting the monomials of a given degree, and counting the ways to allocate a fixed budget in discrete increments.",
+      "technique": "Stars and bars",
+      "difficultyRationale": "Requires the bijection and the correct parameters in the formula."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the difference between sampling with and without replacement, ordered and unordered? Give the four counting formulas.",
+      "canonicalAnswer": "Ordered with replacement: n^k. Ordered without: n!/(n-k)!. Unordered without: C(n,k). Unordered with replacement: C(n+k-1, k).",
+      "explanation": "These four cases cover almost every elementary counting problem, and identifying which one applies is more than half the work. The two questions to ask are whether order matters and whether items can repeat. The fourth case is the least familiar and is exactly stars and bars — choosing k items from n types with repetition allowed. A useful check on any answer is monotonicity: allowing replacement should increase the count, and ignoring order should decrease it, so the four should rank in a predictable way.",
+      "technique": "The four sampling cases",
+      "difficultyRationale": "Requires all four formulas and the two questions that select among them."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Prove that C(n,k) = C(n, n-k) without algebra.",
+      "canonicalAnswer": "Choosing k items to include is the same act as choosing the n-k items to exclude, so the two counts are in one-to-one correspondence and must be equal.",
+      "explanation": "A bijective proof like this is more informative than manipulating factorials, because it tells you WHY the identity holds. The same style handles other standard identities: Pascal's rule C(n,k) = C(n-1,k-1) + C(n-1,k) follows from conditioning on whether a particular element is included, and the hockey-stick identity follows from conditioning on the largest element chosen. Being able to produce a combinatorial argument rather than an algebraic one is a common interview probe, because it shows you understand the objects rather than the notation.",
+      "technique": "Bijective proof",
+      "difficultyRationale": "Requires constructing a correspondence rather than manipulating factorials."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many distinct paths are there from the bottom-left to the top-right of a 4x6 grid, moving only right or up?",
+      "canonicalAnswer": "C(10, 4) = 210. Every path is a sequence of 4 up-moves and 6 right-moves in some order, so you choose which 4 of the 10 steps go up.",
+      "explanation": "The bijection between paths and binary sequences is what makes lattice-path problems tractable. Two common variants are worth knowing. Forbidding a particular cell is handled by subtraction: total paths minus paths through that cell, where the latter factorises as (paths to the cell) times (paths from it). And requiring the path to stay below the diagonal gives the Catalan numbers, which count balanced bracket sequences and appear in the reflection principle for random walks — the same reflection argument used to price barrier options.",
+      "technique": "Lattice paths as binary sequences",
+      "difficultyRationale": "One bijection, with the constrained variants as the extension."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a derangement, and roughly what fraction of permutations of n items are derangements?",
+      "canonicalAnswer": "A permutation with no fixed points — nothing in its original position. The fraction converges to 1/e = 0.368 as n grows, and it is already accurate to three decimals at n = 6.",
+      "explanation": "The count follows from inclusion-exclusion over the events 'item i is fixed', giving n! times the alternating sum of 1/k!, which is the truncated series for e^{-1}. The convergence is remarkably fast. Two useful readings: the expected number of fixed points in a random permutation is exactly 1 for every n, by linearity over indicators — so 'about a third have none' fits a Poisson(1) intuition. And the hat-check problem, the secret-santa constraint, and any 'nobody gets their own' question are all derangements.",
+      "technique": "Derangements via inclusion-exclusion",
+      "difficultyRationale": "Requires the 1/e result and the connection to the expected fixed-point count."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a group of 23 people the probability of a shared birthday exceeds 50%. Explain why the answer is so much smaller than intuition suggests.",
+      "canonicalAnswer": "Because the number of PAIRS grows quadratically: 23 people give C(23,2) = 253 pairs, each with a 1/365 chance of matching. The intuition wrongly focuses on comparisons against one specific person, of which there are only 22.",
+      "explanation": "The exact calculation multiplies (365/365)(364/365)...(343/365) and gives 0.507, but the pair-counting explains it. The approximation 1 - exp(-253/365) = 0.50 makes the mechanism explicit. The contrast with the related question — how many people before someone shares YOUR birthday, which needs about 253 — is the sharpest way to see the difference: one is quadratic in n and the other linear. The same quadratic scaling explains hash collisions, and it is why the birthday bound halves the effective security of a cryptographic digest.",
+      "technique": "Quadratic pair counting",
+      "difficultyRationale": "Requires identifying the pair count as the mechanism and contrasting with the linear version."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does the binomial theorem say, and what is a probabilistic reading of it?",
+      "canonicalAnswer": "(x + y)^n = sum over k of C(n,k) x^k y^{n-k}. Probabilistically, setting x = p and y = 1-p shows that the binomial probabilities sum to 1, since (p + (1-p))^n = 1.",
+      "explanation": "The coefficient C(n,k) counts the ways to choose k factors from which to take x, which is why the same numbers appear in counting and in the binomial distribution — they are the same objects. Differentiating the identity with respect to p and rearranging gives the mean np without any summation, and differentiating twice gives the variance np(1-p); that generating-function trick is far quicker than evaluating the sums directly. Setting x = y = 1 gives 2^n, the number of subsets of an n-set, which is another way of saying the binomial coefficients in a row of Pascal's triangle sum to 2^n.",
+      "technique": "Binomial theorem and generating-function tricks",
+      "difficultyRationale": "Requires the probabilistic reading and the differentiation trick for moments."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many ways can 12 people be split into 3 teams of 4?",
+      "canonicalAnswer": "5,775 if the teams are unlabelled: 12!/(4!4!4!) = 34,650 divided by 3! = 5,775. If the teams are distinguishable (say by name), it is 34,650.",
+      "explanation": "The multinomial coefficient 12!/(4!4!4!) counts assignments to three LABELLED groups. If the groups are interchangeable you have counted each partition 3! times, once for each way of labelling the same three teams, so divide by 3!. Deciding whether the groups are labelled is the entire difficulty in this class of problem, and the question is often deliberately ambiguous — a good answer states the interpretation. The same correction appears whenever identical containers are involved, and it does NOT apply when the groups have different sizes, since then they are distinguishable by size alone.",
+      "technique": "Multinomial coefficients and labelled versus unlabelled groups",
+      "difficultyRationale": "Requires the multinomial plus the division for interchangeability, with the ambiguity noted."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How many ways can you choose 3 numbers from 1 to 20 such that no two are adjacent?",
+      "canonicalAnswer": "816. The count of k non-adjacent choices from n is C(n - k + 1, k) = C(18, 3) = 816.",
+      "explanation": "The bijection is the trick: given a valid selection a < b < c, map it to (a, b-1, c-2). Subtracting the gaps turns the non-adjacency constraint into an ordinary strict inequality, and the images range over 1 to 18 with no constraint at all — so the count is just C(18,3). The general formula C(n-k+1, k) follows the same way. Compare with the unconstrained C(20,3) = 1,140: the adjacency restriction removes about 28% of selections. The same 'absorb the constraint into a shift' technique handles minimum-gap conditions generally, replacing k-1 with the required gap.",
+      "technique": "Bijection to remove an adjacency constraint",
+      "difficultyRationale": "Requires constructing the shift bijection rather than counting cases."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the pigeonhole-style argument behind the claim that in any group of 6 people, 3 mutually know each other or 3 are mutual strangers?",
+      "canonicalAnswer": "Take one person: of the other 5, at least 3 share the same relationship with them (know or do not know), by pigeonhole. If any two of those 3 share that same relationship with each other, you have your triple; if none do, those 3 form the opposite triple.",
+      "explanation": "This is Ramsey's theorem for R(3,3) = 6, and the proof is a clean pigeonhole plus case split. The number 6 is tight: with 5 people a counterexample exists (arrange them in a cycle where each knows their two neighbours). The general Ramsey numbers grow explosively and are unknown beyond small cases — R(5,5) is only bounded between 43 and 48 — which is a striking example of a simply stated combinatorial problem that resists computation. The transferable idea is that sufficient size forces structure, whether or not you can construct it.",
+      "technique": "Ramsey argument via pigeonhole",
+      "difficultyRationale": "Requires the pigeonhole step and the case analysis that completes it."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Estimate C(50, 25) to an order of magnitude without computing it exactly.",
+      "canonicalAnswer": "About 1.26 x 10^14. Using the central binomial approximation C(2n, n) ~= 4^n / sqrt(pi*n): 4^25 = 1.13 x 10^15, divided by sqrt(25*pi) = 8.86, giving 1.27 x 10^14.",
+      "explanation": "The approximation comes from Stirling's formula and is accurate to under 1% even at moderate n. Two things worth carrying: the central binomial coefficient is the largest in its row and is roughly 2^n divided by sqrt(n) times a constant, so the binomial distribution's peak probability at p = 1/2 decays like 1/sqrt(n) — which is the same sqrt(n) that appears in the standard deviation. And 4^25 = 2^50, which is about 10^15 since 2^10 is roughly 10^3, making the whole estimate a mental calculation.",
+      "technique": "Stirling's approximation for central binomial coefficients",
+      "difficultyRationale": "Requires the approximation and the powers-of-two anchor to evaluate it mentally."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many subsets of {1, ..., 10} contain no two consecutive integers?",
+      "canonicalAnswer": "144. The count for {1..n} is the Fibonacci number F_{n+2}, and with F as 1,1,2,3,5,... the answer for n=10 is F_12 = 144.",
+      "explanation": "Condition on whether n is in the subset: if not, the count is the answer for n-1; if it is, then n-1 is excluded and the count is the answer for n-2. That gives the Fibonacci recursion with base cases 2 (for n=1: empty and {1}) and 3 (for n=2). Building up: 2, 3, 5, 8, 13, 21, 34, 55, 89, 144. This is the same structure as counting binary strings with no two consecutive 1s, which is the point — a subset IS a binary string, and recognising two problems as the same object saves you deriving the recursion twice.",
+      "technique": "Fibonacci from a no-two-consecutive constraint",
+      "difficultyRationale": "Requires the recursion and carrying it to n=10 without slipping."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A hand of 5 cards is dealt. Which is more likely: two pairs, or three of a kind?",
+      "options": [
+        "Two pairs",
+        "Three of a kind",
+        "They are equally likely",
+        "It depends on whether aces are high"
+      ],
+      "correctOption": 0,
+      "explanation": "Two pairs occurs with probability about 4.75% and three of a kind about 2.11%, so two pairs is more than twice as likely — which is why it ranks LOWER in poker hand rankings. The counting: two pairs is C(13,2) ways to pick the ranks, times C(4,2)^2 for the suits, times 44 for the fifth card; three of a kind is 13 x C(4,3) x C(12,2) x 4^2. The ordering of poker hands is exactly the ordering of these probabilities, which makes the rankings a useful memory aid for the counts rather than a separate fact.",
+      "technique": "Counting poker hands",
+      "difficultyRationale": "Requires either the counts or the recall that hand rankings follow probability."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a generating function, and how would you use one to count something?",
+      "canonicalAnswer": "A formal power series whose coefficients encode a counting sequence: the number of ways to achieve n is the coefficient of x^n. Combining choices corresponds to MULTIPLYING generating functions, which turns convolution into polynomial algebra.",
+      "explanation": "Example: the ways to make a total of n from coins of denominations 1, 2 and 5 is the coefficient of x^n in 1/((1-x)(1-x^2)(1-x^5)), since each factor is the geometric series listing how many of that coin you use. The power comes from the multiplication rule — independent choices combine by multiplying, exactly as moment generating functions do for independent random variables, which is not a coincidence since a probability generating function IS a generating function with probabilities as coefficients. Once you have the closed form, coefficients can be extracted by partial fractions or by differentiating, which also yields the asymptotics.",
+      "technique": "Generating functions",
+      "difficultyRationale": "Requires the encoding idea, the multiplication rule, and a worked application."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "In how many ways can you tile a 2xn strip with 1x2 dominoes?",
+      "canonicalAnswer": "The Fibonacci number F_{n+1}. The recursion is T_n = T_{n-1} + T_{n-2}, from conditioning on whether the leftmost column is covered by one vertical domino or by the left halves of two horizontal ones.",
+      "explanation": "The case split is exhaustive and exclusive: the leftmost column is either a single vertical domino, leaving a 2x(n-1) strip, or the tops and bottoms of two horizontal dominoes, leaving a 2x(n-2) strip. With T_1 = 1 and T_2 = 2 the sequence is Fibonacci. This is worth doing because it shows the same recursion arising from a completely different-looking problem — subsets without consecutive elements, binary strings without consecutive ones, and domino tilings are all the same counting structure. Recognising that saves you rediscovering it, and the same conditioning move generalises to 3xn strips, where the recursion becomes more involved but the method is identical.",
+      "technique": "Recursion by conditioning on the boundary",
+      "difficultyRationale": "Requires the case split to be exhaustive and exclusive, which is where tiling arguments usually fail."
+    },
+    {
+      "topicId": "combinatorics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You need to count the arrangements of 10 objects where 3 are identical of one type and 2 identical of another. How does that change the count?",
+      "canonicalAnswer": "Divide by the factorials of the repeat counts: 10!/(3! 2!) = 3,628,800/12 = 302,400.",
+      "explanation": "The reasoning is overcounting correction: treat all 10 as distinct to get 10!, then note that permuting the 3 identical objects among themselves produces the same arrangement, as does permuting the 2 — so each distinct arrangement was counted 3! x 2! times. The general multinomial form divides by the factorial of every repeat count. The commonest error is dividing by the factorial of the number of GROUPS rather than of the group sizes, which is a different correction entirely and applies to interchangeable containers rather than to identical items.",
+      "technique": "Permutations with repeated elements",
+      "difficultyRationale": "One correction, with a specific and common way of getting it wrong."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the probability that a randomly chosen chord of a circle is longer than the side of the inscribed equilateral triangle?",
+      "canonicalAnswer": "It depends on what 'randomly chosen' means — 1/3, 1/2 or 1/4 under three natural definitions. This is Bertrand's paradox, and it shows that 'at random' is not well defined until the sampling mechanism is specified.",
+      "explanation": "Pick a random endpoint pair on the circumference and the answer is 1/3. Pick a random radius and a uniform point along it for the chord's midpoint and you get 1/2. Pick a uniform point in the disc as the midpoint and you get 1/4. All three are defensible readings of 'random chord' and they disagree. The lesson generalises well beyond geometry: any statement of the form 'assume it is random' is incomplete, and in modelling the equivalent question is always which measure you are working under. It is the same reason a stress scenario must specify the joint distribution rather than just the marginals.",
+      "technique": "Bertrand's paradox and the need to specify a measure",
+      "difficultyRationale": "Requires recognising that the question is underspecified rather than producing one number."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You will roll a fair die repeatedly and be paid the value of your final roll, but you must decide in advance how many times to roll. Does the number of rolls matter?",
+      "canonicalAnswer": "No. Each roll has expected value 3.5 regardless of what came before, so the expected payoff is 3.5 whatever number you commit to in advance.",
+      "explanation": "The point is that a rule fixed in ADVANCE cannot exploit information, so no amount of rolling helps. Contrast this with being allowed to stop adaptively — keep the current roll or continue — where the answer becomes 4.25 for one reroll and rises towards 6 with more, because you can now condition on what you see. That gap between a pre-committed rule and an adaptive one is the value of optionality, and it is exactly what distinguishes a European from an American option. Recognising which regime a question is in before computing is the skill being tested.",
+      "technique": "Pre-committed versus adaptive rules",
+      "difficultyRationale": "Requires seeing why the answer is invariant, and what would change it."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Define a random variable's expectation for the discrete and continuous cases, and say what unifies them.",
+      "canonicalAnswer": "Discrete: E[X] = sum of x * P(X = x). Continuous: E[X] = integral of x * f(x) dx. Both are special cases of the Lebesgue integral of X with respect to the probability measure, which is what unifies them.",
+      "explanation": "The unified view matters practically because real financial variables are often MIXED — a payoff with an atom at zero and a continuous part above it, which neither formula alone handles. Writing the expectation as an integral against the distribution function covers all three cases at once. A second useful unification is the tail formula: for a non-negative variable, E[X] equals the integral of the survival function, which needs no density at all and is often the quickest route when the survival function is the natural object, as it is for exponential waiting times and for expected shortfall.",
+      "technique": "Expectation across variable types",
+      "difficultyRationale": "Requires both definitions plus the mixed case that motivates the general one."
+    },
+    {
+      "topicId": "basic-probability",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Give an example where the mean is a misleading summary and say what you would report instead.",
+      "canonicalAnswer": "Any heavily skewed distribution — a portfolio strategy with many small gains and rare large losses has a positive mean and a poor risk profile. Report the median, the quantiles, and a tail measure such as expected shortfall alongside it.",
+      "explanation": "The mean answers 'what happens on average across many repetitions', which is the right question only if you get many repetitions and each is small relative to your capital. Selling far out-of-the-money options is the canonical case: positive expected value, high probability of a small gain, and an occasional loss large enough to end the strategy. Reporting the full quantile picture makes the shape visible, and the median tells you what a typical outcome looks like rather than what the average is. This is the same reasoning that made expected shortfall preferable to VaR, and that makes a distribution more informative than any single statistic.",
+      "technique": "When the mean is the wrong summary",
+      "difficultyRationale": "Requires a concrete example and the alternatives that fix it."
+    },
+    {
+      "topicId": "continuous-distributions",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does the central limit theorem not rescue a Gaussian VaR for a portfolio of fat-tailed assets?",
+      "canonicalAnswer": "Because the CLT describes the CENTRE of the distribution of a sum, converging slowly and unevenly in the tails — and VaR is a tail quantile. It also requires finite variance and near-independence, both of which fail for correlated fat-tailed returns.",
+      "explanation": "Convergence to normality is fastest near the mean and slowest in the tails, so even where the CLT applies, the 99th percentile of a sum of n variables can remain far from Gaussian for large n. Two further failures matter in practice. Financial returns are strongly dependent through common factors, so the effective number of independent terms is much smaller than the number of assets. And a fitted tail index below 2 means infinite variance, in which case the sum converges not to a normal but to a stable distribution with the same heavy tails. The practical upshot is that aggregation does not make tail risk disappear, which is precisely what a naive appeal to the CLT assumes.",
+      "technique": "Limits of the central limit theorem in the tails",
+      "difficultyRationale": "Requires knowing that convergence is non-uniform and which assumptions fail."
     }
   ]
 }
