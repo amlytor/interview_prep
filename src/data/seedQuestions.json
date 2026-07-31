@@ -11973,6 +11973,1548 @@
       "explanation": "Convergence to normality is fastest near the mean and slowest in the tails, so even where the CLT applies, the 99th percentile of a sum of n variables can remain far from Gaussian for large n. Two further failures matter in practice. Financial returns are strongly dependent through common factors, so the effective number of independent terms is much smaller than the number of assets. And a fitted tail index below 2 means infinite variance, in which case the sum converges not to a normal but to a stable distribution with the same heavy tails. The practical upshot is that aggregation does not make tail risk disappear, which is precisely what a naive appeal to the CLT assumes.",
       "technique": "Limits of the central limit theorem in the tails",
       "difficultyRationale": "Requires knowing that convergence is non-uniform and which assumptions fail."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "For a geometric distribution with success probability p, what are the variance and standard deviation?",
+      "canonicalAnswer": "Variance = (1-p)/p^2, so the standard deviation is sqrt(1-p)/p. For p = 1/6 that is variance 30 and standard deviation 5.48.",
+      "explanation": "Note how large the spread is relative to the mean: for p = 1/6 the mean is 6 and the standard deviation 5.48, almost as big. The waiting time is heavily right-skewed — usually you succeed reasonably soon, occasionally you wait a very long time. As p gets small the standard deviation approaches the mean, since sqrt(1-p)/p tends to 1/p, which is exactly the behaviour of an exponential. That is worth remembering when someone quotes an expected waiting time: for rare events the expectation is a poor description of any individual outcome.",
+      "technique": "Geometric moments",
+      "difficultyRationale": "Recall of a formula plus one substitution."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two conventions exist for the geometric distribution. Which pair of means is correct?",
+      "options": [
+        "Counting the successful trial: 1/p. Counting only failures before it: (1-p)/p",
+        "Both conventions give 1/p",
+        "Counting the successful trial: (1-p)/p. Counting only failures: 1/p",
+        "Counting the successful trial: 1/p^2. Counting only failures: 1/p"
+      ],
+      "correctOption": 0,
+      "explanation": "The two differ by exactly 1, since one counts the final success and the other does not: 1/p minus 1 equals (1-p)/p. Both are called 'the geometric distribution' and libraries disagree about which they implement, so the first thing to do with any geometric question is decide which is meant. In interview problems 'how many flips until the first head' almost always includes the successful flip, giving 1/p = 2 for a fair coin. The variance is the same under both conventions, since shifting by a constant does not change spread.",
+      "technique": "The two geometric conventions",
+      "difficultyRationale": "One distinction, with the constant offset as the resolving fact."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A trading signal fires on 8% of days, independently. What is the probability you wait more than 20 days for the next one?",
+      "canonicalAnswer": "About 19%. P(no signal in 20 days) = 0.92^20 = 0.189.",
+      "explanation": "The survival function of a geometric is (1-p)^n, which is far quicker than summing the probability of waiting exactly 21, 22, 23 days and so on. Here 0.92^20 = 0.189. The mean wait is 1/0.08 = 12.5 days, and yet nearly a fifth of gaps exceed 20 days — a good illustration that a right-skewed waiting time regularly produces gaps far longer than the average. That matters practically: a strategy with a 12-day average gap will still have month-long droughts, and mistaking one for a broken signal is a common error.",
+      "technique": "Geometric survival function",
+      "difficultyRationale": "One exponentiation, with the interpretation of the skew as the payload."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You need at least one success and each attempt succeeds with probability 0.2. How many attempts give you a 95% chance of at least one success?",
+      "canonicalAnswer": "14 attempts. Solve 0.8^n <= 0.05, giving n >= ln(0.05)/ln(0.8) = 13.4, so n = 14.",
+      "explanation": "The move is to work with the complement — the probability of NO success in n attempts is 0.8^n — and then take logs to bring n down from the exponent. Note the answer is well above the mean waiting time of 1/0.2 = 5, because reaching 95% confidence costs roughly three times the average. The general rule of thumb worth carrying: to be 95% sure of at least one success you need about 3/p attempts, since ln(0.05) is about -3 and ln(1-p) is about -p for small p.",
+      "technique": "Inverting the geometric survival function",
+      "difficultyRationale": "Complement plus a logarithm, with a rule of thumb to check it."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You need a 6 on a fair die, but you also stop after 4 rolls whatever happens. What is the expected number of rolls?",
+      "canonicalAnswer": "About 3.03. E[rolls] = sum over n=0..3 of P(no 6 in first n rolls) = 1 + (5/6) + (5/6)^2 + (5/6)^3 = 1 + 0.833 + 0.694 + 0.579 = 3.11.",
+      "explanation": "The tail-sum formula is the clean route: for a non-negative integer variable, E[X] = sum over n >= 0 of P(X > n), and here X > n requires no 6 in the first n rolls, capped at 4. That gives 1 + 5/6 + 25/36 + 125/216 = 3.11. Compare with the uncapped geometric mean of 6 — the cap more than halves it, because the long right tail is exactly what the truncation removes. This is the structure of any capped waiting time, including a barrier option's life and a stop-loss on a strategy.",
+      "technique": "Truncated waiting time via the tail-sum formula",
+      "difficultyRationale": "Requires the tail-sum identity and careful handling of the cap."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two players alternately roll a die, and the first to roll a 6 wins. What is the probability the first player wins?",
+      "canonicalAnswer": "6/11. Let p be the first player's chance: p = 1/6 + (5/6)(1 - p), so p = 1/6 + 5/6 - 5p/6, giving 11p/6 = 1 and p = 6/11.",
+      "explanation": "After the first player misses, the second player is in exactly the position the first started in, so their chance from that point is p and the first player's is 1 - p. That self-similarity turns an infinite series into one linear equation. The answer 6/11 = 0.545 shows the first-mover advantage is real but modest at this success rate; with a fair coin instead of a die it rises to 2/3, because a higher per-turn success probability makes going first worth more. The general answer is p_first = q/(1 + (1-q)) where q is the per-turn success probability.",
+      "technique": "Alternating geometric trials via self-similarity",
+      "difficultyRationale": "One linear equation after spotting the role reversal."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the negative binomial distribution, and how does it relate to the geometric?",
+      "canonicalAnswer": "It is the number of trials needed for the r-th success. A geometric is the special case r = 1, and a negative binomial is a sum of r independent geometrics, so its mean is r/p and variance r(1-p)/p^2.",
+      "explanation": "The decomposition into a sum of geometrics is what makes the moments immediate — no summation required, just linearity for the mean and independence for the variance. It also explains the shape: summing several right-skewed waits produces something less skewed, converging towards normal as r grows, which is the central limit theorem showing up again. In practice it appears wherever you need multiple successes: the number of client calls to close three deals, or the number of simulation paths to observe five tail events.",
+      "technique": "Negative binomial as a sum of geometrics",
+      "difficultyRationale": "Requires the decomposition and reading the moments off it."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A geometric distribution has mean 20. What is the probability of success on exactly the 20th trial?",
+      "canonicalAnswer": "About 1.9%. With p = 1/20, P(X = 20) = (0.95)^19 (0.05) = 0.377 x 0.05 = 0.0189.",
+      "explanation": "The point of the question is that the mean is not the most likely value — in fact for a geometric the MODE is always 1, since P(X = n) = (1-p)^{n-1} p is strictly decreasing in n. So the single most likely outcome is succeeding immediately, even though the average wait is 20. That combination of a decreasing probability mass function with a large mean is what a long right tail looks like, and it is why quoting only the expected waiting time of a rare event is misleading in both directions.",
+      "technique": "Geometric PMF, mode versus mean",
+      "difficultyRationale": "One evaluation, with the mode-versus-mean point as the substance."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Derive E[X] = 1/p for the geometric distribution using the memoryless property.",
+      "canonicalAnswer": "Condition on the first trial: with probability p you succeed and stop at 1; with probability 1-p you fail and, by memorylessness, face the same expected wait again. So E = 1 + (1-p)E, giving pE = 1 and E = 1/p.",
+      "explanation": "The whole derivation rests on the observation that after a failure you are in exactly the starting state, which is memorylessness stated operationally. Compare with the direct route — summing n(1-p)^{n-1}p over all n, which needs the derivative of a geometric series — and the conditioning argument is plainly better. It also generalises where the series does not: any problem where a failure returns you to a previously-seen state yields to the same one-line recursion, which is why this is the technique to reach for rather than the formula.",
+      "technique": "First-step conditioning to derive the mean",
+      "difficultyRationale": "One recursion, with the comparison to the series route as the lesson."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Two independent alerts fire with probability 0.1 and 0.2 per day. What is the distribution of the wait until the FIRST of them fires?",
+      "canonicalAnswer": "Geometric with success probability 1 - (0.9)(0.8) = 0.28, so the mean wait is 1/0.28 = 3.57 days.",
+      "explanation": "On any given day neither fires with probability (1-p)(1-q) = 0.72, so 'at least one fires' is a Bernoulli trial with probability 0.28 — and repeated independent Bernoulli trials give a geometric. The general result is worth carrying: the minimum of independent geometrics is itself geometric, with failure probabilities multiplying. Note the mean of 3.57 is shorter than either alert alone (10 and 5 days), and shorter than the harmonic-style guess many people reach for. The continuous analogue is that the minimum of independent exponentials is exponential with the RATES adding, which is the same statement in the limit.",
+      "technique": "Minimum of independent geometrics",
+      "difficultyRationale": "Requires recognising the combined per-trial event and that the minimum stays geometric."
+    },
+    {
+      "topicId": "geometric-distribution",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In what sense is the exponential distribution the continuous limit of the geometric?",
+      "canonicalAnswer": "Take a geometric with success probability p per trial and let trials happen every dt with p = lambda*dt. As dt tends to zero, the waiting time converges to an exponential with rate lambda: (1-lambda*dt)^{t/dt} tends to e^{-lambda t}.",
+      "explanation": "The survival functions map directly onto each other, which is why every geometric fact has an exponential counterpart: mean 1/p becomes 1/lambda, memorylessness carries over exactly, and the negative binomial becomes the gamma. The limit is the same one that defines e, which is where the exponential gets its name and its form. Practically it means you can reason in whichever setting is more convenient — discrete trials for a per-day signal, continuous time for an intensity model — and translate the answer.",
+      "technique": "Discrete-to-continuous limit",
+      "difficultyRationale": "Requires the limiting argument and the mapping of properties across it."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Estimate the total annual salary bill of a 40-person trading desk in London.",
+      "canonicalAnswer": "Roughly £10-15m. Say 25 traders/quants at £250k all-in, 10 support at £120k, 5 senior at £600k: 6.25 + 1.2 + 3.0 = about £10.5m, and higher if bonuses are strong.",
+      "explanation": "The decomposition that matters is by ROLE, because compensation is wildly unequal across a desk and a single average would be dominated by whichever tail you happened to guess. Splitting into three bands gets you within a factor of two with numbers you can defend. A useful cross-check from the revenue side: desks are typically run at a compensation ratio of 30-40% of revenue, so a £10.5m salary bill implies the desk needs to generate roughly £30m — which is a sanity test on whether the headcount is plausible for the business.",
+      "technique": "Decompose by role, cross-check against revenue",
+      "difficultyRationale": "Three-band decomposition with a ratio-based check."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Your Fermi estimate comes out 30 times larger than the published figure. What is the most likely explanation?",
+      "options": [
+        "A single factor is wrong by an order of magnitude, or a unit conversion slipped",
+        "The accumulation of small errors across many factors",
+        "The published figure is wrong",
+        "Fermi estimation does not work for this kind of quantity"
+      ],
+      "correctOption": 0,
+      "explanation": "Independent small errors partially cancel — that is the whole reason the method works — so they rarely compound to 30x. A discrepancy that large almost always traces to one factor being badly wrong or to a units slip: thousands versus millions, per-day versus per-year, per-person versus per-household. The diagnostic procedure is to check each factor's order of magnitude in isolation rather than re-deriving the whole chain, and to state units explicitly at every step. Blaming the published figure is occasionally right and should be the last hypothesis, not the first.",
+      "technique": "Debugging a Fermi estimate",
+      "difficultyRationale": "Requires knowing that small errors cancel, so a large gap implicates one factor."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Estimate the daily trading volume of the London Stock Exchange in pounds.",
+      "canonicalAnswer": "Order of £4-6bn. UK listed market cap is roughly £2.5-3tn; typical annual turnover is around 60-80% of market cap, so about £2tn a year over ~250 trading days gives £8bn a day — call it £4-10bn depending on the turnover assumption.",
+      "explanation": "The decomposition is market cap times turnover ratio divided by trading days, and the weak link is the turnover ratio, which varies enormously by market and by year. Anchoring it is the judgement: US markets run above 100%, the LSE lower. A second route cross-checks it — if a typical FTSE 100 stock trades a few hundred million a day and there are 100 of them, plus a long tail, you land in the same range. The habit worth demonstrating is naming which factor you trust least and giving a range around it rather than a point.",
+      "technique": "Stock-to-flow decomposition with a turnover ratio",
+      "difficultyRationale": "Requires a stock-flow conversion and honesty about which factor dominates the error."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How would you estimate the size of the market for a new derivatives product before it launches?",
+      "canonicalAnswer": "Two ways, and you should do both. Top-down: size the pool of institutions with the exposure it hedges, and estimate the fraction that would use it. Bottom-up: estimate typical ticket size times expected clients times trades per year. Reconcile the two.",
+      "explanation": "The value of doing both is that they fail differently. Top-down anchors on a real population but relies on an adoption rate that is essentially a guess. Bottom-up is built from things a salesperson can estimate but easily misses that the addressable population is small. If they agree within a factor of two you have some confidence; if they disagree tenfold, the disagreement itself is the finding and locating its source is more informative than either number. It is also worth asking what the product REPLACES, since a genuinely new instrument usually cannibalises an existing hedge rather than creating demand.",
+      "technique": "Top-down and bottom-up triangulation",
+      "difficultyRationale": "Requires two independent methods and treating their disagreement as information."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Estimate how much electricity a large data centre uses in a year, and sanity-check it against something familiar.",
+      "canonicalAnswer": "For a 50 MW facility: 50 MW x 8,760 hours = about 440 GWh a year. Cross-check: a UK home uses roughly 3,000 kWh a year, so that is the consumption of about 145,000 homes — a small city.",
+      "explanation": "The hours-in-a-year figure, 8,760, is the single most useful constant here and is worth memorising. Multiplying a power rating by it converts capacity into annual energy directly. The home-equivalence check is what makes the number meaningful rather than just large, and cross-checks of that kind — converting an unfamiliar quantity into a familiar one — are the fastest way to catch an order-of-magnitude slip. A further refinement is the power usage effectiveness ratio, typically 1.1 to 1.5, which accounts for cooling on top of the IT load.",
+      "technique": "Capacity to annual energy, with a familiarity cross-check",
+      "difficultyRationale": "One multiplication plus a deliberate conversion into familiar units."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A candidate estimates the number of UK dentists as 200,000. Without looking it up, is that plausible?",
+      "canonicalAnswer": "No — it is roughly five times too high. With 67m people and each dentist serving perhaps 1,500-2,000 patients, you would expect 35,000-45,000. 200,000 would mean one dentist per 335 people, which is implausible.",
+      "explanation": "The technique is to invert the estimate into a per-capita ratio and ask whether THAT is believable, which is usually far easier to judge than the absolute number. One dentist per 335 people would mean dentists were about 0.3% of the population, comparable to the entire teaching profession — clearly wrong. This inversion test is the single most useful check on any Fermi answer: convert to a ratio per person, per household, or per day, and see whether it matches lived experience. The actual figure is around 40,000.",
+      "technique": "Inverting an estimate into a per-capita sanity check",
+      "difficultyRationale": "Requires performing the inversion rather than re-deriving the estimate."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why do interviewers ask Fermi questions, and what are they actually assessing?",
+      "canonicalAnswer": "They assess structured thinking under uncertainty: whether you decompose a problem sensibly, make assumptions explicit, keep units straight, sanity-check, and communicate the reasoning — not whether you land on the right number.",
+      "explanation": "The number is close to irrelevant, which is why the worst possible response is a confident figure with no working. What they are watching for is a decomposition where each factor is something you can defend, assumptions stated out loud so they can be challenged, arithmetic kept simple by rounding aggressively, at least one cross-check, and an honest statement of which factor carries most of the uncertainty. That set of behaviours is exactly what a risk role requires when someone asks for a number that no dataset supplies — which is most interesting questions.",
+      "technique": "What the exercise is really testing",
+      "difficultyRationale": "Conceptual; requires naming the assessed behaviours rather than a method."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Estimate the annual revenue of a mid-sized investment bank's equity derivatives desk.",
+      "canonicalAnswer": "Order of £100-300m. Roughly: 200 institutional clients trading 20 times a year at an average notional of £20m, with a margin of perhaps 3-5 basis points on notional, gives 200 x 20 x £20m x 0.0004 = £32m from flow — then add structured products at much higher margin, taking the total into the hundreds of millions.",
+      "explanation": "The structure to demonstrate is notional times margin, and the crucial judgement is that MARGIN varies by orders of magnitude across the business: vanilla flow earns a basis point or two on notional, while a bespoke structured note can earn 1-2%. So a single blended margin would be badly wrong, and splitting the book into flow and structured is what makes the estimate defensible. A cross-check from the cost side: a desk of 40 people costing £10m at a 35% compensation ratio implies about £30m of revenue, which suggests my flow-only figure describes a smaller desk than the question posits.",
+      "technique": "Notional times margin, split by product type",
+      "difficultyRationale": "Requires recognising that a single margin assumption breaks the estimate."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You must estimate a quantity where one factor could plausibly be anywhere from 1 to 100. How do you handle it?",
+      "canonicalAnswer": "Use the geometric mean of the range — 10 here, not 50 — because the uncertainty is multiplicative. Then report the answer as a range spanning the same factor, and state that this factor dominates the uncertainty.",
+      "explanation": "Taking the arithmetic midpoint of a range spanning two orders of magnitude is a systematic error: 50 is only a factor of 2 below the top and a factor of 50 above the bottom, so it is not central in any meaningful sense. The geometric mean, sqrt(1 x 100) = 10, is equidistant multiplicatively. The same reasoning says you should think in logs whenever a quantity spans orders of magnitude, which is why log scales are standard for such variables. If that one factor spans 100x, your final answer spans 100x too, and pretending otherwise by quoting a point estimate is the real failure.",
+      "technique": "Geometric mean for multiplicative uncertainty",
+      "difficultyRationale": "Requires knowing the arithmetic midpoint is wrong and why."
+    },
+    {
+      "topicId": "estimation-fermi",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many trades does a typical equity market-making algorithm execute in a day, and what does that imply about its per-trade margin?",
+      "canonicalAnswer": "Order of 100,000 to 1,000,000 for a large market maker across all names. At those volumes per-trade profit must be tiny — fractions of a cent per share — so the business is a volume business where cost per trade and latency dominate.",
+      "explanation": "The structural conclusion is what matters more than the count. If a firm makes a fraction of a cent per share a million times a day, then a one-cent adverse selection cost on a small fraction of trades wipes out the margin entirely — which is why market makers invest so heavily in avoiding informed flow and in minimising exchange fees. It also explains the risk profile: no single trade matters, so the risk is not position risk but systematic — a bad model, a fat-finger, or a market regime where adverse selection rises. This is the same reasoning that makes a casino's edge safe and a single large bet unsafe.",
+      "technique": "From volume estimate to business-model implications",
+      "difficultyRationale": "Requires drawing the structural conclusion, not just producing a count."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is log base 2 of 1,000,000, approximately, and how would you get it without a calculator?",
+      "canonicalAnswer": "About 20. Since 2^10 = 1,024 which is roughly 10^3, we have 10^6 roughly equal to 2^20.",
+      "explanation": "The anchor 2^10 ~= 10^3 is one of the most useful facts in quick mental arithmetic, and it gives the conversion log2(x) ~= 3.32 * log10(x). It answers a family of questions instantly: a billion is about 2^30, a trillion about 2^40, and binary search on a million items takes about 20 steps. The 2.4% error in treating 1,024 as 1,000 compounds slightly over repeated use — 2^20 is actually 1,048,576, a 5% overstatement — which is fine for estimation and worth knowing about before you use it for anything precise.",
+      "technique": "The 2^10 ~= 10^3 anchor",
+      "difficultyRationale": "One anchor applied twice."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Which of these is NOT a valid log identity?",
+      "options": [
+        "log(a + b) = log(a) + log(b)",
+        "log(a*b) = log(a) + log(b)",
+        "log(a/b) = log(a) - log(b)",
+        "log(a^n) = n*log(a)"
+      ],
+      "correctOption": 0,
+      "explanation": "Logs turn multiplication into addition, not addition into addition — there is no simplification for log(a+b) at all. It is the single most common algebra error in this area, and the reason is that people remember 'logs turn things into sums' without remembering what the input operation was. The three valid identities are all the same fact in different forms, since division is multiplication by an inverse and a power is repeated multiplication. That one property is why log returns are additive across time while simple returns are not.",
+      "technique": "Log identities",
+      "difficultyRationale": "Recognition of the standard error among three correct identities."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A quantity falls by 20% then rises by 20%. Where does it end up, and why is it not back where it started?",
+      "canonicalAnswer": "At 96% of the original: 0.8 x 1.2 = 0.96, a 4% loss. Percentage changes compound multiplicatively, and the 20% rise is applied to a smaller base than the 20% fall was.",
+      "explanation": "The asymmetry is worth internalising because it grows quickly: a 50% fall needs a 100% gain to recover, and a 90% fall needs 900%. In general a fall of x requires a gain of x/(1-x). This is the arithmetic behind why drawdowns matter more than volatility to a compounding investor, and it is the same effect as the gap between arithmetic and geometric means — the loss here, 4%, is close to the variance-based approximation of the drag. Anyone quoting an average of percentage changes is implicitly ignoring it.",
+      "technique": "Multiplicative compounding of percentage changes",
+      "difficultyRationale": "One multiplication, with the recovery asymmetry as the lesson."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What does the notation n! mean, and roughly how large is 10!?",
+      "canonicalAnswer": "n factorial is the product of all integers from 1 to n. 10! = 3,628,800, about 3.6 million.",
+      "explanation": "Two anchors are worth carrying: 10! is about 3.6 million and 20! is about 2.4 x 10^18. Factorials grow faster than any exponential, which is why brute-force enumeration over permutations becomes impossible so quickly — 20 items already exceeds what any computer can enumerate. By convention 0! = 1, which is not arbitrary: it is the number of ways to arrange nothing, exactly one, and it is what makes the binomial coefficient formula work at the edges. Stirling's approximation, n! ~= sqrt(2*pi*n)(n/e)^n, gives the size for large n.",
+      "technique": "Factorials and their growth rate",
+      "difficultyRationale": "One definition plus an anchor for scale."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is a basis point, and convert 250 basis points into a decimal and a percentage.",
+      "canonicalAnswer": "One basis point is one hundredth of a percent, or 0.0001 in decimal. So 250bp = 2.5% = 0.025.",
+      "explanation": "The conversion trips people up under time pressure because there are two steps: basis points to percent (divide by 100) and percent to decimal (divide by 100 again), so basis points to decimal is divide by 10,000. Basis points exist because 'rates rose by 1%' is ambiguous — it could mean from 4% to 5% or from 4% to 4.04% — while 'rose by 100bp' is not. Getting the conversion wrong by a factor of 100 in a duration or VaR calculation is the single most common arithmetic error in fixed income work, which is why writing the decimal out explicitly is worth the extra second.",
+      "technique": "Basis point conversions",
+      "difficultyRationale": "Two divisions, with the ambiguity motivation as context."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is sigma notation for a product, and why do we usually take logs of products?",
+      "canonicalAnswer": "The product is written with a capital pi. We take logs because log turns a product into a sum, which is easier to differentiate, easier to compute without overflow, and turns multiplicative growth into additive growth.",
+      "explanation": "The three reasons are all practical. Differentiating a product of many terms is painful; differentiating a sum is trivial, which is why maximum likelihood always maximises the LOG likelihood. Multiplying a thousand probabilities underflows to zero in floating point, while summing their logs does not. And multiplicative processes — compounding returns, population growth — become linear in log space, so a constant growth rate becomes a straight line. The cost is that you must remember log of a sum does not simplify, so the trick only helps where the structure is genuinely multiplicative.",
+      "technique": "Why logs are applied to products",
+      "difficultyRationale": "Requires all three motivations, not just the algebra."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Derive the formula for the sum of a FINITE geometric series with n terms, and state the condition for the infinite version to converge.",
+      "canonicalAnswer": "(1 - r^n)/(1 - r) for r not equal to 1. The infinite series converges to 1/(1-r) when |r| < 1.",
+      "explanation": "The derivation is worth being able to reproduce: call the sum S, multiply by r, subtract, and every term cancels except the first and last, giving S(1-r) = 1 - r^n. The finance applications are constant — the present value of an annuity is a geometric series with r = 1/(1+y), a perpetuity is the infinite case giving the familiar C/y, and the discount factors in any bond price form one. The convergence condition matters: a perpetuity formula with a growth rate exceeding the discount rate produces a negative price, which is the model telling you the assumption is impossible rather than a valuation.",
+      "technique": "Geometric series and its convergence",
+      "difficultyRationale": "Requires the formula, the derivation trick, and the convergence condition."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the Cauchy-Schwarz inequality and give one financial interpretation.",
+      "canonicalAnswer": "|E[XY]| <= sqrt(E[X^2] E[Y^2]), or in vector form |u.v| <= |u||v|. Financially it is why a correlation coefficient cannot exceed 1 in absolute value.",
+      "explanation": "Dividing both sides by the product of the standard deviations turns the inequality directly into |rho| <= 1, with equality exactly when one variable is a linear function of the other — which is what perfect correlation means. That is not a definition or a convention; it is a theorem. The same inequality bounds the Sharpe ratio achievable from a set of assets and underpins the Cauchy-Schwarz step in several portfolio-theory results. Recognising a bound as an instance of Cauchy-Schwarz often shortens a proof considerably.",
+      "technique": "Cauchy-Schwarz and the correlation bound",
+      "difficultyRationale": "Requires connecting an abstract inequality to a familiar constraint."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Rearrange the compound interest formula to solve for the rate: an investment grows from 100 to 180 over 7 years. What is the annual rate?",
+      "canonicalAnswer": "About 8.8%. From 100(1+r)^7 = 180 we get (1+r) = 1.8^{1/7} = e^{ln(1.8)/7} = e^{0.0840} = 1.0876, so r = 8.8%.",
+      "explanation": "The move is to take the n-th root, which is most reliably done as exp(ln(x)/n). Here ln(1.8) = 0.588, divided by 7 gives 0.084, and e^{0.084} = 1.0876. A quick check with the rule of 72: at 8.8% money doubles in about 8.2 years, and we grew 1.8x in 7 years, which is consistent. The general skill is recognising which variable to isolate and that roots and logs are the tools for pulling a variable out of an exponent — the same operation as computing an annualised return from a total return.",
+      "technique": "Solving for a compound growth rate",
+      "difficultyRationale": "Requires the root-via-logs technique and a sanity check."
+    },
+    {
+      "topicId": "maths-toolkit",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean to say a function grows like O(n^2), and rank these by growth: n log n, 2^n, n^2, log n.",
+      "canonicalAnswer": "Big-O gives an upper bound on growth rate up to a constant factor, ignoring lower-order terms. Ranked slowest to fastest: log n, n log n, n^2, 2^n.",
+      "explanation": "The notation deliberately discards constants because for large inputs the growth RATE dominates any constant factor — an O(n^2) algorithm eventually loses to an O(n log n) one however much faster its inner loop. The practical caveat is 'eventually': for small n the constants often decide, which is why real sorting implementations switch to insertion sort below a threshold. In finance the ranking matters most for simulation and matrix work: inverting an n x n matrix is O(n^3), so doubling the number of assets costs eight times the compute, which is a real constraint on portfolio optimisation at scale.",
+      "technique": "Asymptotic growth rates",
+      "difficultyRationale": "Requires the definition plus correct ranking of four common rates."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Differentiate f(x) = 3x^4 - 2x + 7.",
+      "canonicalAnswer": "f'(x) = 12x^3 - 2.",
+      "explanation": "Three rules applied term by term. The power rule brings the exponent down and reduces it by one, so 3x^4 becomes 3*4*x^3 = 12x^3. A linear term differentiates to its coefficient, so -2x becomes -2. A constant differentiates to zero, which is why the +7 vanishes — the constant shifts the curve up or down without changing its slope anywhere. That last point is worth internalising, because it is why antiderivatives always carry a '+C': differentiation destroys the constant, so integration cannot recover it.",
+      "technique": "Power rule term by term",
+      "difficultyRationale": "Three routine applications of one rule."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "The chain rule says the derivative of f(g(x)) is:",
+      "options": [
+        "f'(g(x)) * g'(x)",
+        "f'(x) * g'(x)",
+        "f'(g'(x))",
+        "f(g'(x)) + f'(g(x))"
+      ],
+      "correctOption": 0,
+      "explanation": "Differentiate the outer function keeping the inner one intact, then multiply by the derivative of the inner. The intuition is rates multiplying: if y changes three times as fast as u, and u changes twice as fast as x, then y changes six times as fast as x. Worked example: the derivative of e^{3x} is e^{3x} times 3. The commonest error is forgetting the second factor entirely, which is why writing the two pieces down separately before multiplying is worth the extra line.",
+      "technique": "Chain rule",
+      "difficultyRationale": "Recognition of a rule, with the standard omission as a distractor."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the quotient rule, and use it to differentiate x/(1+x).",
+      "canonicalAnswer": "For u/v the derivative is (u'v - uv')/v^2. Here u = x and v = 1+x, giving (1(1+x) - x(1))/(1+x)^2 = 1/(1+x)^2.",
+      "explanation": "The numerator's order matters — it is u'v minus uv', not the other way round — and getting it backwards flips the sign of the whole answer. A memory aid many prefer: rewrite the quotient as a product, x * (1+x)^{-1}, and use the product and chain rules instead, which avoids memorising a fourth rule. Here that route gives (1+x)^{-1} + x * (-1)(1+x)^{-2} = 1/(1+x)^2 after simplifying, the same answer. Note the result is always positive, so the function is increasing everywhere it is defined.",
+      "technique": "Quotient rule, or product rule on a negative power",
+      "difficultyRationale": "One application, with the sign order as the trap."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Compute the definite integral of 2x from 1 to 4.",
+      "canonicalAnswer": "15. The antiderivative is x^2, so the value is 4^2 - 1^2 = 16 - 1 = 15.",
+      "explanation": "The fundamental theorem of calculus says a definite integral is the antiderivative evaluated at the upper limit minus at the lower. The +C cancels in the subtraction, which is why definite integrals need no constant. A geometric check: the region under y = 2x between 1 and 4 is a trapezium with parallel sides 2 and 8 and width 3, giving area (2+8)/2 * 3 = 15. Having a geometric cross-check available for simple integrands is a good habit — it catches limit-order and sign errors immediately.",
+      "technique": "Fundamental theorem with a geometric check",
+      "difficultyRationale": "One antiderivative and a subtraction, checkable by area."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the derivative of ln(x), and why does that make logs useful for growth rates?",
+      "canonicalAnswer": "1/x. It makes logs useful because the derivative of ln(f(t)) is f'(t)/f(t), which is exactly the PROPORTIONAL rate of change — the growth rate.",
+      "explanation": "So plotting the log of a quantity against time gives a line whose SLOPE is the growth rate, which is why log scales are standard for anything compounding. It is also the reason log returns are the natural unit in finance: the log return over a period is the integral of the instantaneous growth rate, so log returns add across time while simple returns must be compounded. And the 1/x form explains why ln has no elementary antiderivative problem in reverse — the integral of 1/x is ln|x|, the one gap the power rule cannot fill, since the power rule would require dividing by zero.",
+      "technique": "Derivative of ln and proportional rates",
+      "difficultyRationale": "One derivative, with the growth-rate interpretation as the substance."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Find the maximum of f(x) = -2x^2 + 8x - 3 and verify it is a maximum.",
+      "canonicalAnswer": "At x = 2, with value 5. f'(x) = -4x + 8 = 0 gives x = 2; f''(x) = -4 < 0 confirms a maximum; f(2) = -8 + 16 - 3 = 5.",
+      "explanation": "Three steps: differentiate and set to zero to find stationary points, use the second derivative's sign to classify, then evaluate. The negative leading coefficient tells you before any calculus that the parabola opens downward, so the stationary point must be a maximum — a check worth making first. This is the whole shape of a constrained optimisation problem in miniature, and the same procedure with several variables becomes the gradient-and-Hessian method used for portfolio optimisation.",
+      "technique": "Optimising with first and second derivatives",
+      "difficultyRationale": "Three routine steps with a structural check available."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a partial derivative, and why does an option have several of them?",
+      "canonicalAnswer": "The derivative with respect to one variable holding the others fixed. An option's value depends on spot, volatility, time and rates, so it has one partial derivative for each — delta, vega, theta and rho.",
+      "explanation": "The 'holding others fixed' clause is what makes the Greeks separable and hedgeable one at a time, and it is also their main limitation: in reality spot and volatility move together, so a delta computed with volatility held fixed understates the true sensitivity for an equity book where a fall in spot raises vol. That is why desks compute 'shadow' or 'sticky-delta' variants that add a correction term for the induced vol move. The gap between a partial derivative and a total derivative is exactly the chain-rule term that the partial deliberately omits.",
+      "technique": "Partial derivatives and the Greeks",
+      "difficultyRationale": "Requires the definition plus the practical consequence of holding variables fixed."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain what a limit is, using the definition of a derivative as the example.",
+      "canonicalAnswer": "A limit is the value a function approaches as its input approaches some point, without necessarily reaching it. The derivative is the limit of [f(x+h) - f(x)]/h as h approaches 0 — a quotient that is 0/0 at h = 0 exactly, but approaches a definite value as h shrinks.",
+      "explanation": "The 'without reaching it' part is the whole idea. You cannot set h = 0 because the expression becomes meaningless, but you can ask what it tends to, and for well-behaved functions that limit exists. Worked instance: for f(x) = x^2, the quotient is (2xh + h^2)/h = 2x + h, which tends to 2x. The subtlety is that limits can fail to exist — approaching from left and right can give different answers, as at a kink — and a function with a kink has no derivative there. That is precisely why an option payoff is not differentiable at the strike, and why gamma is infinite for a digital.",
+      "technique": "Limits and the difference quotient",
+      "difficultyRationale": "Requires the definition and a case where the limit fails."
+    },
+    {
+      "topicId": "calculus-refresher",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean for a function to be continuous but not differentiable? Give a financial example.",
+      "canonicalAnswer": "The function has no gaps but has a sharp corner where the slope is undefined — the limit of the difference quotient differs from the left and the right. A call option's payoff at expiry, max(S-K, 0), is continuous everywhere but not differentiable at S = K.",
+      "explanation": "At the strike, the payoff's slope is 0 from below and 1 from above, so no single tangent exists. This is not a technicality: it is why delta jumps discontinuously at expiry, why gamma blows up near the strike as expiry approaches, and why hedging a near-expiry at-the-money option is so difficult — the hedge ratio you need swings between 0 and 1 on tiny moves. The extreme case is a digital option, whose payoff is discontinuous, giving an unbounded delta at the strike and forcing traders to price and hedge it as a tight call spread instead.",
+      "technique": "Continuity versus differentiability",
+      "difficultyRationale": "Requires the distinction plus tracing its consequence for hedging."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "When should you reach for complementary counting? Give the trigger phrase.",
+      "canonicalAnswer": "When the event is 'at least one', or more generally when the complement has far fewer cases than the event itself. 'At least one X' always has the single-case complement 'no X at all'.",
+      "explanation": "The count of cases is the deciding factor. 'At least one 6 in four rolls' splits into exactly one, two, three or four sixes — four cases with binomial coefficients — while its complement is one case, (5/6)^4. Other triggers worth recognising: 'at least two share a birthday' (complement: all distinct), 'not all the same' (complement: all identical), and 'the maximum exceeds x' (complement: all below x). The last of these is how the CDF of a maximum is derived, so complementary counting is not just a puzzle trick.",
+      "technique": "Recognising the complement trigger",
+      "difficultyRationale": "Conceptual, with the case-count comparison as the criterion."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Three cards are drawn from a standard deck without replacement. What is the probability at least one is a heart?",
+      "canonicalAnswer": "About 58.7%. P(no heart) = (39/52)(38/51)(37/50) = 0.4135, so the answer is 1 - 0.4135 = 0.5865.",
+      "explanation": "The complement is a single chain of three fractions; computing it directly would require summing the exactly-one, exactly-two and exactly-three cases. Note the without-replacement structure — each draw reduces both the hearts remaining and the deck — which is why the denominators fall from 52 to 50. Sanity check against sampling WITH replacement: 1 - 0.75^3 = 0.578, very close to 0.587, as expected when drawing only three cards from a large deck. Without replacement gives the slightly higher figure because each non-heart drawn raises the proportion of hearts left.",
+      "technique": "Complementary counting without replacement",
+      "difficultyRationale": "Three-term product with shrinking denominators."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Four letters are chosen at random from the 26-letter alphabet, with repeats allowed. What is the probability at least one is a vowel?",
+      "canonicalAnswer": "About 57.5%. P(no vowel) = (21/26)^4 = 0.4254, so the answer is 1 - 0.4254 = 0.5746.",
+      "explanation": "Five vowels leave 21 consonants, so each letter avoids the vowels with probability 21/26 = 0.8077, and four independent letters do so with probability 0.8077^4 = 0.4254. Counting directly would mean summing the exactly-one, two, three and four-vowel cases with binomial coefficients. Note how quickly 'at least one' becomes likely even for a minority event: vowels are under a fifth of the alphabet, yet four draws make one more likely than not. The rule of thumb is that you need roughly 1/p draws for 'at least one' to reach about 63%, since (1-p)^{1/p} tends to 1/e.",
+      "technique": "Complement over independent draws",
+      "difficultyRationale": "One fourth power, with the 1/e rule of thumb as the check."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A portfolio holds 20 bonds, each defaulting independently with probability 2% over a year. What is the probability of at least two defaults?",
+      "canonicalAnswer": "About 5.99%. P(0) = 0.98^20 = 0.6676 and P(1) = 20(0.02)(0.98^19) = 0.2725, so P(at least 2) = 1 - 0.6676 - 0.2725 = 0.0599.",
+      "explanation": "'At least two' needs the complement of TWO cases rather than one, which is still far quicker than summing eighteen terms. The binomial term for exactly one is C(20,1) p (1-p)^19. The result is worth noting: nearly 6% chance of multiple defaults from a book where each name is 98% safe, which is the kind of arithmetic that makes concentration limits necessary. And this assumes INDEPENDENCE — with realistic default correlation the probability of multiple defaults is substantially higher, which is exactly the effect a one-factor credit model captures.",
+      "technique": "Complement of the first two binomial terms",
+      "difficultyRationale": "Two binomial terms plus the observation about the independence assumption."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How many 4-digit PINs contain at least one repeated digit?",
+      "canonicalAnswer": "4,960. Total is 10^4 = 10,000; all-distinct is 10 x 9 x 8 x 7 = 5,040; so 10,000 - 5,040 = 4,960.",
+      "explanation": "Counting the repeats directly would require handling one pair, two pairs, a triple, and four-of-a-kind separately with overlaps between them — messy and easy to double-count. The complement is a single falling product. Note the answer is just under half, which surprises people: with only 10 digits and 4 slots, a repeat is close to a coin flip. That is the birthday problem again, and the same pair-counting intuition applies — C(4,2) = 6 pairs each with a 1/10 chance of matching gives roughly 0.45 by the approximation.",
+      "technique": "Complement to avoid inclusion-exclusion casework",
+      "difficultyRationale": "Two counts and a subtraction, with the direct route as the contrast."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "A fair coin is tossed 6 times. Which probability is EASIEST to compute via the complement?",
+      "options": [
+        "At least one head",
+        "Exactly three heads",
+        "More heads than tails",
+        "The first and last tosses match"
+      ],
+      "correctOption": 0,
+      "explanation": "'At least one head' has the single-case complement 'all tails', probability (1/2)^6 = 1/64, so the answer is 63/64 in one step. Exactly three heads is a single binomial term already and needs no complement. 'More heads than tails' is best done by symmetry — with 6 tosses, P(more heads) = P(more tails) and ties take the rest — and 'first and last match' is just 1/2 directly. The lesson is that the complement is a tool for a specific shape of problem, not a universal simplification.",
+      "technique": "When the complement helps and when it does not",
+      "difficultyRationale": "Requires evaluating four problems for which method suits each."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A system has 4 independent components each with 95% reliability, and works only if ALL work. What is the failure probability, and what if it needs only one to work?",
+      "canonicalAnswer": "Series: P(fail) = 1 - 0.95^4 = 1 - 0.8145 = 18.55%. Parallel (needs only one): P(fail) = 0.05^4 = 0.000625, so 0.06%.",
+      "explanation": "The two arrangements are complements of each other in structure, and the contrast is dramatic: the same components give an 18.5% failure rate in series and 0.06% in parallel — a factor of nearly 300. In series, reliability multiplies and degrades fast with more components; in parallel, FAILURE multiplies, so redundancy improves things exponentially. The finance parallel is direct: a process requiring five sequential approvals to work is fragile, while a firm with five independent funding sources is robust. The critical assumption in both is independence, which common-mode failures (one power supply, one clearing bank) destroy.",
+      "technique": "Series versus parallel reliability",
+      "difficultyRationale": "Two complementary computations with a structural contrast."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How many ways can 8 rooks be placed on a chessboard so that no two attack each other, and how does the complement help here?",
+      "canonicalAnswer": "8! = 40,320. The complement does NOT help — this is a case where direct construction is far easier, since each row must contain exactly one rook and the columns form a permutation.",
+      "explanation": "The question is a test of judgement rather than technique. Counting arrangements WITH an attack would require inclusion-exclusion over which pairs share a row or column, and is much harder than the direct count. The direct argument is one line: rook 1 has 8 column choices, rook 2 has 7, and so on, giving 8! — the non-attacking placements are exactly the permutations of columns. The general lesson is that complementary counting earns its place when the complement is SIMPLER, and reaching for it reflexively can make a problem worse. Compare with the eight QUEENS problem, which has no such clean structure and is solved by search.",
+      "technique": "Knowing when not to use the complement",
+      "difficultyRationale": "Requires rejecting the topic's own technique and justifying the direct count."
+    },
+    {
+      "topicId": "complementary-counting",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Over 250 trading days, what is the probability a 99% VaR model produces zero exceptions if it is correctly calibrated?",
+      "canonicalAnswer": "About 8.1%. P(no exception) = 0.99^250 = 0.0811.",
+      "explanation": "The complement framing makes this a one-line calculation, and the result matters for backtesting: a correctly specified model produces zero exceptions in a year roughly one time in twelve, so zero exceptions is NOT strong evidence the model is fine. Combined with the earlier result that the expected count is 2.5, this is why the Basel green zone spans 0 to 4 rather than demanding a specific number. It also cuts the other way — a bank reporting zero exceptions for three consecutive years is at 0.0811^3 = 0.05%, which is evidence of over-conservatism rather than good modelling.",
+      "technique": "Complement applied to backtesting counts",
+      "difficultyRationale": "One exponentiation, with a genuine risk-management conclusion."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two people each draw one card from separate well-shuffled decks. What is the probability they draw the same rank?",
+      "canonicalAnswer": "1/13. Whatever the first person draws, the second matches its rank with probability 4/52 = 1/13.",
+      "explanation": "The move is to condition on the first draw and note the answer does not depend on WHAT it was — every rank is symmetric, so you never need to enumerate. Trying to sum over all 13 ranks gives 13 x (1/13)(1/13) = 1/13, the same answer with thirteen times the work. This 'fix the first, count the second' pattern is the core of the topic and handles a large family of matching problems: same suit is 1/4, same card exactly is 1/52.",
+      "technique": "Condition on the first draw, exploit rank symmetry",
+      "difficultyRationale": "One conditional probability once the symmetry is spotted."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "easy",
+      "type": "multiple_choice",
+      "prompt": "Two cards are dealt from a standard deck. What is the probability they are the same colour?",
+      "options": [
+        "25/51",
+        "1/2",
+        "26/52",
+        "1/4"
+      ],
+      "correctOption": 0,
+      "explanation": "Condition on the first card and ignore what it is — symmetry means the answer cannot depend on it. Of the 51 cards remaining, 25 share its colour, so the probability is 25/51 = 0.490. The tempting 1/2 forgets that the first card removes one of its own colour from the pool, and 26/52 makes the same error dressed up. The same one-step conditioning gives same-suit as 12/51 and same-rank as 3/51, so one technique covers the whole family.",
+      "technique": "Condition on the first card",
+      "difficultyRationale": "One conditional count, with the with-replacement answer as the trap."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A deck is shuffled. What is the probability that all four aces appear in the top half of the deck?",
+      "canonicalAnswer": "About 5.5%. Each ace is equally likely to be in either half, and the count is C(26,4)/C(52,4) = 14,950/270,725 = 0.0552.",
+      "explanation": "The symmetry argument gives an approximate answer instantly — if the aces were independent, (1/2)^4 = 6.25% — and the exact hypergeometric count corrects it slightly downward, because the aces crowd each other: once three aces are in the top half, only 23 of the remaining 49 slots there are free. The general lesson is that 'each is equally likely' handles the marginal question perfectly but that joint questions about several cards need the without-replacement correction. Both routes are worth being able to produce, and quoting the approximation with its direction of bias is a good interview answer.",
+      "technique": "Symmetry for the approximation, hypergeometric for the exact",
+      "difficultyRationale": "Requires both routes and knowing the sign of the difference."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Three fair dice are rolled. What is the probability that all three show different values?",
+      "canonicalAnswer": "5/9. Condition on the first die being anything; the second must differ (5/6) and the third must differ from both (4/6), giving (5/6)(4/6) = 20/36 = 5/9.",
+      "explanation": "Fixing the first die costs nothing because every face is symmetric, so the whole problem reduces to two conditional probabilities. Enumerating instead means counting 6 x 5 x 4 = 120 favourable out of 216, the same answer with more arithmetic. The pattern extends directly: for n dice all different the probability is a falling product, and it hits zero at n = 7 by pigeonhole. This is the same structure as the birthday problem, which is worth noticing because it means one technique covers both.",
+      "technique": "Condition on the first, multiply conditional probabilities",
+      "difficultyRationale": "Two conditional factors after fixing the first roll."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a knockout tournament of 64 equally matched players, what is the probability that two specific players meet at some point?",
+      "canonicalAnswer": "About 3.1%. There are 63 matches in total and C(64,2) = 2,016 possible pairs, each equally likely by symmetry, so the probability is 63/2016 = 1/32.",
+      "explanation": "The elegant route counts MATCHES rather than rounds: a 64-player knockout eliminates 63 players and so plays exactly 63 matches, and by symmetry every one of the 2,016 possible pairings is equally likely to be one of them. That gives 63/2016 = 1/32 immediately. The direct route — summing the probability of meeting in round one, round two, and so on — gets the same answer with far more work. The general result for 2^n players is (2^n - 1)/C(2^n, 2) = 2/2^n, which is a neat formula worth spotting.",
+      "technique": "Count outcomes rather than paths, using symmetry over pairs",
+      "difficultyRationale": "Requires reframing the question in terms of matches rather than rounds."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "n people each write their name on a slip and draw one at random. What is the probability a specific person draws their own name, and what is the expected number who do?",
+      "canonicalAnswer": "1/n for any specific person, by symmetry. The expected number is n x (1/n) = 1, regardless of n.",
+      "explanation": "Symmetry gives the individual probability without any casework — the slips are exchangeable, so each person is equally likely to receive any slip. Linearity of expectation then gives the total without needing independence, which is essential here because the events are strongly dependent. The answer of exactly 1 for every n is the striking part: whether 5 people or 5 million, you expect one self-match on average. It also connects to derangements — the probability of ZERO self-matches tends to 1/e, consistent with a Poisson(1) approximation for the count.",
+      "technique": "Exchangeability plus linearity of expectation",
+      "difficultyRationale": "Two techniques combined, with the n-independence of the answer as the payoff."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You and a friend each roll a die repeatedly until you get a 6. What is the probability you both take the same number of rolls?",
+      "canonicalAnswer": "1/11. Summing over n: sum of [(5/6)^{n-1}(1/6)]^2 = (1/36) sum of (25/36)^{n-1} = (1/36)/(1 - 25/36) = (1/36)/(11/36) = 1/11.",
+      "explanation": "The sum is geometric with ratio (5/6)^2 = 25/36, which is the key simplification — squaring the geometric probability gives another geometric series. The general answer for success probability p is p/(2-p), which at p = 1/6 gives (1/6)/(11/6) = 1/11. Note it exceeds the naive guess: with a mean wait of 6 rolls you might expect matching to be rare, but the mode of a geometric is 1, so both players quite often finish quickly and together. Symmetry also gives the companion result immediately — P(you take fewer) = P(they take fewer) = (1 - 1/11)/2 = 5/11.",
+      "technique": "Squaring a geometric, plus symmetry for the tie-split",
+      "difficultyRationale": "Requires setting up and summing the squared geometric series."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A stick is broken at a uniformly random point. What is the probability the longer piece is more than twice the shorter?",
+      "canonicalAnswer": "2/3. The condition holds when the break point is outside the middle third, i.e. below 1/3 or above 2/3, which has total probability 2/3.",
+      "explanation": "Let the break be at x. The longer piece exceeds twice the shorter exactly when the shorter is less than 1/3 of the stick, which means x < 1/3 or x > 2/3 — and by symmetry those two regions have equal probability 1/3 each. Setting up the inequality is the only real work: for x < 1/2 the condition is (1-x) > 2x, giving x < 1/3, and symmetry supplies the mirror case rather than requiring it to be solved again. Recognising the symmetry about x = 1/2 halves the algebra and is what the topic is for.",
+      "technique": "Solve one side, mirror by symmetry",
+      "difficultyRationale": "Requires translating the ratio condition into an interval, then using symmetry."
+    },
+    {
+      "topicId": "symmetry-condition-first",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two traders each independently pick a random stock from the FTSE 100. What is the probability the alphabetically-first of their two picks belongs to the first trader?",
+      "canonicalAnswer": "Just under 1/2 — precisely 99/200. They pick the same stock with probability 1/100, and the remaining 99/100 splits equally by symmetry, giving (99/100)/2 = 0.495.",
+      "explanation": "The symmetry is exact: nothing distinguishes the two traders, so conditional on their picks differing, each is equally likely to hold the alphabetically-first one. The only care needed is the tie case, which must be removed before halving. This 'subtract the ties, halve the rest' pattern handles every comparison question of this shape — which die is higher, whose card ranks first, who finishes sooner — and forgetting the tie adjustment is the standard error, producing exactly 1/2 where the true answer is slightly less.",
+      "technique": "Symmetry with an explicit tie adjustment",
+      "difficultyRationale": "One symmetry argument, with the tie case as the discriminating detail."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "A bag has 4 red and 6 blue balls. Two are drawn without replacement. What is the probability the second is red?",
+      "canonicalAnswer": "4/10 = 2/5 — the same as the first.",
+      "explanation": "By symmetry every ball is equally likely to occupy the second position, so the answer is simply the fraction of red balls. The conditioning route confirms it: (4/10)(3/9) + (6/10)(4/9) = 12/90 + 24/90 = 36/90 = 2/5. The lesson is that the UNCONDITIONAL probability of the k-th draw never depends on k, however many draws precede it. What does change is the conditional probability given what you have seen — and confusing those two is the error this topic exists to prevent.",
+      "technique": "Position independence without replacement",
+      "difficultyRationale": "One symmetry observation, verifiable by conditioning."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You tag 50 fish in a lake, release them, then later catch 40 fish of which 8 are tagged. Estimate the lake's population.",
+      "canonicalAnswer": "About 250. If 8/40 = 20% of the recapture is tagged, and 50 fish are tagged in total, then 50 is 20% of the population: N = 50 x 40 / 8 = 250.",
+      "explanation": "This is the Lincoln-Petersen capture-recapture estimator, and it is the hypergeometric distribution read backwards — instead of computing a probability from a known population, you infer the population from an observed proportion. The assumptions are the whole story: the tagged fish must mix uniformly, no births, deaths or migration between the two samples, and tagging must not change catchability. Each failure biases the estimate in a predictable direction, and if tagged fish are easier to catch the population is UNDERestimated. The same estimator is used to size populations that cannot be counted directly, including undetected software defects and unreported cases in epidemiology.",
+      "technique": "Capture-recapture as inverted hypergeometric",
+      "difficultyRationale": "One proportion inverted, with the assumptions carrying the weight."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the hypergeometric distribution, and how does it differ from the binomial?",
+      "canonicalAnswer": "It gives the number of successes in n draws WITHOUT replacement from a finite population of N containing K successes: P(X = k) = C(K,k)C(N-K,n-k)/C(N,n). The binomial is the with-replacement analogue, and the two converge when N is large relative to n.",
+      "explanation": "The mean is the same in both cases, n(K/N), which is why the position-independence shortcut works. The variance differs by the finite population correction factor (N-n)/(N-1), which is always at most 1 — so sampling without replacement gives LOWER variance, because each draw removes uncertainty rather than leaving it. That is the mathematical reason a sample survey without replacement is more efficient. In practice the correction is ignored once the sample is under about 5% of the population, which is why binomial approximations are usually fine for card and quality-control problems with large decks or lots.",
+      "technique": "Hypergeometric versus binomial",
+      "difficultyRationale": "Requires the distribution plus the finite population correction and its direction."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Five cards are dealt from a deck. What is the expected number of aces, and does the answer depend on whether dealing is with or without replacement?",
+      "canonicalAnswer": "5 x 4/52 = 5/13 = 0.385 in both cases. The mean is identical; only the variance differs.",
+      "explanation": "Linearity of expectation needs no independence, so the without-replacement dependence between draws is irrelevant to the mean. The variance does differ: with replacement it is np(1-p) = 5(1/13)(12/13) = 0.355, and without replacement that is multiplied by the finite population correction (52-5)/(52-1) = 0.922, giving 0.327. The practical reading is that sampling without replacement gives you the same expected count with slightly more certainty about it, and the effect is small when the sample is a small fraction of the population.",
+      "technique": "Means agree, variances do not",
+      "difficultyRationale": "Requires knowing which moment is affected by the sampling scheme."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A batch of 100 items contains 5 defective. You sample 10 without replacement and accept the batch if none are defective. What is the probability you accept it?",
+      "canonicalAnswer": "About 58%. P = C(95,10)/C(100,10), or sequentially (95/100)(94/99)...(86/91) = 0.584.",
+      "explanation": "This is hypergeometric acceptance sampling, and the result is the point: inspecting 10% of a batch fails to detect a 5% defect rate more than half the time. A rough check via the binomial approximation gives 0.95^10 = 0.599, close because the sample is a modest fraction of the batch. To get the acceptance probability of a bad batch below 10% you would need to sample roughly 40 items — the required sample size grows far faster than intuition suggests, which is why acceptance sampling plans specify sample sizes from tables rather than from a fixed percentage. The same arithmetic explains why spot-checking a small share of trades detects a low error rate so poorly.",
+      "technique": "Hypergeometric acceptance sampling",
+      "difficultyRationale": "One falling product, with the detection-power conclusion as the payload."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are dealt a bridge hand of 13 cards. What is the probability it contains no aces, and how would you compute it two ways?",
+      "canonicalAnswer": "About 30.4%. Combinations: C(48,13)/C(52,13) = 0.3038. Sequentially: (48/52)(47/51)(46/50)(45/49) = 0.3038.",
+      "explanation": "The two routes are the same calculation reorganised. The combinations version chooses 13 cards from the 48 non-aces over all possible hands. The sequential version tracks the four ACES rather than the thirteen cards — each ace must land among the 39 cards you do not hold — which is far quicker by hand because it is four fractions rather than two large binomial coefficients. Choosing to condition on the smaller set is the general lesson, and it applies whenever one group is much smaller than the other.",
+      "technique": "Condition on the smaller group",
+      "difficultyRationale": "Two equivalent routes, with the choice between them as the skill."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A lottery draws 6 numbers from 49. You hold one ticket. What is the probability you match exactly 4, and why is a naive independence calculation wrong?",
+      "canonicalAnswer": "About 1 in 1,032. P = C(6,4)C(43,2)/C(49,6) = 15 x 903 / 13,983,816 = 13,545/13,983,816 = 0.000969.",
+      "explanation": "The hypergeometric structure is essential: choose which 4 of your 6 numbers match, then which 2 of the 43 non-matching numbers fill the rest of the draw, over all possible draws. A naive binomial treatment would use p = 6/49 per number and independence, giving C(6,4)p^4(1-p)^2 = 0.00047 — off by a factor of two, because the draw is without replacement and the numbers are strongly dependent. Here the sample (6) is a large fraction of the population (49), so the finite population correction is substantial and the binomial approximation genuinely fails.",
+      "technique": "Hypergeometric where the binomial approximation breaks",
+      "difficultyRationale": "Requires the correct model and quantifying how far the approximation errs."
+    },
+    {
+      "topicId": "without-replacement-shortcut",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does the position-independence shortcut fail if you are told something about an earlier draw?",
+      "canonicalAnswer": "Because the shortcut is about the UNCONDITIONAL probability, which relies on all positions being exchangeable. Conditioning on an earlier draw breaks that exchangeability and changes the composition of what remains.",
+      "explanation": "Concretely, with 4 aces in 52 cards, P(second card is an ace) = 4/52. But P(second is an ace GIVEN the first was an ace) = 3/51, and given the first was not, 4/51. The unconditional value is the weighted average of these, which is exactly the calculation the shortcut lets you skip. So the rule is simple: use the shortcut when nothing has been revealed, and condition explicitly when something has. Most errors in this topic come from applying the shortcut after information has arrived, which quietly assumes independence that is not there.",
+      "technique": "The shortcut's scope of validity",
+      "difficultyRationale": "Requires stating the condition under which the technique applies and why."
+    },
+    {
+      "topicId": "out-of-the-box",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have a 3-litre and a 5-litre jug and need exactly 4 litres. But you are told the answer must work for ANY target achievable with these jugs. What determines which targets are possible?",
+      "canonicalAnswer": "Any whole number of litres that is a multiple of gcd(3,5) = 1, up to the larger jug's capacity — so every integer from 1 to 5. In general the achievable amounts are the multiples of gcd(a,b).",
+      "explanation": "Each operation adds or removes a whole jug's worth, so every reachable volume is of the form 3m + 5n for integers m and n, and Bezout's identity says those are exactly the multiples of gcd(3,5) = 1. That is why these two jugs can measure anything; a 4-litre and 6-litre pair could only ever produce even amounts. The general lesson is worth more than the puzzle: rather than searching for a sequence of pours, identify the INVARIANT that constrains what is reachable, and the answer follows without any search at all.",
+      "technique": "Bezout's identity as a reachability invariant",
+      "difficultyRationale": "Requires generalising from one puzzle to the structural condition."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "In a fair gambler's ruin game with a fixed target N, what happens to your probability of success as your starting bankroll k grows?",
+      "canonicalAnswer": "It rises linearly as k/N, approaching 1 as k approaches N. Starting with 90% of the target gives a 90% chance of reaching it.",
+      "explanation": "The linearity is the memorable part: there is no threshold or acceleration, just a straight line from 0 to 1. It follows from the ruin probability satisfying a harmonic equation whose solution with linear boundary conditions is linear. The practical reading is that in a fair game, distance from ruin is the ONLY thing that matters — not bet size, not strategy, not how long you play. That changes completely once the game is unfair, where the ruin probability becomes exponential in k and a small edge against you overwhelms a large bankroll.",
+      "technique": "Linearity of the fair-game ruin probability",
+      "difficultyRationale": "One formula read as a function of k."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a fair game, you double your bet size from £1 to £2 per flip with the same starting capital and target. What happens to your ruin probability and to the expected duration?",
+      "canonicalAnswer": "The ruin probability is UNCHANGED — it depends only on k/N in units of the bet. The expected duration falls by a factor of 4, since it is k(N-k) measured in bets and both k and N halve.",
+      "explanation": "Doubling the stake halves the number of betting units on both sides, so k/N is unchanged and so is the probability of success. Duration behaves differently: k(N-k) with both halved becomes (k/2)((N-k)/2) = k(N-k)/4, so you finish four times faster. In a fair game that is a pure convenience — same outcome distribution, less time at the table. In an UNFAVOURABLE game it is genuinely valuable, because fewer bets means less exposure to the edge, which is the mathematical case for bold play: bet big and finish quickly when the odds are against you.",
+      "technique": "Scale invariance of ruin, scale dependence of duration",
+      "difficultyRationale": "Requires seeing that one quantity is invariant and the other is not."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the expected duration of a gambler's ruin game for both the fair and unfair cases.",
+      "canonicalAnswer": "Fair: E[T] = k(N-k). Unfair with p not equal to 1/2: E[T] = [k - N*P(reach N)] / (q - p), where P(reach N) is the usual ruin formula.",
+      "explanation": "The fair-case formula is worth memorising and has a neat reading — duration is maximised when you start halfway, at N^2/4, and shrinks to zero at either barrier. The unfair case comes from applying optional stopping to the martingale S_n - (p-q)n, which compensates the drift: your position minus the expected drift is a martingale, so E[S_T] - (p-q)E[T] = k, and rearranging gives the formula. Note the denominator: with a large edge against you the game ends quickly, because the drift carries you to ruin rather than leaving you to wander.",
+      "technique": "Duration via a drift-compensated martingale",
+      "difficultyRationale": "Two formulas, with the compensated martingale as the derivation."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A trader has £1m and risks £10,000 per trade, winning or losing that amount with probability 51% and 49%. What is the probability they double before going broke?",
+      "canonicalAnswer": "About 98%. In units of £10k, k = 100 and N = 200 with r = q/p = 0.9608. P = (1 - r^100)/(1 - r^200) = (1 - 0.0183)/(1 - 0.000335) = 0.982.",
+      "explanation": "The arithmetic is easiest in logs: ln(0.9608) = -0.04, so r^100 = e^{-4} = 0.018 and r^200 = e^{-8} = 0.0003. The result is the important part — a 1% edge with a bankroll of 100 units gives a 98% chance of doubling, whereas a fair game would give only 50%. The exponential in the formula means the edge compounds powerfully with bankroll size. Run it with 10 units instead of 100 and the probability drops to about 60%, which is the quantitative case for position sizing: the same edge is nearly worthless if each trade risks a tenth of your capital.",
+      "technique": "Unfair ruin with a favourable edge",
+      "difficultyRationale": "Requires the formula plus log arithmetic on the powers."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain the bold play versus timid play result: in an unfavourable game, should you bet large or small?",
+      "canonicalAnswer": "Bet as LARGE as possible. In an unfavourable game every bet has negative expectation, so minimising the NUMBER of bets maximises your chance of reaching a target — bold play beats timid play.",
+      "explanation": "The intuition is that the house edge is charged per bet, so playing fewer, larger bets exposes you to it fewer times. In the limit, betting everything at once on a single bet gives the highest chance of doubling in a game with a negative edge. Timid play, by contrast, guarantees the law of large numbers works against you — the more you play, the more certainly the edge shows up. The reverse holds in a FAVOURABLE game, where you want many small bets so the edge can accumulate reliably, which is the Kelly criterion's domain. Recognising which regime you are in determines the entire strategy.",
+      "technique": "Bold play under a negative edge",
+      "difficultyRationale": "Requires the counterintuitive conclusion and the reason it reverses when the edge is positive."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does the ruin problem change if wins and losses are different sizes — say you win £1 but lose £2?",
+      "canonicalAnswer": "It is no longer a simple random walk, so the standard formula does not apply. You need to solve the recursion h(k) = p*h(k+1) + q*h(k-2) with the appropriate boundary conditions, which gives a characteristic equation of higher order.",
+      "explanation": "The step sizes determine the order of the recursion, so unequal steps produce a characteristic polynomial with more roots and a solution that is a combination of several geometric terms rather than one. There is a shortcut for the DRIFT question though: the game is favourable in expectation only if p(1) > q(2), i.e. p > 2/3, which is a much higher bar than the 1/2 needed with symmetric stakes. That asymmetry is exactly the shape of many trading strategies — frequent small gains and occasional large losses — where a high hit rate can still lose money, and it is why hit rate alone is a misleading statistic.",
+      "technique": "Asymmetric step sizes and the drift condition",
+      "difficultyRationale": "Requires recognising the standard formula fails and extracting the drift condition anyway."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A knock-out barrier option and a gambler's ruin problem share a structure. Explain the correspondence.",
+      "canonicalAnswer": "Both concern the probability that a random process hits one barrier before another. The gambler's wealth maps to the underlying's price, ruin maps to the knock-out barrier, and reaching the target maps to finishing in the money.",
+      "explanation": "The mathematical content is the same first-passage problem, which is why the reflection principle solves both. The differences are what make the option version harder: the price process is continuous rather than a lattice walk, it has a drift set by the risk-neutral measure rather than by the gambler's edge, and it is multiplicative rather than additive — so you work with log price, where it becomes an arithmetic walk again. Once in log space the correspondence is exact, and the barrier option formula's structure, with terms in (S/B)^{2r/sigma^2 - 1}, is recognisably the same geometric form as the unfair ruin probability's (q/p)^k.",
+      "technique": "First-passage structure common to both",
+      "difficultyRationale": "Requires mapping each element across and identifying the log transform that makes them match."
+    },
+    {
+      "topicId": "gamblers-ruin",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why does a risk manager care about the gambler's ruin result even though a bank is not gambling?",
+      "canonicalAnswer": "Because it quantifies the relationship between edge, capital and survival probability. A positive-expectation business with insufficient capital relative to its bet size still fails with high probability, and the relationship is exponential in the capital-to-bet ratio.",
+      "explanation": "That exponential dependence is the whole argument for capital requirements and position limits. Two firms with identical expected returns but different capital-to-risk ratios have completely different survival probabilities, and the difference is not proportional — it is exponential, so halving position size can move survival from 60% to 98%. It also formalises why 'we make money on average' is not a sufficient answer to a risk question: the average is over paths that include ones where you no longer exist. Ruin is absorbing, which is exactly why risk management is asymmetric and why drawdown limits exist alongside expected-return targets.",
+      "technique": "Ruin theory as the basis for capital adequacy",
+      "difficultyRationale": "Requires translating a gambling result into a capital-adequacy argument."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "There are 50 US states. How many people would you need to meet, at random, to expect to have met someone from every state?",
+      "canonicalAnswer": "About 225. E = n*H_n = 50 x (ln 50 + 0.5772 + 1/100) = 50 x 4.50 = 225.",
+      "explanation": "The harmonic number H_n is well approximated by ln(n) + gamma where gamma = 0.5772 is the Euler-Mascheroni constant, which is the practical way to evaluate n*H_n without summing fifty terms. Here ln(50) = 3.91, so H_50 = 4.50 and the answer is 225 — four and a half times the number of states. The multiplier grows only logarithmically, so 500 categories would need about 500 x 6.8 = 3,400 draws, not fifty times more. The assumption doing the work is uniformity; real state populations are wildly unequal, which makes the true answer substantially larger.",
+      "technique": "n*H_n with the harmonic approximation",
+      "difficultyRationale": "One formula plus the ln(n) + gamma approximation."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How long does it take to collect HALF the coupons, compared with all of them?",
+      "canonicalAnswer": "Only about 0.69n draws — n*ln(2). For n = 100 that is 69 draws to get half, against 519 to get all of them.",
+      "explanation": "The expected time to go from 0 to n/2 coupons is n(H_n - H_{n/2}) = n*ln(2) approximately, since H_n - H_{n/2} tends to ln 2. The comparison is the striking part: half the collection takes 13% of the total time, and the final half takes the remaining 87%. The very last coupon alone takes n draws in expectation — as long as the first half. This heavily back-loaded structure is the defining feature of the problem, and it is the reason 'we are halfway through the data collection' is such a misleading statement in any coverage-driven task, from test coverage to sampling rare categories.",
+      "technique": "Partial collection times via harmonic differences",
+      "difficultyRationale": "Requires the harmonic difference and the interpretation of the back-loading."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Coupons appear with UNEQUAL probabilities. Does collection take longer or shorter than the uniform case?",
+      "canonicalAnswer": "Longer, always. The uniform distribution minimises the expected collection time; any inequality means some coupon is rarer and dominates the wait.",
+      "explanation": "The intuition is that the total time is driven by the rarest coupon, and making the distribution unequal necessarily creates something rarer than 1/n. Formally the expected time can be written as an integral involving the product of (1 - e^{-p_i t}) terms, which is minimised at uniformity. The practical consequence matters for anything sampling-based: if you need at least one observation from every category and the categories are skewed, budget for the rarest one rather than the average. A category at 1% of the population needs about 100 draws on its own, however common the others are.",
+      "technique": "Uniformity minimises collection time",
+      "difficultyRationale": "Requires the direction of the effect plus the rarest-category reasoning."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the variance of the coupon collector time, and what does its size tell you?",
+      "canonicalAnswer": "Var = n^2 * sum of 1/k^2 for k = 1 to n, which approaches n^2 * pi^2/6 = 1.645n^2. So the standard deviation is about 1.28n.",
+      "explanation": "The variance follows because the total is a sum of independent geometrics, so variances add: the k-th stage has variance approximately (n/k)^2 and the sum converges to the Basel sum pi^2/6. The comparison that matters is with the mean, n*ln(n): for n = 100 the mean is 519 and the standard deviation 128, so a quarter of the mean. That is a wide distribution — you might reasonably need 400 or 700 draws — and it means quoting the expected time alone substantially understates the planning horizon. The distribution is also right-skewed, so overruns are worse than underruns.",
+      "technique": "Variance as a sum of geometric variances",
+      "difficultyRationale": "Requires the sum of independent variances and comparing the spread to the mean."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Explain how the coupon collector problem relates to the maximum of n exponential waiting times.",
+      "canonicalAnswer": "In the continuous version, each coupon type arrives as an independent Poisson process, so the wait for a given type is exponential. Collecting all of them is the MAXIMUM of n independent exponentials, whose expectation is exactly H_n divided by the rate.",
+      "explanation": "This Poissonisation makes the answer fall out of order statistics rather than from a sum of geometrics: E[max of n independent rate-1 exponentials] = 1 + 1/2 + ... + 1/n = H_n. The two derivations agree, as they must, and the continuous one explains WHY the harmonic number appears — it is the expected maximum of exponentials, not a coincidence of the discrete counting. Poissonisation is a general technique worth knowing: converting a discrete dependent problem into a continuous independent one often makes the analysis dramatically simpler, and it is how the sharper concentration results for this problem are proved.",
+      "technique": "Poissonisation and the maximum of exponentials",
+      "difficultyRationale": "Requires the continuous reformulation and seeing why it yields the same harmonic number."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You need at least TWO of each of 20 coupon types. Roughly how much longer does that take than one of each?",
+      "canonicalAnswer": "Only modestly longer — about n(ln n + ln ln n) instead of n*ln n, so roughly 20(3.0 + 1.1) = 82 against 20 x 3.0 = 60 draws.",
+      "explanation": "This is the double dixie cup problem, and the surprise is how cheap the second copy is: collecting m of each costs n(ln n + (m-1) ln ln n) asymptotically, so the increment for each extra copy grows like ln ln n rather than like ln n. The reason is that by the time you have one of everything, most types already have several copies — only a handful are still short. The practical reading for sampling problems is encouraging: if you need multiple observations per category, the marginal cost over single coverage is much smaller than doubling.",
+      "technique": "Double dixie cup asymptotics",
+      "difficultyRationale": "Requires the ln ln n increment and the reason the marginal cost is low."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What is the probability that the coupon collector needs substantially more than n*ln(n) draws?",
+      "canonicalAnswer": "P(T > n(ln n + c)) is approximately 1 - exp(-e^{-c}), so the excess has a Gumbel distribution. At c = 3 that is about 5%, and at c = -1 about 93%.",
+      "explanation": "The limiting distribution being Gumbel is not an accident — it is the extreme value distribution for the maximum of exponentials, which is exactly what the Poissonised version says the collection time is. The practical use is planning: the mean n*ln n is close to the median, but the right tail decays only doubly-exponentially in c, so overruns of a further n or 2n draws are common. For n = 100, the mean is 519 and the 95th percentile is about 519 + 300 = 819. Budgeting to the mean therefore fails roughly half the time, which is why coverage-driven processes routinely overrun.",
+      "technique": "Gumbel limit for the collection time",
+      "difficultyRationale": "Requires the limiting distribution and converting it into a percentile."
+    },
+    {
+      "topicId": "coupon-collector",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A Monte Carlo simulation samples scenarios at random from 1,000 equally likely states. Roughly how many runs before every state has been visited, and is that the right target?",
+      "canonicalAnswer": "About 1,000 x (ln 1000 + 0.577) = 1,000 x 7.48 = 7,480 runs. But full coverage is usually the WRONG target — Monte Carlo aims to estimate an expectation accurately, not to enumerate the space.",
+      "explanation": "The number is easy; recognising that the question is misframed is the point. Monte Carlo error falls as 1/sqrt(N) regardless of coverage, and an accurate estimate of a mean needs far fewer runs than touching every state. Full coverage matters only when the quantity of interest depends on a rare state — a tail measure such as expected shortfall, or a payoff triggered by one specific scenario. In those cases the right response is not more uniform sampling but IMPORTANCE sampling, which deliberately oversamples the region that matters and reweights, achieving in hundreds of runs what uniform sampling would need millions for.",
+      "technique": "Coverage versus estimation accuracy in Monte Carlo",
+      "difficultyRationale": "Requires computing the figure and then arguing it is the wrong objective."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Choose any 6 numbers from 1 to 10. Prove that two of them are consecutive integers.",
+      "canonicalAnswer": "Partition 1..10 into the 5 pairs {1,2}, {3,4}, {5,6}, {7,8}, {9,10}. Six numbers into five pairs means two fall in the same pair, and the members of each pair are consecutive.",
+      "explanation": "The construction of the boxes is the entire proof, and it is where these problems are won or lost — once the pairs are written down the conclusion is immediate. Note the pairing is chosen so that 'same box' directly implies the property you want; a different partition, such as odds and evens, would prove nothing. The bound is tight: choosing {1,3,5,7,9} gives five numbers with no consecutive pair, so six really is the threshold. Checking tightness by constructing a counterexample one size down is a good habit, because it confirms you have not proved something weaker than the truth.",
+      "technique": "Constructing the right partition",
+      "difficultyRationale": "Requires designing the boxes so membership implies the conclusion, plus a tightness check."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Given any sequence of n integers, prove that some consecutive block of them sums to a multiple of n.",
+      "canonicalAnswer": "Form the n partial sums S_1, ..., S_n. If any is divisible by n, done. Otherwise their remainders mod n take one of n-1 non-zero values, so by pigeonhole two are equal — and the difference S_j - S_i is a consecutive block divisible by n.",
+      "explanation": "The move that makes it work is considering PARTIAL SUMS rather than the numbers themselves, which converts 'some block sums to a multiple' into 'two partial sums agree mod n'. The case split at the start is what reduces n possible remainders to n-1, giving pigeonhole the room it needs. This partial-sums-plus-pigeonhole pattern recurs constantly in competition problems, and it is worth recognising as a template: whenever a question asks about a consecutive block, look at the running totals.",
+      "technique": "Partial sums plus pigeonhole on remainders",
+      "difficultyRationale": "Requires the non-obvious step of applying pigeonhole to partial sums rather than to the elements."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A drawer contains socks in 4 colours. How many must you take to guarantee TWO matching pairs?",
+      "canonicalAnswer": "7. With 6 you could have 4 singles plus one pair, giving only one pair; the 7th sock must create a second pair whatever colour it is.",
+      "explanation": "The worst case is what you must construct, and it is not simply 'one more than the number of colours'. With 6 socks the adversarial arrangement is one colour appearing three times and three colours once each — one pair from the triple, and no second pair. Adding a seventh sock either matches one of the singles, creating a pair, or extends the triple to four, creating a second pair from it. Reasoning about the ADVERSARY'S best arrangement, rather than about typical draws, is the discipline that separates pigeonhole from probability.",
+      "technique": "Adversarial worst-case construction",
+      "difficultyRationale": "Requires building the worst case explicitly rather than applying a formula."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Prove that among any 10 distinct two-digit numbers, two different subsets have the same sum.",
+      "canonicalAnswer": "There are 2^10 = 1,024 subsets, but every subset sum lies between 0 and 10 x 99 = 990, so at most 991 possible values. With 1,024 subsets into 991 values, two subsets share a sum.",
+      "explanation": "Counting the two sides is the whole proof: subsets grow exponentially while their possible sums grow only linearly, so a collision is forced. The subsets found may overlap, but removing their common elements gives two DISJOINT subsets with equal sums, which is the stronger and usually intended conclusion. The technique — compare the number of objects with the number of possible values of some statistic — is the general form of pigeonhole and is exactly the argument behind hash collisions and the birthday bound.",
+      "technique": "Exponential objects into polynomial values",
+      "difficultyRationale": "Requires counting both sides and the disjointness refinement."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the infinite pigeonhole principle and give an application.",
+      "canonicalAnswer": "If infinitely many objects are placed into finitely many boxes, at least one box contains infinitely many. Application: any infinite sequence of real numbers in a bounded interval has a monotone subsequence, which underpins Bolzano-Weierstrass.",
+      "explanation": "The finite version guarantees a box with at least the ceiling of n/k; the infinite version upgrades that to an infinite box, which is far stronger and is the workhorse of analysis proofs. The Bolzano-Weierstrass route repeatedly bisects the interval — one half must contain infinitely many terms — producing a nested sequence of intervals converging to a limit point. In probability the same principle appears in proofs of almost-sure convergence, where you need infinitely many terms to satisfy a condition rather than merely one.",
+      "technique": "Infinite pigeonhole",
+      "difficultyRationale": "Requires the statement plus a genuine analytic application."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A hash function maps arbitrary inputs to 64-bit outputs. Use pigeonhole to say something certain about collisions.",
+      "canonicalAnswer": "Collisions must exist: there are infinitely many possible inputs and only 2^64 outputs, so infinitely many inputs share each output. No hash function with a finite output can be collision-free.",
+      "explanation": "That is a certainty, not a probability, and it is why cryptographic hashes aim for collision RESISTANCE — collisions exist but must be computationally infeasible to find — rather than collision freedom. The probabilistic companion is the birthday bound: you expect to find a collision after about 2^32 random inputs, the square root of the output space, which is why a 64-bit hash is considered weak and 256-bit hashes are standard. The two arguments answer different questions: pigeonhole says collisions exist, the birthday bound says how hard they are to find.",
+      "technique": "Pigeonhole certainty versus the birthday bound",
+      "difficultyRationale": "Requires distinguishing the guaranteed existence from the probabilistic search cost."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Prove that among any 100 integers, some non-empty subset sums to a multiple of 100.",
+      "canonicalAnswer": "Order them arbitrarily and take the 100 partial sums S_1, ..., S_100. If any is 0 mod 100, that prefix works. Otherwise the 100 partial sums take one of 99 non-zero remainders, so two coincide and their difference is a consecutive block summing to a multiple of 100.",
+      "explanation": "This is the same partial-sums construction as the general n case, and the subset it produces is always a CONSECUTIVE block, which is stronger than the question requires. The result is tight in the sense that 99 integers do not suffice: take 99 copies of 1, and no non-empty subset sums to a multiple of 100. Constructing that counterexample is what confirms the bound is exactly 100 rather than something smaller, and it is the step most solutions omit.",
+      "technique": "Partial sums with a tightness counterexample",
+      "difficultyRationale": "Requires the construction and the counterexample showing the bound cannot be lowered."
+    },
+    {
+      "topicId": "pigeonhole",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the essential difference between what pigeonhole tells you and what a probability calculation tells you?",
+      "canonicalAnswer": "Pigeonhole gives CERTAINTY about the worst case with no distributional assumption; probability gives a likelihood under an assumed distribution. Pigeonhole says a collision must occur; probability says how likely one is.",
+      "explanation": "The birthday pair makes the contrast concrete: pigeonhole says 366 people guarantee a shared birthday, requiring nothing about how birthdays are distributed, while the birthday problem says 23 people make it more likely than not, and that answer depends entirely on assuming uniformity. Each is the right tool for a different question. In risk terms, pigeonhole reasoning is what a stress test does — a guaranteed statement about a specified scenario — while probability reasoning is what VaR does, and confusing the two is exactly the error of attaching a likelihood to a stress result.",
+      "technique": "Guarantees versus likelihoods",
+      "difficultyRationale": "Conceptual, requiring the assumption-free nature of pigeonhole to be made explicit."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is 2^100 mod 3?",
+      "canonicalAnswer": "1. Since 2 = -1 (mod 3), we have 2^100 = (-1)^100 = 1 (mod 3).",
+      "explanation": "Replacing 2 with -1 is the shortcut, and it works because -1 and 2 leave the same remainder mod 3. Any even power of -1 is 1 and any odd power is -1, so powers of 2 mod 3 simply alternate 2, 1, 2, 1. Looking for a small NEGATIVE representative is often faster than looking for a small positive one — the same trick gives 10 = -1 (mod 11), which is exactly where the alternating-digit-sum divisibility rule for 11 comes from.",
+      "technique": "Use a negative residue to simplify powers",
+      "difficultyRationale": "One substitution once the negative residue is spotted."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State Fermat's little theorem and use it to find 3^100 mod 7.",
+      "canonicalAnswer": "For prime p and a not divisible by p, a^{p-1} = 1 (mod p). So 3^6 = 1 (mod 7), and since 100 = 16 x 6 + 4, we get 3^100 = 3^4 = 81 = 4 (mod 7).",
+      "explanation": "The theorem lets you reduce the EXPONENT modulo p-1, which collapses enormous powers instantly. Here 100 mod 6 = 4, so the answer is 3^4 = 81 = 4 mod 7. The conditions matter: p must be prime and a must not be a multiple of p. Euler's theorem generalises it to composite moduli using the totient function, a^{phi(n)} = 1 mod n for coprime a and n, and that generalisation is what makes RSA work — the decryption exponent is chosen as the inverse of the encryption exponent modulo phi(n).",
+      "technique": "Fermat's little theorem to reduce exponents",
+      "difficultyRationale": "Requires the theorem, the exponent reduction, and one small power."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "When does a modular inverse exist, and find the inverse of 3 modulo 7.",
+      "canonicalAnswer": "The inverse of a mod n exists exactly when gcd(a,n) = 1. Here gcd(3,7) = 1, and 3 x 5 = 15 = 1 (mod 7), so the inverse is 5.",
+      "explanation": "For small moduli, trial is quickest: check 3, 6, 9, 12, 15 until one is 1 more than a multiple of 7. For larger ones the extended Euclidean algorithm finds x and y with ax + ny = 1, and x is the inverse. The coprimality condition is what makes division work in modular arithmetic, and its failure is exactly why you cannot cancel freely: 2 has no inverse mod 4, which is why 2x = 2 (mod 4) has two solutions rather than one. Since every non-zero element is coprime to a PRIME modulus, arithmetic mod a prime behaves like ordinary arithmetic with division — which is why primes are the useful moduli.",
+      "technique": "Modular inverses and coprimality",
+      "difficultyRationale": "Requires the existence condition and finding one inverse."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Solve the congruence 6x = 4 (mod 10).",
+      "canonicalAnswer": "x = 4 or 9 (mod 10). Since gcd(6,10) = 2 divides 4, there are 2 solutions: divide through to get 3x = 2 (mod 5), whose solution is x = 4 (mod 5), giving x = 4 and x = 9 mod 10.",
+      "explanation": "The number of solutions is gcd(a,n) when that gcd divides b, and zero otherwise — so the first step is always to compute the gcd and check divisibility. Here gcd = 2 divides 4, so two solutions exist. Dividing the whole congruence including the modulus by 2 gives 3x = 2 (mod 5); multiplying by the inverse of 3 mod 5, which is 2, gives x = 4 (mod 5). Lifting back to mod 10 gives 4 and 9. Note 6x = 5 (mod 10) has NO solution, since 2 does not divide 5 — the left side is always even.",
+      "technique": "Linear congruences via the gcd",
+      "difficultyRationale": "Requires the solvability condition, the reduction, and lifting the solution back."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "State the Chinese remainder theorem and say why it is useful computationally.",
+      "canonicalAnswer": "For pairwise coprime moduli n_1, ..., n_k, any system x = a_i (mod n_i) has a unique solution modulo the product of the n_i. Computationally it lets you replace arithmetic modulo a large number with independent arithmetic modulo several small ones.",
+      "explanation": "The decomposition is the practical payoff: instead of working with 1,000,000-digit numbers you work with several smaller residues in parallel and reassemble at the end, which is how RSA decryption is accelerated roughly fourfold by working mod p and mod q separately. The coprimality condition is essential — with moduli sharing a factor the system may have no solution or many. A concrete instance: x = 2 (mod 3) and x = 3 (mod 5) has the unique solution x = 8 (mod 15), which you can find by checking the five numbers congruent to 3 mod 5 below 15.",
+      "technique": "Chinese remainder theorem",
+      "difficultyRationale": "Requires the statement, the coprimality condition, and the computational motivation."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does a check digit work, and what kinds of error does it catch?",
+      "canonicalAnswer": "A digit appended so the whole number satisfies a modular condition — for ISBN-10, the weighted sum with weights 10 down to 1 must be 0 mod 11. It catches all single-digit errors and all transpositions of adjacent digits.",
+      "explanation": "The weights are what catch transpositions: swapping two adjacent digits changes the weighted sum by the difference of the digits times the difference of the weights, which is non-zero mod 11 unless the digits are equal. A scheme with equal weights, such as a plain digit sum, would miss every transposition — and transposition is the commonest human keying error, so the weighting is the whole design. The choice of a PRIME modulus matters too, because it guarantees no non-zero difference is ever congruent to zero; ISBN-10 needs the symbol X precisely because 11 requires eleven possible check values.",
+      "technique": "Weighted checksums modulo a prime",
+      "difficultyRationale": "Requires explaining why weights and a prime modulus are both necessary."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is modular exponentiation the basis of public-key cryptography?",
+      "canonicalAnswer": "Because it is easy to compute in one direction and believed hard to reverse: computing a^b mod n is fast by repeated squaring, but recovering b from a^b mod n — the discrete logarithm — has no known efficient classical algorithm.",
+      "explanation": "That asymmetry is the trapdoor. Repeated squaring computes a^b mod n in about log(b) multiplications, so a 2048-bit exponent takes a couple of thousand operations rather than an astronomical number. The reverse direction, discrete log, is what security rests on for Diffie-Hellman, while RSA rests on the related hardness of factoring. Neither is PROVEN hard, which is the uncomfortable foundation of the whole field — and Shor's algorithm solves both efficiently on a sufficiently large quantum computer, which is precisely why post-quantum schemes based on different problems are being standardised.",
+      "technique": "One-way functions from modular exponentiation",
+      "difficultyRationale": "Requires the computational asymmetry and the honest caveat that hardness is unproven."
+    },
+    {
+      "topicId": "modular-arithmetic",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "What are the last two digits of 7^2024?",
+      "canonicalAnswer": "01. Powers of 7 mod 100 cycle with period 4 (7, 49, 43, 01), and 2024 is divisible by 4, so 7^2024 = 01 (mod 100).",
+      "explanation": "Last two digits means mod 100, so find the cycle: 7^1 = 7, 7^2 = 49, 7^3 = 343 = 43, 7^4 = 43 x 7 = 301 = 1. The cycle length is 4, and since 2024 = 4 x 506 the answer lands on 7^4 = 01. Euler's theorem gives an upper bound on the period — phi(100) = 40 — but the actual order here is 4, much smaller, which is why computing the cycle directly beats quoting the theorem. The general recipe for any 'last k digits' question is identical: work mod 10^k, find the cycle, reduce the exponent by its length.",
+      "technique": "Cycle of powers mod 100",
+      "difficultyRationale": "Requires four modular multiplications and correct exponent reduction."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "Two fair dice are rolled. What is the probability their product is even?",
+      "canonicalAnswer": "3/4. The product is odd only when both dice are odd, which has probability (1/2)(1/2) = 1/4, so the answer is 1 - 1/4 = 3/4.",
+      "explanation": "Enumerating the even-product cases means listing 27 of the 36 outcomes; the complement is a single case. The parity structure is what makes it quick — a product is odd only if every factor is odd — and it generalises immediately: with three dice the probability of an odd product is (1/2)^3 = 1/8. Compare with the SUM being even, which requires both dice to share parity and comes out at 1/2. Products and sums behave quite differently under parity, and mixing them up is the usual error here.",
+      "technique": "Parity structure plus the complement",
+      "difficultyRationale": "One complement, with parity reasoning replacing enumeration."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "How many three-digit numbers have all distinct digits?",
+      "canonicalAnswer": "648. The first digit has 9 choices (not zero), the second has 9 (any digit except the first, including zero), the third has 8: 9 x 9 x 8 = 648.",
+      "explanation": "The zero constraint on the leading digit is the trap, and the reason the second position also has 9 choices rather than 8 is that zero becomes available once it has been excluded from the front. Handling the most constrained position FIRST is the general rule for counting with restrictions — start with the leading digit, then fill the rest. A common wrong answer is 9 x 8 x 7 = 504, which mistakenly carries the no-zero rule through every position.",
+      "technique": "Fill the most constrained position first",
+      "difficultyRationale": "Three factors, with the leading-zero rule as the discriminating detail."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Three people each roll a die. What is the probability that exactly two of them roll the same value?",
+      "canonicalAnswer": "5/12. Choose the repeated value (6 ways), choose which two people share it (3 ways), and the third person must differ (5 ways): 6 x 3 x 5 = 90 out of 216, giving 5/12.",
+      "explanation": "'Exactly two' is the trap — it excludes all three matching, which is why the third roll has 5 choices rather than 6. Building the count as value, then people, then remainder keeps the cases separate. Cross-check by partitioning the whole sample space: all different is 6 x 5 x 4 = 120, all the same is 6, and exactly two the same is 90, summing to 216 as required. That completeness check is worth doing on any 'exactly k' counting problem, because it catches both double-counting and omitted cases at once.",
+      "technique": "Count by choosing value, then positions",
+      "difficultyRationale": "Three-factor count with a partition check available."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A game pays out when the total of two dice is a prime number. What fraction of rolls pay out?",
+      "canonicalAnswer": "5/12. The prime sums are 2, 3, 5, 7 and 11, occurring in 1 + 2 + 4 + 6 + 2 = 15 of the 36 outcomes, so 15/36 = 5/12.",
+      "explanation": "The counts come from the standard sum distribution: sum 2 occurs once, 3 twice, 5 four times, 7 six times, 11 twice. The two errors to avoid are including 9 (which is 3 x 3, not prime) and forgetting that 2 is prime. Note that all the primes except 2 are odd, and an odd sum requires the dice to differ in parity, which happens exactly half the time — so a quick upper bound is 1/2, and the answer of 5/12 sits just below it, the shortfall being the odd non-primes 9 and the inclusion of the even prime 2.",
+      "technique": "Enumerate by sum, with a parity cross-check",
+      "difficultyRationale": "Requires the sum distribution and correct identification of the primes."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a best-of-five match where the stronger player wins each game with probability 0.6, what is the probability the match goes to a deciding fifth game?",
+      "canonicalAnswer": "About 34.6%. It reaches game five exactly when the first four games are split 2-2: C(4,2)(0.6)^2(0.4)^2 = 6 x 0.36 x 0.16 = 0.3456.",
+      "explanation": "The condition 'goes to five games' is precisely 'the first four are split evenly', which is a single binomial term — far easier than enumerating winning sequences. Note the probability is maximised at p = 0.5, where it is 6/16 = 0.375, and falls as the players become mismatched, which matches intuition. A useful extension: a longer series favours the stronger player, since the probability of the better player winning a best-of-seven exceeds that for a best-of-three, which is exactly why championship formats lengthen when the organisers want the better team to win.",
+      "technique": "Reduce a series condition to a single binomial term",
+      "difficultyRationale": "Requires reframing the question as a split, then one binomial evaluation."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Three fair coins are flipped. What is the probability that exactly one coin differs from the other two?",
+      "canonicalAnswer": "3/4. The only outcomes where this fails are HHH and TTT, so 1 - 2/8 = 6/8 = 3/4.",
+      "explanation": "With three coins there are only two possibilities: all three match, or exactly one is the odd one out — there is no way to split three coins 2-1 without having a unique minority. So the complement of 'all the same' is exactly the event asked about. This is the basis of the odd-one-out game used to settle who pays: three people flip, and 3/4 of the time someone is singled out immediately. Note the structure fails for four coins, where a 2-2 split becomes possible, which is why the game is played with three.",
+      "technique": "Complement of the all-same case",
+      "difficultyRationale": "Requires seeing the event is the complement of a two-outcome case."
+    },
+    {
+      "topicId": "enumerate-scenarios",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You roll a fair die repeatedly and stop when the running total first exceeds 6. What is the most likely stopping total?",
+      "canonicalAnswer": "7. Every stopping total from 7 to 12 is possible, but 7 is the most likely because it can be reached from more preceding totals — you land on 7 from any of the totals 1 through 6, whereas 12 requires being on exactly 6 and rolling a 6.",
+      "explanation": "Reaching a stopping total of k requires having been at some total between k-6 and 6 and rolling the exact difference. For k = 7 every prior total from 1 to 6 works; for k = 12 only a prior total of 6 does. Since each of those prior totals is reachable and each specific roll has probability 1/6, the number of viable predecessors drives the answer, and it falls monotonically from 7 to 12. The general principle — count the paths INTO each terminal state rather than simulating forward — is what makes these overshoot problems tractable, and the same reasoning describes the distribution of a random walk's first passage beyond a level.",
+      "technique": "Count predecessors of each terminal state",
+      "difficultyRationale": "Requires reasoning about paths into each stopping value rather than enumerating sequences."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a conjugate prior, and why does it matter practically?",
+      "canonicalAnswer": "A prior whose posterior belongs to the same family after observing data. It matters because updating becomes closed-form arithmetic on the parameters rather than an integral — Beta prior with binomial data gives a Beta posterior, adding successes and failures to the parameters.",
+      "explanation": "Without conjugacy the posterior requires evaluating the normalising integral, which is generally intractable and is what MCMC exists to work around. With it, updating is a one-line parameter update you can do in your head. The standard pairs worth knowing are Beta-binomial for probabilities, Normal-Normal for means (posterior mean is a precision-weighted average of prior and data), and Gamma-Poisson for rates. The cost is that you must accept a prior from that family, which may not represent your actual beliefs — conjugacy is a mathematical convenience, not evidence about the world.",
+      "technique": "Conjugate priors",
+      "difficultyRationale": "Requires the definition plus the practical trade-off it imposes."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You have a Beta(2,2) prior on a strategy's win rate and observe 7 wins in 10 trades. What is the posterior, and its mean?",
+      "canonicalAnswer": "Beta(9, 5), with mean 9/14 = 0.643. The update adds successes to the first parameter and failures to the second: Beta(2+7, 2+3).",
+      "explanation": "The raw win rate is 0.7 but the posterior mean is 0.643, pulled towards the prior mean of 0.5 — that shrinkage is the whole point. A Beta(2,2) prior carries the weight of about 2 pseudo-observations of each outcome, so with only 10 real trades it still exerts real influence; with 100 trades the data would dominate and the posterior mean would sit near the sample rate. This is the formal version of 'be sceptical of a small sample', and the prior's parameters are exactly how much scepticism you are applying, stated in units of imaginary prior data.",
+      "technique": "Beta-binomial update and shrinkage",
+      "difficultyRationale": "One parameter update, with the shrinkage interpretation as the substance."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two independent tests both come back positive for a rare condition. How do you combine them?",
+      "canonicalAnswer": "Multiply the likelihood ratios: posterior odds = prior odds x LR_1 x LR_2. If each test has LR 10 and the prior odds are 1:1000, the posterior odds become 100:1000, i.e. about 9%.",
+      "explanation": "Working in odds is what makes sequential evidence trivial — each independent result multiplies the odds, so combining tests is a product rather than a nested Bayes calculation. The example shows why a second test helps so much with a rare condition: one test takes you from 0.1% to about 1%, and the second to 9%, because the ratios compound. The critical assumption is CONDITIONAL INDEPENDENCE given the true state, which fails if both tests share a mechanism — two tests detecting the same protein will agree with each other for reasons unrelated to the truth, and multiplying their ratios then overstates the evidence badly.",
+      "technique": "Combining evidence via likelihood ratios",
+      "difficultyRationale": "Requires the multiplicative structure and the conditional-independence caveat."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What does it mean for a prior to be 'uninformative', and is a uniform prior always uninformative?",
+      "canonicalAnswer": "It aims to let the data dominate. A uniform prior is NOT generally uninformative, because uniformity is not preserved under reparameterisation — uniform on a probability p is not uniform on the odds or on log(p).",
+      "explanation": "That non-invariance is the central difficulty. If you are genuinely ignorant, your ignorance should not change when you rewrite the parameter, yet a uniform prior does exactly that. Jeffreys priors are constructed to be invariant under reparameterisation, which is why they are the standard answer, and for a binomial proportion the Jeffreys prior is Beta(0.5, 0.5) — U-shaped, favouring the extremes, which looks odd until you see the invariance argument. The practical lesson for finance is that 'I used a flat prior so I made no assumption' is false, and a sensitivity analysis across several priors is the honest alternative.",
+      "technique": "Uninformative priors and reparameterisation invariance",
+      "difficultyRationale": "Requires the non-invariance argument, which is counterintuitive."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A model flags 1% of transactions as fraud. It catches 90% of real fraud and has a 2% false positive rate. Real fraud is 0.5% of transactions. What fraction of flags are genuine?",
+      "canonicalAnswer": "About 18%. Out of 100,000 transactions: 500 are fraud and 450 are caught; 99,500 are clean and 1,990 are falsely flagged. So 450 of 2,440 flags are real, giving 18.4%.",
+      "explanation": "Counting in natural frequencies makes the base-rate effect obvious without any formula. The result — over four in five alerts are false — is typical of fraud and surveillance systems, and it is why alert fatigue is a genuine operational risk rather than a complaint about laziness. The two levers are the same as for any rare-event detector: lower the false positive rate, or raise the prior by pre-filtering to a higher-risk population before applying the model. Note that pushing the false positive rate from 2% to 0.2% would take precision from 18% to about 69%, a far larger gain than improving the 90% detection rate could deliver.",
+      "technique": "Precision under a low base rate",
+      "difficultyRationale": "Requires the frequency computation and identifying which lever matters more."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "medium",
+      "type": "multiple_choice",
+      "prompt": "Evidence E is observed. If P(E | H) = P(E | not H), what happens to your belief in H?",
+      "options": [
+        "Nothing — the likelihood ratio is 1, so the posterior equals the prior",
+        "It increases, because E was observed",
+        "It decreases",
+        "It depends on the prior"
+      ],
+      "correctOption": 0,
+      "explanation": "Evidence only moves belief when it is more likely under one hypothesis than the other — that is what a likelihood ratio of 1 means. Observing something equally expected either way is genuinely uninformative about H, however striking it seems. This is the formal reason that confirming a prediction which any alternative theory also makes provides no support, and it is the flaw in most anecdotal evidence for trading strategies: a story about a winning trade is equally likely whether the strategy has an edge or not.",
+      "technique": "Likelihood ratio of 1",
+      "difficultyRationale": "One consequence of the odds form, with the intuitive answer as the distractor."
+    },
+    {
+      "topicId": "bayes-theorem",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You test 200 strategies and one shows a t-statistic of 3. Use Bayesian reasoning to assess whether it has a genuine edge.",
+      "canonicalAnswer": "Suppose 5% of proposed strategies have a real edge — prior odds 1:19. A t of 3 has likelihood ratio of perhaps 20-30 in favour of a real effect. Posterior odds are then roughly 1:1, so about a 50% chance — and that is before accounting for having selected the best of 200.",
+      "explanation": "The selection is what finishes the argument. Under the null, testing 200 strategies produces a maximum t-statistic around 3 by chance alone, so observing t = 3 as the BEST of 200 carries almost no evidence at all — the likelihood ratio collapses towards 1 once you condition on how the strategy was chosen. This is why the number of specifications tried is not a footnote but a required input, and why the deflated Sharpe ratio adjusts for it explicitly. The practical rule: a result that would be impressive in isolation is unremarkable as the winner of a large search.",
+      "technique": "Bayesian assessment with a selection correction",
+      "difficultyRationale": "Requires setting a prior, estimating a likelihood ratio, and then correcting for selection."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the value of an option to stop, compared with a rule fixed in advance?",
+      "canonicalAnswer": "It is always at least as valuable, and usually strictly more, because you can condition on what you observe. The difference is the value of the optionality.",
+      "explanation": "A pre-committed rule cannot use information, so its expected value is just the unconditional average. An adaptive rule uses each observation to decide whether the current offer beats the expected value of continuing, which can only help — by Jensen's inequality, E[max(X, c)] >= max(E[X], c). This is precisely why an American option is worth at least as much as its European counterpart, and why the difference is called the early exercise premium. It also frames the whole topic: optimal stopping is the study of how much that flexibility is worth and when to use it.",
+      "technique": "Value of adaptivity",
+      "difficultyRationale": "Conceptual, with the Jensen inequality underpinning it."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a Dutch auction the price falls continuously until a bidder accepts. What optimal stopping problem does a bidder face?",
+      "canonicalAnswer": "Stop when the surplus from accepting now exceeds the expected surplus from waiting. Waiting lowers the price you pay but risks another bidder accepting first, so the threshold balances a falling price against a rising probability of losing the item.",
+      "explanation": "The continuation value here depends on OTHER agents' behaviour, which is what distinguishes it from a single-agent stopping problem — it is a game, and the equilibrium threshold depends on your belief about how many rivals there are and how they value the item. More bidders means accepting earlier at a higher price, which is exactly why the seller benefits from competition. The classic result is that a Dutch auction is strategically equivalent to a first-price sealed-bid auction: your acceptance price IS your bid, and the same shading applies.",
+      "technique": "Stopping against strategic rivals",
+      "difficultyRationale": "Requires recognising the continuation value is set by other agents, not by a distribution alone."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In the secretary problem, why is the optimal strategy a fixed cutoff rather than something adaptive?",
+      "canonicalAnswer": "Because you observe only RELATIVE ranks, not values, so the only information available at step k is whether the current candidate is the best so far. The optimal policy therefore reduces to choosing when to start accepting best-so-far candidates.",
+      "explanation": "If you could observe actual values, the problem changes completely — you would use a value threshold that declines over time, as in the die problem. The rank-only structure is what collapses the policy to a single number. The variant where values are observed and drawn from a known distribution is called the Cayley-Moser problem and has a much higher success probability, since you are no longer discarding almost all the information. The lesson worth carrying is that the optimal policy's SHAPE is determined by what you are allowed to observe, so establishing the information structure comes before any optimisation.",
+      "technique": "Information structure determines the policy shape",
+      "difficultyRationale": "Requires seeing that rank-only observation is what produces a cutoff rule."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "How does the secretary problem change if you are allowed to pick the second-best and still count it a success?",
+      "canonicalAnswer": "The success probability rises substantially — above 50% — and the optimal policy gains a second phase: you accept a best-so-far candidate after one cutoff, and relax to accepting a second-best-so-far candidate after a later cutoff.",
+      "explanation": "The two-phase structure is the interesting part. Early on you hold out for the best seen so far; as the pool runs out you become willing to settle. That is a formal version of a very human behaviour, and it appears in any search where the cost of ending empty-handed is high. The general principle is that relaxing the success criterion changes not just the probability but the SHAPE of the optimal policy, adding thresholds rather than merely moving one. It is also why 'satisficing' rules can be genuinely optimal rather than a concession to bounded rationality.",
+      "technique": "Multi-phase thresholds under a relaxed objective",
+      "difficultyRationale": "Requires predicting a structural change in the policy, not just a numerical one."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the house-selling problem with search costs, and how does a cost per observation change the optimal rule?",
+      "canonicalAnswer": "You receive offers over time, each drawn from a known distribution, and pay a cost c to see each new one. The optimal rule is a fixed reservation price: accept any offer above it, reject below. The reservation price FALLS as the search cost rises.",
+      "explanation": "The reservation price solves the indifference condition — the expected gain from one more search equals its cost — which is an equation in one unknown rather than a dynamic program, because with an infinite horizon and identical draws the problem is stationary. That stationarity is why the threshold does not decline over time here, unlike the finite die problem. The comparative statics are the useful part: a higher search cost, a lower offer variance, or impatience all lower the reservation price. It is the standard model of job search and it explains why cheaper search (online listings) raises the quality of matches.",
+      "technique": "Reservation price from an indifference condition",
+      "difficultyRationale": "Requires the stationary structure and the comparative statics."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is an American put worth more than a European put, but an American call on a non-dividend stock is not worth more than a European call?",
+      "canonicalAnswer": "Exercising a put early converts it into cash that earns interest, and the stock cannot fall below zero, so early exercise can be optimal. Exercising a call early throws away time value and pays the strike sooner than necessary, so it is never optimal without dividends.",
+      "explanation": "The asymmetry comes from the direction of the interest effect. For a put you receive the strike, so exercising early accelerates a cash inflow — valuable when rates are positive and the option is deep in the money, where remaining time value is small. For a call you PAY the strike, so early exercise accelerates an outflow and forfeits both interest and the remaining optionality. Dividends change the call case, because holding the option means missing the dividend, which can make early exercise just before an ex-dividend date optimal. So the general result is that early exercise is optimal only when holding has a carrying cost.",
+      "technique": "Early exercise and the direction of carry",
+      "difficultyRationale": "Requires the interest argument in both directions plus the dividend exception."
+    },
+    {
+      "topicId": "optimal-stopping",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "How does Longstaff-Schwartz price an American option by Monte Carlo, given that Monte Carlo runs forward and optimal stopping runs backward?",
+      "canonicalAnswer": "Simulate paths forward, then work backwards through exercise dates. At each date, regress the discounted future cash flows on functions of the current state across the in-the-money paths; the fitted value estimates the continuation value, and you exercise where immediate payoff exceeds it.",
+      "explanation": "The regression is what bridges the two directions — it converts the continuation value, which formally requires a conditional expectation, into a fitted function you can evaluate path by path. Restricting the regression to in-the-money paths matters, since out-of-the-money paths carry no exercise decision and would just add noise to the fit. Two known weaknesses: the method is biased because the same paths are used to estimate the policy and to value it, and the answer depends on the basis functions chosen, so a low-order polynomial can systematically misprice. Reporting a lower bound from a re-simulation under the fitted policy is the standard remedy.",
+      "technique": "Regression-based continuation values",
+      "difficultyRationale": "Requires the regression step and awareness of the bias it introduces."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "easy",
+      "type": "free_text",
+      "prompt": "What is the difference between the average and worst case complexity of quicksort, and why does the difference matter?",
+      "canonicalAnswer": "Average is O(n log n), worst case O(n^2) when the pivot is consistently the smallest or largest element. It matters because adversarial or already-sorted input can trigger the worst case with a naive pivot choice.",
+      "explanation": "The worst case arises when each partition removes only one element, producing n levels of recursion rather than log n. Choosing a random pivot, or the median of three, makes the bad case vanishingly unlikely — and randomising means no fixed input can reliably trigger it, which matters when the input might be chosen by an adversary. This is a general pattern worth recognising: randomisation converts a worst case over inputs into an expectation over the algorithm's own coin flips, which is a much safer guarantee.",
+      "technique": "Average versus worst case, and randomisation as a defence",
+      "difficultyRationale": "Requires both complexities and why randomisation helps."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You need the median of a large dataset that does not fit in memory. Outline an approach.",
+      "canonicalAnswer": "Options include: sample and estimate the median with a confidence interval; use a streaming quantile sketch such as t-digest or Greenwald-Khanna; or do a multi-pass binary search on the value, counting elements below a candidate on each pass.",
+      "explanation": "The multi-pass counting approach is the exact one — binary search on the VALUE rather than the position, counting how many elements fall below each candidate, converging in about 32 passes for 32-bit data. Sketches trade exactness for a single pass and bounded memory, giving quantiles to within a guaranteed error, which is usually the right choice in production. Sampling is cheapest and often sufficient: a random sample of 10,000 estimates the median to within about 1% of a quantile. The general lesson is that 'compute it exactly' is one option among several, and the right choice depends on whether you need the exact value or a bounded error.",
+      "technique": "Streaming and multi-pass quantile estimation",
+      "difficultyRationale": "Requires several approaches with the accuracy/memory trade-off between them."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is floating-point addition not associative, and what should you do about it when summing a large array?",
+      "canonicalAnswer": "Because each addition rounds to the nearest representable value, so (a+b)+c can differ from a+(b+c). When summing many values, use Kahan summation or sum in order of increasing magnitude to limit the accumulated error.",
+      "explanation": "The failure mode is that adding a small number to a large accumulator loses the small number's low bits entirely — add 1 to 10^17 in double precision and nothing happens. Summing a million small values into a growing total therefore accumulates error proportional to n. Kahan summation carries a running compensation term for the lost low-order bits and reduces the error to essentially constant. In finance this matters for portfolio aggregation and for long P&L series, and it is a real source of the small reconciliation breaks that appear when two systems sum the same values in different orders.",
+      "technique": "Floating-point summation error",
+      "difficultyRationale": "Requires the rounding mechanism and a concrete mitigation."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Compare bisection and Newton-Raphson for root finding. When would you deliberately choose the slower one?",
+      "canonicalAnswer": "Bisection converges linearly, gaining one bit per iteration, but is guaranteed to converge given a sign change. Newton converges quadratically but can diverge or cycle. Choose bisection when robustness matters more than speed, or when the derivative is unavailable or unreliable.",
+      "explanation": "The guarantee is what you are buying: if f is continuous and changes sign across the bracket, bisection cannot fail, whereas Newton can shoot off to infinity from a bad starting point or stall where the derivative is near zero. For implied volatility that near-zero derivative case is real — vega vanishes for deep out-of-the-money options — so production implementations typically use a hybrid such as Brent's method, which takes fast steps when they behave and falls back to bisection when they do not. Choosing the guaranteed-but-slow method for the awkward cases is standard practice rather than a compromise.",
+      "technique": "Robustness versus convergence rate",
+      "difficultyRationale": "Requires the trade-off plus a concrete case where the fast method fails."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is dynamic programming, and what property must a problem have for it to apply?",
+      "canonicalAnswer": "Solving a problem by combining solutions to overlapping subproblems, storing each result once. It requires optimal substructure — the optimal solution contains optimal solutions to subproblems — and overlapping subproblems, so caching actually saves work.",
+      "explanation": "Both conditions matter. Without optimal substructure, combining sub-solutions does not give the global optimum. Without overlap, caching buys nothing and plain divide-and-conquer is simpler — merge sort has optimal substructure but no overlap, so it is not a dynamic programming problem. In finance the canonical instance is pricing an American option on a lattice: the value at each node depends on the optimally-computed values at the two successor nodes, and those nodes are shared between many paths, which is exactly why a recombining tree is so much cheaper than enumerating paths.",
+      "technique": "Conditions for dynamic programming",
+      "difficultyRationale": "Requires both conditions and a case satisfying only one."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What are antithetic variates and control variates, and how much do they help?",
+      "canonicalAnswer": "Antithetic variates pair each random draw Z with -Z, so errors partially cancel. Control variates subtract a correlated quantity with a known expectation. Both reduce variance without bias; control variates can help far more, cutting variance by the factor (1 - rho^2).",
+      "explanation": "Antithetic variates help when the payoff is roughly monotone in the driver, since then the pair straddles the mean, and they achieve little for a symmetric payoff such as a straddle where both members of the pair move the same way. Control variates are more powerful and more targeted: price an Asian option using the geometric-average version, which has a closed form, as the control — the two are correlated above 0.99, so the variance reduction is enormous. Both are far cheaper than brute-force extra paths, since halving the standard error by sampling alone requires four times the work.",
+      "technique": "Variance reduction techniques",
+      "difficultyRationale": "Requires both methods, their relative power, and when each fails."
+    },
+    {
+      "topicId": "algorithms-numerical",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "You need to sort 1 billion 32-bit integers with limited memory. What approach, and what complexity?",
+      "canonicalAnswer": "External merge sort: read chunks that fit in memory, sort each, write them out, then k-way merge the sorted runs. Complexity is O(n log n) comparisons but the binding constraint is I/O, roughly 2 passes over the data if the merge fan-in is large enough.",
+      "explanation": "The analysis that matters is I/O rather than comparisons, because disk access dominates by orders of magnitude — so the objective is minimising passes over the data, not operations. With enough memory for a wide merge, two passes suffice: one to create sorted runs, one to merge them. For this specific case there is a better answer worth mentioning: 32-bit integers have only 4 billion possible values, so a counting sort using a bit array or counter array runs in a single pass and O(n) time, beating any comparison sort. Recognising when the data's structure permits a non-comparison sort is the real insight.",
+      "technique": "External sorting and the non-comparison alternative",
+      "difficultyRationale": "Requires the I/O-bound analysis and spotting the counting-sort shortcut."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "100 balls are thrown independently into 100 bins, uniformly at random. What is the expected number of EMPTY bins?",
+      "canonicalAnswer": "About 36.8. Each bin is missed by a given ball with probability 99/100, so it is empty with probability (0.99)^100 = 0.366, and 100 x 0.366 = 36.6.",
+      "explanation": "Define an indicator per bin and apply linearity — the bins are dependent, since filling one means not filling another, but that is irrelevant to the mean. The limit (1-1/n)^n tends to 1/e = 0.368, so roughly 37% of bins stay empty no matter how large n is, which surprises people who expect uniform throwing to spread out evenly. The same arithmetic governs hash table load factors and explains why a hash table at 100% load has ~37% empty buckets and correspondingly long collision chains elsewhere.",
+      "technique": "Indicators over bins, with the 1/e limit",
+      "difficultyRationale": "One probability plus linearity, with the 1/e constant as the payoff."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In a random binary string of length 20, what is the expected number of positions where a 1 is immediately followed by a 0?",
+      "canonicalAnswer": "4.75. There are 19 adjacent pairs, each equal to '10' with probability 1/4, giving 19/4 = 4.75.",
+      "explanation": "Define an indicator for each of the 19 positions where a pair can start; each has probability (1/2)(1/2) = 1/4. The overlapping structure of the pairs makes the indicators dependent — positions 1 and 2 cannot both be '10' — but linearity does not care, which is exactly why this beats any direct enumeration. The general pattern counts occurrences of a pattern of length k in a string of length n as (n - k + 1) times the pattern's probability, and it works for any pattern, overlapping or not.",
+      "technique": "Indicators over overlapping positions",
+      "difficultyRationale": "Requires counting positions correctly and noting dependence is irrelevant."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Twenty people throw their names into a hat and each draws one. What is the expected number of PAIRS who draw each other?",
+      "canonicalAnswer": "0.5. There are C(20,2) = 190 pairs, and under a uniformly random permutation a specific pair draws each other with probability (1/20)(1/19) = 1/380, so the expected count is 190/380 = 0.5.",
+      "explanation": "Work out one pair's probability carefully. For persons A and B, P(A draws B) = 1/20 in a uniformly random assignment where anyone may draw anyone including themselves; given that, P(B draws A) = 1/20 as well if draws are independent with replacement, or 1/19 without. Under the standard random-permutation model, P(A draws B AND B draws A) = 1/(20 x 19) = 1/380. With 190 pairs the expected number of mutual pairs is 190/380 = 0.5. The technique is unchanged — one probability times the number of pairs — and the care needed is entirely in modelling the draw correctly.",
+      "technique": "Indicators over pairs, with careful model specification",
+      "difficultyRationale": "Requires correct handling of the permutation model before applying linearity."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "n people sit at a round table and each flips a coin. What is the expected number of adjacent pairs who both flip heads?",
+      "canonicalAnswer": "n/4. There are n adjacent pairs around a circle, each both-heads with probability 1/4.",
+      "explanation": "The circular arrangement is what makes it n pairs rather than n-1 — every person has a right-hand neighbour, with no endpoints. Getting that count right is the only subtlety; the rest is one probability times the count. The same setup answers related questions instantly: the expected number of adjacent pairs that MATCH is n/2, and the expected number of 'blocks' of consecutive heads is n/4 as well, since a block starts wherever a tail is followed by a head. Counting the right set of positions is the whole skill.",
+      "technique": "Indicators around a cycle",
+      "difficultyRationale": "One probability, with the circular position count as the trap."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A random graph on n vertices includes each possible edge independently with probability p. What is the expected number of triangles?",
+      "canonicalAnswer": "C(n,3) * p^3. There are C(n,3) possible triangles and each requires its three specific edges, which occur together with probability p^3.",
+      "explanation": "Triangles share edges, so their indicators are heavily dependent — yet linearity handles it without a second thought. The result is the basis of the first-moment method: if the expected count tends to zero, then with high probability there are no triangles at all, since a non-negative integer variable with small mean is usually zero. That gives the threshold p = 1/n, below which the graph is almost surely triangle-free. This 'compute an expectation to prove existence or non-existence' pattern is the probabilistic method, and it proves combinatorial facts with no construction at all.",
+      "technique": "First-moment method on a dependent count",
+      "difficultyRationale": "Requires the count, the shared-edge dependence, and the first-moment consequence."
+    },
+    {
+      "topicId": "linearity-of-expectation",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why can linearity of expectation compute a mean easily but not a variance?",
+      "canonicalAnswer": "Because expectation is linear whatever the dependence, while variance involves squares and therefore covariance terms: Var(sum) = sum of variances plus twice the sum of all pairwise covariances. Those covariances require knowing the dependence structure.",
+      "explanation": "That asymmetry is why indicator arguments give the mean of a dependent count in one line and the variance in many. For the fixed-point problem the mean is 1 for any n, but computing the variance requires E[X_i X_j] for every pair — which is P(both i and j are fixed) = 1/(n(n-1)) — and summing those covariances. It works out to exactly 1 as well, which is the Poisson(1) signature, but the work is an order of magnitude greater. When a question asks only for a mean, resist computing the distribution.",
+      "technique": "Why the second moment is harder",
+      "difficultyRationale": "Requires the covariance expansion and a worked contrast."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Write the density of the k-th order statistic from n independent draws with density f and CDF F.",
+      "canonicalAnswer": "f_{(k)}(x) = [n! / ((k-1)!(n-k)!)] * F(x)^{k-1} * [1-F(x)]^{n-k} * f(x).",
+      "explanation": "The formula is a multinomial count: choose which k-1 observations fall below x, which n-k fall above, and which single one sits at x. The three factors correspond exactly to those three groups. Checking the edge cases is the fastest way to remember it — at k = n only the F(x)^{n-1} term survives with coefficient n, recovering the density of the maximum, and at k = 1 you get n[1-F(x)]^{n-1}f(x) for the minimum. For the uniform distribution the whole expression collapses to a Beta(k, n-k+1) density, which is where E[X_(k)] = k/(n+1) comes from.",
+      "technique": "General order statistic density",
+      "difficultyRationale": "Requires the multinomial structure and verification at the edge cases."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Why is the sample median more robust than the sample mean, expressed in terms of order statistics?",
+      "canonicalAnswer": "The median is a single central order statistic, so contaminating the extreme observations does not move it — its breakdown point is 50%. The mean is a function of every observation, so one arbitrarily large value moves it arbitrarily far, giving a breakdown point of 0.",
+      "explanation": "Breakdown point is the fraction of observations an adversary must corrupt to move the estimator without limit, and the contrast could hardly be sharper: 0% for the mean against 50% for the median. Trimmed means sit in between, with a breakdown point equal to the trimming fraction. For financial returns this matters both ways: the extremes are often genuine and informative rather than contamination, so robustness is desirable when guarding against bad data and undesirable when the tails are the object of study. Knowing which situation you are in decides the estimator.",
+      "technique": "Breakdown point via order statistics",
+      "difficultyRationale": "Requires the breakdown framing and the finance-specific caveat."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "For n draws from an exponential with rate lambda, what is the distribution of the minimum, and why is that convenient?",
+      "canonicalAnswer": "Exponential with rate n*lambda. It is convenient because the family is closed under minimum: rates simply add, and the expected minimum is 1/(n*lambda).",
+      "explanation": "The derivation is one line: P(min > x) = P(all > x) = e^{-n*lambda*x}, which is the exponential survival function with rate n*lambda. The closure property makes competing-risks problems trivial — with several independent Poisson processes, the wait for the first event of any kind is exponential with the summed rate, and the probability that it comes from process i is lambda_i divided by the total. That is exactly how a continuous-time Markov chain's jump structure works, and how credit models combine independent default intensities.",
+      "technique": "Minimum of exponentials and rate additivity",
+      "difficultyRationale": "One derivation, with the competing-risks application as the payoff."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Historical simulation VaR is an order statistic. What does that tell you about its statistical properties?",
+      "canonicalAnswer": "It inherits the sampling behaviour of a quantile estimator: asymptotically normal with standard error sqrt(q(1-q)/n) divided by the density at the quantile. Since the density is small in the tail, the standard error is large — the estimate is noisy precisely where you care.",
+      "explanation": "Framing it this way makes the weakness quantitative rather than a vague complaint. At q = 0.99 with n = 500, the numerator sqrt(0.99 x 0.01 / 500) is small but the density in the tail is smaller still, and the ratio typically gives a standard error of 10-20% of the VaR. It also explains a structural property: the estimator can only take values that are observed P&Ls, so it moves in steps rather than continuously as the window rolls. Both facts argue for reporting a confidence interval alongside the number, which a bootstrap supplies directly.",
+      "technique": "VaR as a sample quantile",
+      "difficultyRationale": "Requires the quantile standard error and interpreting why the tail is worst."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are told the maximum of n independent uniform [0,1] draws equals m. What is the distribution of the remaining n-1 draws?",
+      "canonicalAnswer": "They are independent and uniform on [0, m]. Conditioning on the maximum tells you only that everything else fell below m, and within that range no value is favoured.",
+      "explanation": "The conditional independence is the useful part and it is what makes the maximum a SUFFICIENT statistic for the upper endpoint of a uniform distribution — once you know it, the rest of the sample carries no further information about the range. That is why the maximum likelihood estimator of the endpoint is simply the sample maximum, and why the unbiased correction is the maximum times (n+1)/n. The same structure underlies the German tank problem, where the serial numbers observed are uniform draws and the maximum drives the estimate of total production.",
+      "technique": "Conditioning on the maximum; sufficiency",
+      "difficultyRationale": "Requires the conditional distribution and its connection to sufficiency."
+    },
+    {
+      "topicId": "order-statistics",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Ten independent projects each have a normally distributed completion time with mean 10 and standard deviation 2 days. All must finish before the programme completes. What is the expected completion time?",
+      "canonicalAnswer": "About 13 days — the expected MAXIMUM of ten normals, roughly mu + 1.54*sigma = 10 + 3.1 = 13.1 days, not the 10-day mean of any single project.",
+      "explanation": "The expected maximum of n standard normals is approximately sqrt(2 ln n), which for n = 10 gives 2.15, though a better approximation accounting for the correction term gives about 1.54. Either way the point stands: the programme is expected to take substantially longer than any individual project's mean, because it waits for the slowest. This is the mathematics of why multi-workstream projects overrun systematically — planning to the average of each stream ignores that the maximum is what binds — and it gets worse with more streams, growing like sqrt(2 ln n). Correlation between streams reduces the effect, which is an argument for shared dependencies being less damaging than they appear.",
+      "technique": "Expected maximum of normals",
+      "difficultyRationale": "Requires the sqrt(2 ln n) approximation and the project-planning interpretation."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is strong induction, and when do you need it rather than ordinary induction?",
+      "canonicalAnswer": "Strong induction assumes the statement for ALL values up to n, not just n itself, when proving it for n+1. You need it when the step depends on a smaller case that is not the immediate predecessor.",
+      "explanation": "The classic example is proving every integer above 1 has a prime factorisation: n is either prime, or it factors as a*b with both smaller than n but neither necessarily n-1 — so ordinary induction gives you the wrong hypothesis. The two forms are logically equivalent in strength, since strong induction on a statement is ordinary induction on 'the statement holds for everything up to n', but strong induction is often far more convenient. The base case needs care: sometimes several base cases are required, one for each smaller value the step might reach down to.",
+      "technique": "Strong versus ordinary induction",
+      "difficultyRationale": "Requires an example where ordinary induction genuinely fails."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is the probabilistic method, and how can a probability argument prove a statement with no randomness in it?",
+      "canonicalAnswer": "Show that a randomly chosen object has the desired property with positive probability; it follows that at least one such object must exist. The randomness is a proof device, not part of the conclusion.",
+      "explanation": "The logic is that an event with positive probability cannot be empty. A standard application: if the expected number of monochromatic subgraphs in a random 2-colouring is less than 1, then some colouring has none, which proves a Ramsey lower bound without exhibiting a single colouring. That is the striking feature — the method proves existence while giving no construction at all, and for many of these results no explicit construction is known. The first-moment version (expected count below 1 implies some instance has zero) and the Lovasz local lemma are the two workhorses.",
+      "technique": "The probabilistic method",
+      "difficultyRationale": "Requires the positive-probability logic and an example of non-constructive existence."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are asked to prove a statement is FALSE. What is the most efficient approach?",
+      "canonicalAnswer": "Find a single counterexample. Disproving a universal claim requires only one instance where it fails, whereas proving it requires covering every case.",
+      "explanation": "The asymmetry between proof and disproof is worth internalising: 'all X are Y' needs a general argument, while 'not all X are Y' needs one example. So when facing an unfamiliar claim, spend a minute hunting for a counterexample before attempting a proof — the search often either succeeds quickly or reveals why the statement is true. The useful places to look are the edge cases: zero, one, the empty set, negative values, and equality boundaries, which is where most plausible-sounding false claims break. Note the asymmetry reverses for existential claims, where one example proves and a general argument is needed to disprove.",
+      "technique": "Counterexamples and the proof/disproof asymmetry",
+      "difficultyRationale": "Requires the asymmetry plus a search strategy."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "What is a monovariant, and how does it differ from an invariant?",
+      "canonicalAnswer": "An invariant is a quantity that never changes under the allowed operations; a monovariant changes only in one direction. Invariants prove something is unreachable; monovariants prove a process must terminate.",
+      "explanation": "The two answer different questions. If a quantity is invariant and differs between the start and the target, the target is unreachable — that is the standard impossibility argument. If a quantity strictly decreases and is bounded below by an integer, the process cannot run forever, which proves termination. A worked case: in a process where you repeatedly replace two numbers by their difference, the maximum strictly decreases and stays non-negative, so it must stop. Recognising which of the two a problem needs — impossible versus must-terminate — is the first decision.",
+      "technique": "Invariants versus monovariants",
+      "difficultyRationale": "Requires the distinction and which conclusion each supports."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "In an interview you are asked to prove something and get stuck. What should you do?",
+      "canonicalAnswer": "Say what you have tried and why it failed, test small cases to build intuition, look for the invariant or the extremal element, and consider whether the contrapositive or a proof by contradiction is easier. Narrate the search rather than going silent.",
+      "explanation": "The narration matters as much as the proof, because the interviewer is assessing how you attack an unfamiliar problem — and silence gives them nothing to assess. Small cases are the highest-yield move: n = 1, 2, 3 usually reveals the pattern and occasionally reveals the statement is false. Beyond that, the standard prompts are worth running through explicitly: what is preserved, what is extremal, what happens if I assume the opposite, is there a bijection to something I know. Stating which you are trying and why also invites a hint, which a good interviewer will give.",
+      "technique": "Search strategy under time pressure",
+      "difficultyRationale": "Meta-level; requires a concrete ordered strategy rather than generic advice."
+    },
+    {
+      "topicId": "proof-techniques",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "Prove that there are infinitely many primes.",
+      "canonicalAnswer": "Suppose there are finitely many, p_1 through p_n. Consider N = p_1 x p_2 x ... x p_n + 1. N leaves remainder 1 on division by every p_i, so no listed prime divides it. Then N is either prime itself or has a prime factor not in the list — either way the list was incomplete. Contradiction.",
+      "explanation": "Euclid's proof, and the detail most people get wrong is the final step: N is NOT necessarily prime. For instance 2 x 3 x 5 x 7 x 11 x 13 + 1 = 30,031 = 59 x 509, which is composite — but both its factors are absent from the list, which is all the argument needs. Stating it as 'therefore N is a new prime' is a genuine error that a careful interviewer will probe. Note also that the proof is constructive in a weak sense: it gives a procedure for finding a new prime from any finite set, just not an efficient one.",
+      "technique": "Euclid's proof, with the standard error identified",
+      "difficultyRationale": "Requires the argument stated correctly, including why N need not be prime."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "A frog starts on step 0 and jumps 1 or 2 steps with equal probability each time. What is the probability it ever lands exactly on step n, for large n?",
+      "canonicalAnswer": "2/3. Let p_n be the probability of landing on step n: p_n = (1/2)p_{n-1} + (1/2)p_{n-2}, which converges to 2/3.",
+      "explanation": "The recursion says you reach step n from either of the two preceding steps. Its characteristic equation is 2x^2 = x + 1, with roots 1 and -1/2, so the solution is A + B(-1/2)^n and the oscillating term dies out, leaving the limit A. Fixing it with the initial conditions p_0 = 1 and p_1 = 1/2 gives A = 2/3. There is a slicker argument: the frog's average step is 1.5, so in the long run it lands on 1 in every 1.5 steps, giving 2/3 directly — an instance of the renewal theorem. Having both routes is worth it, since the second generalises to any step distribution.",
+      "technique": "Linear recursion with a renewal-theorem cross-check",
+      "difficultyRationale": "Requires solving the recursion or spotting the renewal argument."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "When setting up a recursion, how do you know how many boundary conditions you need?",
+      "canonicalAnswer": "As many as the ORDER of the recursion — the number of previous terms it refers back to. A recursion using the two previous terms needs two boundary conditions, and one using k previous terms needs k.",
+      "explanation": "The reason is that the general solution has one free constant per root of the characteristic equation, and the number of roots equals the order. Supplying too few leaves the answer undetermined; too many will usually be inconsistent unless they happen to agree. The practical error to watch for is a boundary condition that seems obvious but is wrong at the edge — for pattern-waiting problems, checking your base case by brute-force enumeration of the first two or three cases catches it immediately, and is worth the thirty seconds.",
+      "technique": "Matching boundary conditions to recursion order",
+      "difficultyRationale": "Requires the link between order, roots, and free constants."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "You are computing an expected value by conditioning and end up with E = 1 + E. What has gone wrong?",
+      "canonicalAnswer": "The equation has no finite solution, which means the expectation is infinite — or the state was defined so that it always returns to itself with probability 1, which usually indicates a modelling error.",
+      "explanation": "The equation is telling you something real. If the process genuinely never escapes, the expectation is infinite, which is the correct answer for a null-recurrent case such as the expected return time of a symmetric random walk. More often it signals a setup error: the state was defined too coarsely, so a transition that should have made progress appears to return to the same state. The diagnostic is to check whether the state variable captures progress towards the goal — for pattern problems, whether it tracks the length of the current matching prefix rather than just the last symbol.",
+      "technique": "Diagnosing a degenerate recursion",
+      "difficultyRationale": "Requires distinguishing a genuine infinite expectation from a modelling error."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "medium",
+      "type": "free_text",
+      "prompt": "Two players alternate removing 1, 2 or 3 stones from a pile of 21; whoever takes the last stone wins. Who wins with optimal play?",
+      "canonicalAnswer": "The first player. Leave a multiple of 4 for your opponent: take 1 to leave 20, then always take (4 - opponent's move) to keep leaving multiples of 4, ending at 0 with them to move.",
+      "explanation": "Work backwards from the terminal position. Positions that are multiples of 4 are LOSING for the player to move, because whatever they take (1, 2 or 3) you can complete a group of 4. Every other position is winning, since you can move to a multiple of 4. The recursion here is over game states rather than expectations, and the answer is a parity invariant rather than a number — which is typical of combinatorial game theory. The general result for take-away games with a maximum of k is that multiples of k+1 are the losing positions.",
+      "technique": "Backward induction on game states",
+      "difficultyRationale": "Requires identifying the losing positions and generalising the modulus."
+    },
+    {
+      "topicId": "recursive-states",
+      "difficulty": "hard",
+      "type": "free_text",
+      "prompt": "A random walk on the integers starts at 0 and moves +1 with probability 2/3, -1 with probability 1/3. What is the probability it EVER reaches -1?",
+      "canonicalAnswer": "1/2. Let r be the probability of ever moving down one level. Then r = (1/3) + (2/3)r^2, since either you step down immediately or step up and must come down twice. Solving gives r = 1/2 (rejecting the root r = 1).",
+      "explanation": "The self-similar structure is what makes the quadratic appear: coming down from +1 to -1 requires two independent down-moves, each with probability r, so the recursion is r = q + p*r^2. The roots are r = 1 and r = q/p = 1/2, and you take the smaller one because the walk has upward drift and cannot be certain to descend. Choosing the correct root is the step people get wrong — the rule is that for a transient walk you take the root below 1, and for a recurrent one (p = q) both roots coincide at 1, correctly giving certain return.",
+      "technique": "Self-similar recursion with root selection",
+      "difficultyRationale": "Requires setting up the quadratic and justifying which root is correct."
     }
   ]
 }

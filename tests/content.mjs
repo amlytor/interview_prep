@@ -124,17 +124,18 @@ check("every topic (bar fixed-income) has 4+ easy questions", noRamp.length === 
 const noExample = notes.filter((n) => !/##+\s*worked example/i.test(n.body)).map((n) => n.topicId);
 check("every note carries a worked example", noExample.length === 0, noExample.join(", "));
 
-// Progress toward the shallower topics' own target, reported rather than
-// asserted: they are being filled in over time and a hard gate here would just
-// be a reminder in a red shirt.
+// The narrower topics have their own, lower target. fixed-income is exempt —
+// deliberately deprioritised, so it keeps only the OTHER_FLOOR guarantee.
 const SHALLOW_TARGET = 18;
-const remaining = notes
+const belowShallow = notes
   .map((n) => n.topicId)
   .filter((t) => !DEEP.includes(t) && t !== "fixed-income" && (counts[t] ?? 0) < SHALLOW_TARGET);
-console.log(
-  `\nnote: ${remaining.length} narrower topics still below their ${SHALLOW_TARGET}-question target` +
-    (remaining.length ? ` (${remaining.map((t) => `${t}=${counts[t]}`).join(", ")})` : ""),
+check(
+  `every narrower topic has ${SHALLOW_TARGET}+ questions`,
+  belowShallow.length === 0,
+  belowShallow.map((t) => `${t}=${counts[t] ?? 0}`).join(", "),
 );
-console.log(`bank: ${questions.length} authored questions across ${notes.length} notes`);
+
+console.log(`\nbank: ${questions.length} authored questions across ${notes.length} notes`);
 
 finish();
