@@ -12,6 +12,7 @@ import {
   blockingPrereqs,
   topicsWithQuestionsSet,
   topicDepths,
+  topicReach,
   recommendNextTopic,
 } from "../lib/mastery";
 import { MasteryRing } from "../components/MasteryRing";
@@ -51,6 +52,7 @@ export function Topics({ onNavigate, onDrillTopic }: TopicsProps) {
   const notesById = useMemo(() => new Map(data.studyNotes.map((n) => [n.topicId, n])), [data.studyNotes]);
   const withQuestions = useMemo(() => topicsWithQuestionsSet(data.questions), [data.questions]);
   const depths = useMemo(() => topicDepths(data.studyNotes), [data.studyNotes]);
+  const reach = useMemo(() => topicReach(data.studyNotes), [data.studyNotes]);
   const recommended = useMemo(
     () => recommendNextTopic(data.studyNotes, data.questions, data.attempts),
     [data.studyNotes, data.questions, data.attempts],
@@ -80,14 +82,21 @@ export function Topics({ onNavigate, onDrillTopic }: TopicsProps) {
     );
   }
 
-  // Group topics into tiers by their depth in the prerequisite DAG.
+  // Group topics into tiers by their depth in the prerequisite DAG. Within a
+  // tier, the topics that unlock the most come first — alphabetical order put
+  // "Maths toolkit" third behind Fermi estimation and fixed income, which is
+  // the wrong first impression for someone arriving cold. Ties fall back to
+  // the label so the order stays stable.
   const maxDepth = Math.max(...Array.from(depths.values()), 0);
   const tiers: TopicId[][] = [];
   for (let d = 0; d <= maxDepth; d++) {
     const tier = data.studyNotes
       .filter((n) => (depths.get(n.topicId) ?? 0) === d)
       .map((n) => n.topicId)
-      .sort((a, b) => topicLabel(a).localeCompare(topicLabel(b)));
+      .sort((a, b) => {
+        const diff = (reach.get(b) ?? 0) - (reach.get(a) ?? 0);
+        return diff !== 0 ? diff : topicLabel(a).localeCompare(topicLabel(b));
+      });
     if (tier.length > 0) tiers.push(tier);
   }
 

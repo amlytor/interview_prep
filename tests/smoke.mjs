@@ -72,6 +72,18 @@ await page.waitForSelector(".topic-card");
 const seededCount = await page.locator(".topic-card").count();
 check("seeded topics render", seededCount === SEEDED_TOPICS, `${seededCount} topics`);
 
+// --- Where a cold start actually points you ---------------------------------
+// Every depth-0 topic ties on tier and on score for a brand-new user, so the
+// order used to fall through to studyNotes.json's file order — which put
+// "Fixed income" both first in tier 1 and in the Next-up banner. That is the
+// one topic the tree teaches nothing else from. Both are now broken by reach
+// (how many topics this one unlocks), so the maths toolkit leads.
+const tierOneFirst = await page.locator(".topic-grid").first().locator(".topic-card-title").first().textContent();
+check("tier 1 leads with the actual entry point", /Maths toolkit/i.test(tierOneFirst ?? ""), tierOneFirst);
+const nextUp = await page.locator(".banner-info").innerText().catch(() => "");
+check("and so does the Next-up recommendation", /Maths toolkit/i.test(nextUp),
+  nextUp.replace(/\s+/g, " ").slice(0, 70));
+
 await page.getByRole("button", { name: "+ New topic" }).click();
 await page.waitForSelector("#topicTitle");
 await page.fill("#topicTitle", "Reflection principle");

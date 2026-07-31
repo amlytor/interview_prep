@@ -198,8 +198,48 @@ export function topicDepths(notes: StudyNote[]): Map<TopicId, number> {
 }
 
 /**
+ * How many topics each topic unlocks, directly or transitively — its "reach".
+ *
+ * This is what distinguishes a genuine foundation from a leaf that happens to
+ * sit in the same tier. `maths-toolkit` and `fixed-income` are both depth 0,
+ * but the first is upstream of nearly the whole tree and the second of nothing.
+ */
+export function topicReach(notes: StudyNote[]): Map<TopicId, number> {
+  const dependents = new Map<TopicId, TopicId[]>();
+  for (const n of notes) {
+    for (const p of n.prereqs) {
+      const list = dependents.get(p);
+      if (list) list.push(n.topicId);
+      else dependents.set(p, [n.topicId]);
+    }
+  }
+
+  const reach = new Map<TopicId, number>();
+  for (const n of notes) {
+    // Breadth-first over everything downstream, counting each topic once.
+    const seen = new Set<TopicId>();
+    const queue = [...(dependents.get(n.topicId) ?? [])];
+    while (queue.length > 0) {
+      const id = queue.pop() as TopicId;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      queue.push(...(dependents.get(id) ?? []));
+    }
+    reach.set(n.topicId, seen.size);
+  }
+  return reach;
+}
+
+/**
  * "Next topic to study": the knowledge frontier — unlocked, not yet mastered.
- * Foundations first (shallowest tier), then lowest score.
+ * Shallowest tier first, then the topic that unlocks the most, then lowest
+ * score.
+ *
+ * The reach tie-break is load-bearing rather than cosmetic. Without it every
+ * depth-0 topic ties and the winner is whichever happens to come first in
+ * studyNotes.json — which pointed a brand-new user at fixed income, a leaf
+ * topic that teaches nothing else in the tree, instead of the maths toolkit
+ * the rest of the graph is built on.
  */
 export function recommendNextTopic(
   notes: StudyNote[],
@@ -210,6 +250,7 @@ export function recommendNextTopic(
   const notesById = new Map(notes.map((n) => [n.topicId, n]));
   const withQuestions = topicsWithQuestionsSet(questions);
   const depths = topicDepths(notes);
+  const reach = topicReach(notes);
 
   const candidates = notes
     .map((n) => n.topicId)
@@ -222,6 +263,9 @@ export function recommendNextTopic(
       const da = depths.get(a) ?? 0;
       const db = depths.get(b) ?? 0;
       if (da !== db) return da - db;
+      const ra = reach.get(a) ?? 0;
+      const rb = reach.get(b) ?? 0;
+      if (ra !== rb) return rb - ra; // unlocks more of the tree first
       return masteryFor(a, mastery).score - masteryFor(b, mastery).score;
     });
 
