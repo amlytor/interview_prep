@@ -293,6 +293,25 @@ lossy and the original is the only record of it.
 
 </details>
 
+### Install it
+
+QuantPrep is a progressive web app, so it can be installed rather than kept in a
+tab: **Chrome/Edge** show an install icon in the address bar, **Safari on iOS**
+is Share → Add to Home Screen, **Android** offers Add to Home Screen. It then
+opens in its own window with its own icon.
+
+**It works with no network.** Everything it needs — the app, the notes, the
+1,209 seeded questions — is cached on first visit, so a train with no signal or
+a locked-down work laptop is fine. Multiple-choice questions grade locally and
+your progress is written to IndexedDB as usual. The only thing that needs a
+connection is AI grading of free-text answers and quiz generation, since those
+call your provider.
+
+The service worker is deliberately **network-first for page loads**, so a
+running install can never get stuck on an old build: when you are online you
+always get the newest one. Build assets are cached by their content-hashed
+filename, so a cached file can never be the wrong version of anything.
+
 ### Continuous backup (recommended)
 
 **Settings → Continuous Backup → Choose backup file...** picks a file once;
@@ -351,6 +370,9 @@ src/
                          timer, banners
   pages/                 One file per sidebar destination (Dashboard, Topics, Drill,
                          Review, Mock, AddQuestion, Settings)
+public/
+  manifest.webmanifest   PWA manifest (installable, standalone window)
+  sw.js                  Service worker: offline cache, network-first navigations
 tests/                   End-to-end suites driven through a real browser
 ```
 
@@ -374,7 +396,7 @@ npm run test:e2e   # end-to-end suites (build first)
 ```
 
 `npm run test:e2e` drives a real browser against the production build. It starts
-the preview server and a mock OpenAI-compatible provider, then runs nine
+the preview server and a mock OpenAI-compatible provider, then runs ten
 suites. `content` comes first and needs no browser at all — it reads the seed
 JSON directly and checks referential integrity, question depth per topic, an
 easy entry point everywhere, and that no note has fallen behind the bank it
@@ -393,5 +415,7 @@ that it isn't saving), and `multitab` (two tabs on one origin: a stale tab must
 not overwrite the other's work, simultaneous writes must both land, and a change
 in one tab must show up in the other), and `flows` (a Mock Interview session
 through to its debrief, and a due question resurfacing in Review and advancing
-the 2 → 7 → 21 ladder). Needs a browser once — `npx playwright install chromium` — or set
+the 2 → 7 → 21 ladder), and `offline` (the manifest is installable, and the app
+boots, renders and records an answer with the network genuinely cut). Needs a
+browser once — `npx playwright install chromium` — or set
 `CHROMIUM_PATH` to one you already have.

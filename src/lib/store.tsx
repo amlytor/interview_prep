@@ -16,7 +16,7 @@ import { registerCustomTopics, slugifyTopic } from "./topics";
 import {
   clearStoredData, commitData, exportToFile, freshData, importFromFile, loadData, readStoredState,
 } from "./storage";
-import type { LoadResult } from "./storage";
+import type { LoadResult, StoredState } from "./storage";
 import { announceCommit, onRemoteCommit } from "./sync";
 import { applyTrickleCredit, scheduleAfterAttempt } from "./srs";
 import { useAutoBackup } from "./backup";
@@ -61,7 +61,8 @@ interface StoreValue {
   updateDiagnosisSummary: (attemptId: string, summary: string) => void;
   // Custom topics: a user-created topic is a study note plus a taxonomy entry,
   // so it flows through mastery, the knowledge tree, and Learn mode unchanged.
-  addCustomTopic: (input: NewTopicInput) => TopicId;
+  /** Async: the slug is assigned inside the commit. Null if the save failed. */
+  addCustomTopic: (input: NewTopicInput) => Promise<TopicId | null>;
   deleteCustomTopic: (topicId: TopicId) => void;
   setTopicPrereqs: (topicId: TopicId, prereqs: TopicId[]) => void;
   topicDeletionImpact: (topicId: TopicId) => TopicDeletionImpact;
@@ -73,7 +74,7 @@ interface StoreValue {
   /** Approve one staged question. `revealed` records whether you read the answer. */
   approveStagedQuestion: (id: string, revealed?: boolean) => void;
   /** Bulk-approve every staged question that passed validation, unseen. */
-  approveCleanStaged: (topicId?: TopicId) => number;
+  approveCleanStaged: (topicId?: TopicId) => Promise<number | null>;
   rejectStagedQuestion: (id: string) => void;
   /** Mark a staged question's answer as read, so approving it can't claim otherwise. */
   markStagedRevealed: (id: string) => void;
@@ -154,6 +155,17 @@ function StoreInner({ initial, children }: { initial: LoadResult; children: Reac
   const dataRef = useRef(data);
   dataRef.current = data;
 
+  /** Take a committed result as the new truth, and tell the other tabs. */
+  const adopt = useCallback((result: StoredState | null): AppData | null => {
+    setSaveFailed(result === null);
+    if (!result) return null;
+    revision.current = result.revision;
+    registerCustomTopics(result.data.customTopics);
+    setData(result.data);
+    announceCommit(result.revision);
+    return result.data;
+  }, []);
+
   /**
    * The single write path.
    *
@@ -165,17 +177,36 @@ function StoreInner({ initial, children }: { initial: LoadResult; children: Reac
    * must be a pure function of the previous state: it runs twice, and the
    * second run is the one that counts.
    */
-  const mutate = useCallback((apply: (prev: AppData) => AppData) => {
-    setData(apply);
-    void commitData((stored) => apply(stored ?? dataRef.current)).then((result) => {
-      setSaveFailed(result === null);
-      if (!result) return;
-      revision.current = result.revision;
-      registerCustomTopics(result.data.customTopics);
-      setData(result.data);
-      announceCommit(result.revision);
-    });
-  }, []);
+  const mutate = useCallback(
+    (apply: (prev: AppData) => AppData) => {
+      setData(apply);
+      void commitData((stored) => apply(stored ?? dataRef.current)).then(adopt);
+    },
+    [adopt],
+  );
+
+  /**
+   * A write whose transform must run EXACTLY ONCE, because it decides something
+   * the caller needs back — an assigned id, a count of what it touched.
+   *
+   * mutate() runs its transform twice by design, which is fine when the only
+   * output is the next state but not when the transform is also choosing a
+   * value. Here there is no optimistic pass: the caller waits for the commit,
+   * which for a deliberate one-off action costs a few milliseconds and buys an
+   * answer computed against the real stored state.
+   */
+  const commitOnce = useCallback(
+    async <T,>(apply: (prev: AppData) => [AppData, T]): Promise<T | null> => {
+      let output: T | undefined;
+      const result = await commitData((stored) => {
+        const [next, value] = apply(stored ?? dataRef.current);
+        output = value;
+        return next;
+      });
+      return adopt(result) ? (output as T) : null;
+    },
+    [adopt],
+  );
 
   // Adopt writes made in other tabs, so a second window isn't showing a
   // snapshot frozen at the moment it loaded.
@@ -291,28 +322,34 @@ function StoreInner({ initial, children }: { initial: LoadResult; children: Reac
   }, [mutate]);
 
   const addCustomTopic = useCallback(
-    (input: NewTopicInput): TopicId => {
-    const title = input.title.trim() || "Untitled topic";
-    // Computed outside the updater so it can be returned to the caller, which
-    // navigates straight to the new topic.
-    const topicId = slugifyTopic(title, data.customTopics.map((t) => t.id));
-    const note: StudyNote = {
-      topicId,
-      title,
-      prereqs: input.prereqs,
-      source: "user",
-      body: input.body,
-      lastEdited: Date.now(),
-      modified: false,
-    };
-    mutate((prev) => ({
-      ...prev,
-      customTopics: [...prev.customTopics, { id: topicId, label: title }],
-      studyNotes: [...prev.studyNotes, note],
-    }));
-    return topicId;
+    (input: NewTopicInput): Promise<TopicId | null> => {
+      const title = input.title.trim() || "Untitled topic";
+      // The slug is chosen INSIDE the commit, against the ids that are actually
+      // stored. Picking it from render-time state instead meant two tabs — or
+      // two fast clicks — creating the same title could settle on the same id,
+      // and a duplicate topic id silently merges two topics' questions.
+      return commitOnce((prev) => {
+        const topicId = slugifyTopic(title, prev.customTopics.map((t) => t.id));
+        const note: StudyNote = {
+          topicId,
+          title,
+          prereqs: input.prereqs,
+          source: "user",
+          body: input.body,
+          lastEdited: Date.now(),
+          modified: false,
+        };
+        return [
+          {
+            ...prev,
+            customTopics: [...prev.customTopics, { id: topicId, label: title }],
+            studyNotes: [...prev.studyNotes, note],
+          },
+          topicId,
+        ];
+      });
     },
-    [data.customTopics, mutate],
+    [commitOnce],
   );
 
   /**
@@ -396,28 +433,32 @@ function StoreInner({ initial, children }: { initial: LoadResult; children: Reac
 
   /** Approve everything the validation pass cleared, without revealing answers. */
   const approveCleanStaged = useCallback(
-    (topicId?: TopicId): number => {
-      const clean = data.stagedQuestions.filter(
-        (q) =>
-          q.validation?.status === "clean" &&
-          !q.answerSeen &&
-          (topicId === undefined || q.topics.includes(topicId)),
-      );
-      if (clean.length === 0) return 0;
-      const ids = new Set(clean.map((q) => q.id));
-      mutate((prev) => ({
-        ...prev,
-        stagedQuestions: prev.stagedQuestions.filter((q) => !ids.has(q.id)),
-        questions: [
-          ...prev.questions,
-          ...prev.stagedQuestions
-            .filter((q) => ids.has(q.id))
-            .map((q) => ({ ...q, id: makeId(), answerSeen: false })),
-        ],
-      }));
-      return clean.length;
-    },
-    [data.stagedQuestions, mutate],
+    (topicId?: TopicId): Promise<number | null> =>
+      // Which questions are "clean" is decided inside the commit too, so the
+      // count reported back is what was actually banked rather than what this
+      // tab last saw staged.
+      commitOnce((prev) => {
+        const clean = prev.stagedQuestions.filter(
+          (q) =>
+            q.validation?.status === "clean" &&
+            !q.answerSeen &&
+            (topicId === undefined || q.topics.includes(topicId)),
+        );
+        if (clean.length === 0) return [prev, 0];
+        const ids = new Set(clean.map((q) => q.id));
+        return [
+          {
+            ...prev,
+            stagedQuestions: prev.stagedQuestions.filter((q) => !ids.has(q.id)),
+            questions: [
+              ...prev.questions,
+              ...clean.map((q) => ({ ...q, id: makeId(), answerSeen: false })),
+            ],
+          },
+          clean.length,
+        ];
+      }),
+    [commitOnce],
   );
 
   const markStagedRevealed = useCallback((id: string) => {

@@ -298,8 +298,15 @@ export function TopicDetail({ topicId, onBack, onNavigate, onDrillTopic }: Topic
               <button
                 className="btn btn-primary btn-sm"
                 onClick={() => {
-                  const n = approveCleanStaged(topicId);
-                  setBulkMessage(`Banked ${n} checked question${n === 1 ? "" : "s"} unseen.`);
+                  // The count comes back from the commit, so the message
+                  // reports what was actually banked.
+                  void approveCleanStaged(topicId).then((n) => {
+                    setBulkMessage(
+                      n === null
+                        ? "Couldn't save — this browser is refusing to store data."
+                        : `Banked ${n} checked question${n === 1 ? "" : "s"} unseen.`,
+                    );
+                  });
                 }}
               >
                 Bank {cleanStaged.length} checked question{cleanStaged.length === 1 ? "" : "s"} unseen

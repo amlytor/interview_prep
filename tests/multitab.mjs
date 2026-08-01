@@ -149,6 +149,51 @@ const titles = (state) => (state?.customTopics ?? []).map((t) => t.label).sort()
 }
 
 // ===========================================================================
+// 5. Two tabs creating the SAME title must not land on the same id.
+//
+// The slug used to be picked from render-time state, outside the transaction,
+// so both tabs would compute "collision-test" and one topic would silently
+// absorb the other's questions. It is now chosen inside the commit, against
+// the ids actually stored.
+// ===========================================================================
+{
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    Object.defineProperty(window, "BroadcastChannel", { configurable: true, get: () => undefined });
+  });
+  const tabA = await context.newPage();
+  const tabB = await context.newPage();
+  await tabA.goto(APP_URL, { waitUntil: "networkidle" });
+  await waitForSaved(tabA);
+  await tabB.goto(APP_URL, { waitUntil: "networkidle" });
+  await tabB.waitForSelector("nav.sidebar");
+
+  for (const page of [tabA, tabB]) {
+    await nav(page, /Topics/);
+    await page.getByRole("button", { name: "+ New topic" }).click();
+    await page.waitForSelector("#topicTitle");
+    await page.fill("#topicTitle", "Collision test");
+    await page.fill("#topicBody", "## Core idea\nSame title, both tabs.");
+  }
+  await Promise.all([
+    tabA.getByRole("button", { name: "Create topic" }).click(),
+    tabB.getByRole("button", { name: "Create topic" }).click(),
+  ]);
+  await tabA.waitForTimeout(1200);
+
+  const state = await readState(tabA);
+  const created = state.customTopics.filter((t) => t.label === "Collision test");
+  const ids = new Set(created.map((t) => t.id));
+  check("collision: both same-titled topics are created", created.length === 2, `${created.length} created`);
+  check("collision: they get DISTINCT ids", ids.size === 2, [...ids].join(", "));
+  check("collision: each has its own note",
+    state.studyNotes.filter((n) => ids.has(n.topicId)).length === 2,
+    `${state.studyNotes.filter((n) => ids.has(n.topicId)).length} notes`);
+
+  await context.close();
+}
+
+// ===========================================================================
 // 4. Attempt history — the thing that actually hurts to lose — merges too.
 // ===========================================================================
 {

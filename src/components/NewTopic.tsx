@@ -83,13 +83,21 @@ export function NewTopic({ onCreated, onCancel, onNavigate }: NewTopicProps) {
     onCreated(existingId);
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     const finalTitle = title.trim();
     if (!finalTitle) {
       setError("Give the topic a title before creating it.");
       return;
     }
-    onCreated(addCustomTopic({ title: finalTitle, prereqs, body }));
+    // The id is assigned inside the commit, so it only exists once the write
+    // has landed — which is also the only point at which navigating to it is
+    // meaningful.
+    const topicId = await addCustomTopic({ title: finalTitle, prereqs, body });
+    if (!topicId) {
+      setError("Couldn't save the new topic — this browser is refusing to store data.");
+      return;
+    }
+    onCreated(topicId);
   }
 
   return (
