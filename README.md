@@ -339,6 +339,12 @@ filename, so a cached file can never be the wrong version of anything.
 
 ### Continuous backup (recommended)
 
+**Where to put it:** somewhere that syncs — Dropbox, iCloud Drive, OneDrive —
+and **not inside this repo**. The backup is your entire state, and that
+includes your API keys in plaintext, so a stray `git add -A` would publish
+them. `.gitignore` blocks the obvious filenames as a safety net, but outside
+the repo is the right answer. Any name works; the picker suggests one.
+
 **Settings → Continuous Backup → Choose backup file...** picks a file once;
 after that QuantPrep writes your entire state to it every time anything
 changes, debounced so a burst of typing produces one write. No remembering to
@@ -351,9 +357,11 @@ write permission after a restart (a one-click **Reconnect**; browsers
 deliberately don't hand out silent, permanent disk access). Until you do, the
 status line says so rather than failing quietly.
 
-This uses the File System Access API, so it needs Chrome, Edge, or another
-Chromium browser. Elsewhere the section explains that and points you at manual
-export, which works everywhere.
+This uses the File System Access API. Chrome and Edge have it on by default.
+**Brave ships it turned off** for privacy despite being Chromium-based — open
+`brave://flags`, search for *File System*, enable it, and restart. Firefox and
+Safari don't implement it at all. Wherever it is missing the panel says so and
+points you at manual export, which works everywhere.
 
 ### Manual export
 

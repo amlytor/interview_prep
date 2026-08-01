@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# QuantPrep backups. These are the FULL app state, which includes your API keys
+# in plaintext — committing one would publish them. Ignored here as a safety
+# net in case a backup file is pointed at this folder, but the right home for
+# it is somewhere outside the repo (a synced folder, e.g. Dropbox/iCloud).
+quantprep-backup*.json
+*-quantprep-backup.json
+backup.json

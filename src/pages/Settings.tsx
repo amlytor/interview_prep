@@ -455,11 +455,18 @@ export function SettingsPage() {
       <div className="card" style={{ maxWidth: 660 }}>
         <div className="card-title">Continuous Backup</div>
         {backup.state === "unsupported" ? (
-          <p className="muted" style={{ marginTop: 0 }}>
-            Auto-saving to a file needs the File System Access API, which this browser doesn't support (currently
-            Chrome, Edge, and other Chromium browsers). Use <strong>Export to JSON</strong> below instead — it
-            works everywhere.
-          </p>
+          <>
+            <p className="muted" style={{ marginTop: 0 }}>
+              Auto-saving to a file needs the File System Access API, which this browser isn't offering. Chrome
+              and Edge have it on by default. <strong>Brave</strong> ships it turned off for privacy even though
+              it's Chromium-based — open <code>brave://flags</code>, search for <em>File System</em>, enable it,
+              and restart. Firefox and Safari don't implement it at all.
+            </p>
+            <p className="muted" style={{ marginBottom: 0 }}>
+              Either way <strong>Export to JSON</strong> below works everywhere, and it's your whole state in one
+              file — worth doing at the end of each session until auto-save is available.
+            </p>
+          </>
         ) : (
           <>
             <p className="muted" style={{ marginTop: 0 }}>

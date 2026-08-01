@@ -6,8 +6,10 @@
 // on the app writes its whole state to that file whenever anything changes —
 // so progress lives somewhere durable instead of only in localStorage.
 //
-// Chromium-based browsers only. Everywhere else this degrades to the manual
-// Export button, which is always available.
+// Needs the File System Access API: Chrome and Edge by default, Brave only
+// once the user enables it in brave://flags (it is off there for privacy, even
+// though Brave is Chromium-based), and not at all in Firefox or Safari.
+// Everywhere it is missing this degrades to the manual Export button.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppData } from "../types";
 import { keyValueStore } from "./db";
