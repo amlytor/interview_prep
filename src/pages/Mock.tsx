@@ -6,6 +6,7 @@ import { TimerBadge } from "../components/Timer";
 import { ApiKeyBanner, ErrorBanner } from "../components/ApiKeyBanner";
 import { gradeFreeTextAnswer, aiConfigured, GradingError } from "../lib/ai";
 import { orderForPractice } from "../lib/practice";
+import { topicLabel } from "../lib/topics";
 import type { Page } from "../App";
 
 type MockPhase = "setup" | "in-progress" | "grading" | "debrief";
@@ -341,7 +342,7 @@ export function Mock({ onNavigate }: { onNavigate: (page: Page) => void }) {
             <div className="tag-row" style={{ marginTop: 8 }}>
               {weakTopics.map(([t, count]) => (
                 <span key={t} className="badge badge-hard">
-                  {t} ({count})
+                  {topicLabel(t)} ({count})
                 </span>
               ))}
             </div>

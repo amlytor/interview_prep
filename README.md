@@ -374,7 +374,7 @@ npm run test:e2e   # end-to-end suites (build first)
 ```
 
 `npm run test:e2e` drives a real browser against the production build. It starts
-the preview server and a mock OpenAI-compatible provider, then runs eight
+the preview server and a mock OpenAI-compatible provider, then runs nine
 suites. `content` comes first and needs no browser at all — it reads the seed
 JSON directly and checks referential integrity, question depth per topic, an
 easy entry point everywhere, and that no note has fallen behind the bank it
@@ -391,5 +391,7 @@ happens when the browser refuses to store anything — blocked site data, a
 denied IndexedDB, or both: the app has to boot, stay usable, and say out loud
 that it isn't saving), and `multitab` (two tabs on one origin: a stale tab must
 not overwrite the other's work, simultaneous writes must both land, and a change
-in one tab must show up in the other). Needs a browser once — `npx playwright install chromium` — or set
+in one tab must show up in the other), and `flows` (a Mock Interview session
+through to its debrief, and a due question resurfacing in Review and advancing
+the 2 → 7 → 21 ladder). Needs a browser once — `npx playwright install chromium` — or set
 `CHROMIUM_PATH` to one you already have.
