@@ -155,10 +155,35 @@ Requires Node.js 18+.
 
 ```bash
 npm install
-npm run dev
+npm start
 ```
 
-Then open the URL Vite prints (typically `http://localhost:5173`).
+Then open **http://localhost:4173** — and keep using that exact address.
+
+`npm start` builds and serves the production app, which is the one you want for
+actual studying: it is the only mode with the service worker, so it is the only
+one that installs and works offline. Both scripts pin their port with
+`--strictPort`, so if something else is already on it you get an error instead
+of Vite quietly moving to the next port — which matters more than it sounds,
+because a different port is a different origin with its own empty storage, and
+your progress would look like it had vanished.
+
+Use `npm run dev` (on `http://localhost:5173`) only when you are changing the
+code: it has hot reload but no service worker, and it is a **separate origin**,
+so progress made there does not appear at `localhost:4173` and vice versa. Pick
+one and stay on it.
+
+### First run
+
+1. **Settings → AI Provider.** Pick a provider, paste a key, **Test
+   Connection**. Multiple-choice questions grade locally without this, but
+   free-text grading, quiz generation and the diagnostic chat all need it.
+2. **Settings → Continuous Backup → Choose backup file…** Do this before you
+   build up any history. Everything lives in this browser; one file on disk
+   (in Dropbox or iCloud Drive) is what makes that safe.
+3. **Install it** from the address-bar icon, if you want it in its own window
+   and available offline.
+4. **Topics → Study now.** The banner points at the right starting topic.
 
 ### Pick an AI provider
 

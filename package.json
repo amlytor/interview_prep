@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "start": "npm run build && vite preview --port 4173 --strictPort",
+    "dev": "vite --port 5173 --strictPort",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview",
+    "preview": "vite preview --port 4173 --strictPort",
     "test:e2e": "node tests/run.mjs"
   },
   "dependencies": {
